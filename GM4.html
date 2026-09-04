@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>GM4 — Calculer le périmètre d'un polygone</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --primary:#e11d48;--primary2:#fb7185;--primary-clair:#ffe4e6;
+  --bg:#fff1f2;--cote:#9f1239;
+  --bleu:#1a73e8;--bleu-clair:#e8f0fe;
+  --orange:#ea580c;--orange-clair:#ffedd5;
+  --vert:#16a34a;--vert-clair:#f0fdf4;
+  --violet:#7c3aed;--violet-clair:#f5f3ff;
+  --gris:#94a3b8;
+  --teal:#0d9488;--teal-clair:#f0fdfa;
+  --card:#fff;--texte:#1e293b;--border:#e2e8f0;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+header{display:flex;justify-content:center;margin-bottom:22px;}
+.header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+.badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--primary);background:var(--primary-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--primary);flex-shrink:0;}
+.tache-label{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--primary);line-height:1.3;}
+.progress-bar-wrap{width:100%;max-width:680px;background:var(--primary-clair);border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .5s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+.step-dot{width:34px;height:34px;border-radius:50%;background:var(--primary-clair);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--primary2);transition:all .4s;border:2px solid transparent;}
+.step-dot.active{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+.card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:360px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(0,0,0,.07);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .45s ease both;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;color:var(--primary);text-align:center;line-height:1.3;}
+.step-text{font-size:.97rem;line-height:1.7;text-align:center;max-width:580px;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:580px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 16px;font-weight:600;font-size:.92rem;line-height:1.6;max-width:580px;width:100%;}
+.info.primary{background:var(--primary-clair);border-left:4px solid var(--primary);}
+.info.vert{background:var(--vert-clair);border-left:4px solid var(--vert);color:#14532d;}
+.info.bleu{background:var(--bleu-clair);border-left:4px solid var(--bleu);color:#1e3a5f;}
+.btn-complete{border:2px solid var(--vert);background:var(--vert-clair);color:var(--vert);font-family:'Baloo 2',cursive;font-size:1rem;font-weight:700;border-radius:10px;padding:10px 22px;cursor:pointer;transition:all .2s;}
+.btn-complete:hover{background:var(--vert);color:#fff;}
+.btn-anim{border:2px solid var(--primary);background:var(--primary-clair);color:var(--primary);font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;transition:all .2s;}
+.btn-anim:hover{background:var(--primary);color:#fff;}
+.recap-list{display:flex;flex-direction:column;gap:12px;width:100%;max-width:580px;}
+.recap-item{display:flex;gap:12px;align-items:flex-start;background:#f8faff;border-radius:12px;padding:11px 16px;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;}
+.nav{display:flex;align-items:center;justify-content:space-between;max-width:680px;width:100%;margin-top:20px;gap:12px;}
+.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;border-radius:12px;padding:11px 22px;cursor:pointer;transition:all .25s;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-prev:disabled{opacity:.35;cursor:default;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;}
+.btn-next:hover{opacity:.9;}
+.step-counter{font-family:'Baloo 2',cursive;font-weight:700;color:var(--primary);font-size:.95rem;white-space:nowrap;}
+.calcul-ligne{font-family:'Baloo 2',cursive;font-size:1.1rem;font-weight:800;color:var(--texte);text-align:center;min-height:1.8em;letter-spacing:.01em;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">GM4</div>
+    <div class="tache-label">Calculer le périmètre d'un polygone</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+const CS = 22; // px par carreau
+const SPEED = 80; // px/s pour le contour
+
+// ── Utilitaires ──────────────────────────────────────────────────────────────
+function grilleSVG(uid, cols, rows, ox, oy){
+  return `<defs><pattern id="gr-${uid}" width="${CS}" height="${CS}" patternUnits="userSpaceOnUse" x="${ox}" y="${oy}">
+    <path d="M ${CS} 0 L 0 0 0 ${CS}" fill="none" stroke="#e2e8f0" stroke-width="0.9"/>
+  </pattern></defs>
+  <rect x="${ox}" y="${oy}" width="${cols*CS}" height="${rows*CS}" fill="url(#gr-${uid})"/>`;
+}
+
+function pStr(pts,ox,oy){ return pts.map(([c,r])=>`${ox+c*CS},${oy+r*CS}`).join(' '); }
+
+function decomposerSegs(pts){
+  const subs=[]; const n=pts.length;
+  for(let i=0;i<n;i++){
+    const [c1,r1]=pts[i],[c2,r2]=pts[(i+1)%n];
+    const dc=c2-c1,dr=r2-r1,steps=Math.abs(dc)+Math.abs(dr);
+    const sc=dc===0?0:Math.sign(dc),sr=dr===0?0:Math.sign(dr);
+    for(let s=0;s<steps;s++) subs.push([c1+s*sc,r1+s*sr,c1+(s+1)*sc,r1+(s+1)*sr]);
+  }
+  return subs;
+}
+
+// ── PAGE 2 : polygone sur quadrillage, comptage 1/1 ──────────────────────────
+// L inversée : 14 carreaux de périmètre
+const PTS_P2 = [[0,0],[4,0],[4,2],[2,2],[2,4],[0,4]];
+
+function svgPolygoneComptage(uid, pts, gridCols, gridRows){
+  const ox=14, oy=14;
+  const W=gridCols*CS+28, H=gridRows*CS+28+20;
+  const subs=decomposerSegs(pts);
+  const perimPx=subs.length*CS;
+  const cx=pts.reduce((s,[c])=>s+c,0)/pts.length;
+  const cy=pts.reduce((s,[,r])=>s+r,0)/pts.length;
+
+  let s=`<svg id="svg-${uid}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  s+=grilleSVG(uid,gridCols,gridRows,ox,oy);
+  s+=`<polygon points="${pStr(pts,ox,oy)}" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linejoin="round"/>`;
+  // Contour rouge animé — AVANT les textes pour être sous les numéros
+  s+=`<polygon id="perim-${uid}" points="${pStr(pts,ox,oy)}" fill="none" stroke="var(--primary)" stroke-width="3.5" stroke-linecap="square" stroke-linejoin="miter" style="stroke-dasharray:${perimPx};stroke-dashoffset:${perimPx}"/>`;
+
+  // Numéros centrés SUR le segment (off=0), avec halo blanc pour lisibilité
+  subs.forEach(([c1,r1,c2,r2],i)=>{
+    const mx=ox+(c1+c2)/2*CS, my=oy+(r1+r2)/2*CS;
+    // halo blanc
+    s+=`<text id="nh-${uid}-${i}" x="${mx}" y="${my+3.5}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="9" font-weight="800" fill="white" stroke="white" stroke-width="3" paint-order="stroke" opacity="0">${i+1}</text>`;
+    // texte rouge foncé par-dessus
+    s+=`<text id="nm-${uid}-${i}" x="${mx}" y="${my+3.5}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="9" font-weight="800" fill="#9f1239" opacity="0">${i+1}</text>`;
+  });
+  s+=`<text id="total-${uid}" x="${W/2}" y="${gridRows*CS+oy+17}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--primary)" opacity="0">Périmètre → ${subs.length} unités</text>`;
+  s+=`</svg>`;
+  return `<div style="display:flex;justify-content:center">${s}</div>`;
+}
+
+function lancerComptagePerim(uid, pts){
+  const subs=decomposerSegs(pts);
+  const perimPx=subs.length*CS;
+  const durTotale=perimPx/SPEED*1000;
+  subs.forEach((_,i)=>{
+    ['nh-','nm-'].forEach(p=>{const el=document.getElementById(p+uid+'-'+i);if(el){el.style.transition='none';el.style.opacity='0';}});
+  });
+  const tot=document.getElementById('total-'+uid);
+  if(tot){tot.style.transition='none';tot.style.opacity='0';}
+  const el=document.getElementById('perim-'+uid);
+  if(!el) return;
+  el.style.transition='none'; el.style.strokeDashoffset=perimPx;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    el.style.transition=`stroke-dashoffset ${durTotale.toFixed(0)}ms linear`;
+    el.style.strokeDashoffset=0;
+  }));
+  subs.forEach((_,i)=>{
+    setTimeout(()=>{
+      ['nh-','nm-'].forEach(p=>{const lbl=document.getElementById(p+uid+'-'+i);if(lbl){lbl.style.transition='opacity 0.15s';lbl.style.opacity='1';}});
+    }, (i+1)*(CS/SPEED)*1000);
+  });
+  setTimeout(()=>{if(tot){tot.style.transition='opacity 0.4s';tot.style.opacity='1';}}, durTotale);
+}
+
+// ── PAGE 3 : rectangle sur quadrillage, mesures + calcul progressif ──────────
+// Rectangle 5×3 carreaux. Côtés dans l'ordre : haut(5), droite(3), bas(5), gauche(3)
+// Animation : contour se dessine, à mi-côté la mesure apparaît,
+//             puis à la fin du côté le "+" (ou "=") s'ajoute dans le calcul.
+const RECT_W=5, RECT_H=3; // en carreaux
+const RECT_SIDES=[
+  {label:'5', px: RECT_W*CS, dir:'haut'},
+  {label:'3', px: RECT_H*CS, dir:'droite'},
+  {label:'5', px: RECT_W*CS, dir:'bas'},
+  {label:'3', px: RECT_H*CS, dir:'gauche'},
+];
+
+function svgRectGrille(uid){
+  const ox=24, oy=28;
+  const rw=RECT_W*CS, rh=RECT_H*CS;
+  const W=rw+48, H=rh+56;
+  let s=`<svg id="svg-${uid}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  s+=grilleSVG(uid+'r', RECT_W, RECT_H, ox, oy);
+  // Contour gris
+  s+=`<rect x="${ox}" y="${oy}" width="${rw}" height="${rh}" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>`;
+  // 4 segments de contour animés individuellement
+  // haut : (ox,oy)→(ox+rw,oy)
+  s+=`<line id="seg-${uid}-0" x1="${ox}" y1="${oy}" x2="${ox+rw}" y2="${oy}" stroke="var(--primary)" stroke-width="3.5" stroke-linecap="round" style="stroke-dasharray:${rw};stroke-dashoffset:${rw}"/>`;
+  // droite : (ox+rw,oy)→(ox+rw,oy+rh)
+  s+=`<line id="seg-${uid}-1" x1="${ox+rw}" y1="${oy}" x2="${ox+rw}" y2="${oy+rh}" stroke="var(--primary)" stroke-width="3.5" stroke-linecap="round" style="stroke-dasharray:${rh};stroke-dashoffset:${rh}"/>`;
+  // bas : (ox+rw,oy+rh)→(ox,oy+rh)
+  s+=`<line id="seg-${uid}-2" x1="${ox+rw}" y1="${oy+rh}" x2="${ox}" y2="${oy+rh}" stroke="var(--primary)" stroke-width="3.5" stroke-linecap="round" style="stroke-dasharray:${rw};stroke-dashoffset:${rw}"/>`;
+  // gauche : (ox,oy+rh)→(ox,oy)
+  s+=`<line id="seg-${uid}-3" x1="${ox}" y1="${oy+rh}" x2="${ox}" y2="${oy}" stroke="var(--primary)" stroke-width="3.5" stroke-linecap="round" style="stroke-dasharray:${rh};stroke-dashoffset:${rh}"/>`;
+  // Labels mesures (invisibles au départ)
+  // haut : au-dessus du milieu
+  s+=`<text id="lbl-${uid}-0" x="${ox+rw/2}" y="${oy-8}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--primary)" opacity="0">5</text>`;
+  // droite : à droite du milieu
+  s+=`<text id="lbl-${uid}-1" x="${ox+rw+14}" y="${oy+rh/2+5}" text-anchor="start" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--primary)" opacity="0">3</text>`;
+  // bas : en dessous du milieu
+  s+=`<text id="lbl-${uid}-2" x="${ox+rw/2}" y="${oy+rh+18}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--primary)" opacity="0">5</text>`;
+  // gauche : à gauche du milieu
+  s+=`<text id="lbl-${uid}-3" x="${ox-14}" y="${oy+rh/2+5}" text-anchor="end" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--primary)" opacity="0">3</text>`;
+  s+=`</svg>`;
+  return `<div style="display:flex;justify-content:center">${s}</div>`;
+}
+
+function lancerRectCalc(uid, calcId){
+  // Durées de chaque côté (en ms) à vitesse constante
+  const durs=[RECT_W*CS, RECT_H*CS, RECT_W*CS, RECT_H*CS].map(px=>px/SPEED*1000);
+  // Calcul progressif affiché dans #calcId
+  const labels=['5','3','5','3'];
+  const total=16;
+  let temps=0;
+
+  // Reset
+  for(let i=0;i<4;i++){
+    const seg=document.getElementById(`seg-${uid}-${i}`);
+    const lbl=document.getElementById(`lbl-${uid}-${i}`);
+    const px=i%2===0?RECT_W*CS:RECT_H*CS;
+    if(seg){seg.style.transition='none';seg.style.strokeDashoffset=px;}
+    if(lbl){lbl.style.transition='none';lbl.style.opacity='0';}
+  }
+  const calcEl=document.getElementById(calcId);
+  if(calcEl) calcEl.textContent='Périmètre →';
+
+  // Lancer côté par côté en chaîne
+  function animerCote(idx){
+    if(idx>=4) return;
+    const seg=document.getElementById(`seg-${uid}-${idx}`);
+    const lbl=document.getElementById(`lbl-${uid}-${idx}`);
+    const px=idx%2===0?RECT_W*CS:RECT_H*CS;
+    const dur=durs[idx];
+    if(seg){
+      seg.style.transition=`stroke-dashoffset ${dur.toFixed(0)}ms linear`;
+      seg.style.strokeDashoffset=0;
+    }
+    // À mi-côté : label + mise à jour calcul
+    setTimeout(()=>{
+      if(lbl){lbl.style.transition='opacity 0.25s';lbl.style.opacity='1';}
+      // Construire la chaîne de calcul
+      if(calcEl){
+        const parts=labels.slice(0,idx+1);
+        calcEl.textContent='Périmètre → '+parts.join(' + ');
+      }
+    }, dur/2);
+    // Au coin : chaîner le côté suivant
+    setTimeout(()=>{
+      if(idx===3 && calcEl){
+        calcEl.textContent=`Périmètre → 5 + 3 + 5 + 3 = ${total}`;
+      }
+      animerCote(idx+1);
+    }, dur);
+  }
+  animerCote(0);
+}
+
+// ── PAGE 4 : polygone sans quadrillage, mesures données, calcul progressif ───
+// Pentagone avec 5 côtés de longueurs variées
+// Côtés : 4, 3, 5, 3, 4 → total = 19 (pour l'exemple)
+// On le dessine en SVG absolu, sans quadrillage
+// Points (px) : départ haut-gauche, sens horaire
+// Pentagone : (40,10)(120,10)(150,60)(90,100)(10,60)
+// Côtés : haut 80px, droite-haut ~61px, droite-bas ~72px, gauche-bas ~72px, gauche-haut ~61px
+// Trop irrégulier → on va faire un hexagone simple avec des côtés entiers
+// Polygone : rectangle avec un coin coupé
+// (0,0)(100,0)(130,40)(130,80)(0,80) → côtés : 100, ~50, 40, 130, 80
+// Plus simple : trapèze
+// (30,0)(130,0)(150,80)(0,80) → côtés : 100, ~89, 150, ~89 — pas entiers
+// Allons avec un polygone à côtés bien définis :
+// Triangle rectangle : (0,0)(120,0)(0,90) → côtés : 12cm, 9cm, 15cm (Pythagore 3-4-5)
+// On annonce les mesures en cm directement.
+// Points SVG : (ox,oy)(ox+120,oy)(ox,oy+90)
+
+// ── PAGE 4 : pentagone irrégulier sans quadrillage ───────────────────────────
+// Pentagone avec 5 côtés : 4, 6, 5, 6, 3 cm → total = 24 cm
+// Points dessinés en SVG pour avoir ces longueurs approximativement à l'écran
+// On construit le pentagone point par point :
+// A(60,10) → B(170,10) : côté AB = 110px ≈ représente 4 cm
+// B(170,10) → C(200,80) : côté BC ≈ 76px ≈ représente 6 cm (non entier en px)
+// Plus simple : utiliser des côtés horizontaux/verticaux + 1 diagonale pour avoir des entiers
+// Pentagone : ABCDE
+// A(20,10) B(130,10) C(160,60) D(100,110) E(10,60)
+// AB = 110px, BC ≈ 68, CD ≈ 78, DE ≈ 91, EA ≈ 51 — pas joli
+// Utilisons plutôt un pentagone dessiné à la main avec de belles mesures affichées :
+// A(40,10) B(160,10) → AB = 6 cm (affiché)
+// B(160,10) C(180,80) → BC = 5 cm
+// C(120,120) → CD = 5 cm
+// D(20,100) → DE = 6 cm
+// E(20,10)=A → EA = 3 cm
+// Non — simplifions : un pentagone "maison" avec des côtés lisibles
+// Base 6cm, gauche 4cm, toit-gauche 3cm, toit-droit 3cm, droite 4cm → total 20cm
+
+function svgPolygoneMesures(uid){
+  const ox=20, oy=10;
+  const W=220, H=180;
+  // Pentagone "maison" : base + deux côtés + deux côtés du toit
+  // Coordonnées en px : base 120px (=6), hauteur rectangle 80px (=4), toit 60px de hauteur
+  // A bas-gauche, B bas-droit, C droit-haut, D sommet, E gauche-haut
+  const A=[ox, oy+140], B=[ox+120, oy+140], C=[ox+120, oy+60], D=[ox+60, oy+10], E=[ox, oy+60];
+  const pts=[A,B,C,D,E];
+  const ptStr=pts.map(p=>p.join(',')).join(' ');
+
+  // Longueurs affichées (ne correspondent pas exactement aux px, c'est l'étiquette qui compte)
+  // AB = 6 cm (bas), BC = 4 cm (droite), CD = 5 cm (toit-droit), DE = 5 cm (toit-gauche), EA = 4 cm (gauche)
+  // Total = 24 cm
+  const sides=[
+    {x1:A[0],y1:A[1],x2:B[0],y2:B[1], label:'6 cm', lx:(A[0]+B[0])/2, ly:A[1]+18, anchor:'middle'},
+    {x1:B[0],y1:B[1],x2:C[0],y2:C[1], label:'4 cm', lx:B[0]+16, ly:(B[1]+C[1])/2+5, anchor:'start'},
+    {x1:C[0],y1:C[1],x2:D[0],y2:D[1], label:'5 cm', lx:(C[0]+D[0])/2+16, ly:(C[1]+D[1])/2+5, anchor:'start'},
+    {x1:D[0],y1:D[1],x2:E[0],y2:E[1], label:'5 cm', lx:(D[0]+E[0])/2-16, ly:(D[1]+E[1])/2+5, anchor:'end'},
+    {x1:E[0],y1:E[1],x2:A[0],y2:A[1], label:'4 cm', lx:E[0]-16, ly:(E[1]+A[1])/2+5, anchor:'end'},
+  ];
+  const dxArr=sides.map(({x1,y1,x2,y2})=>Math.sqrt((x2-x1)**2+(y2-y1)**2));
+  const perimPx=dxArr.reduce((a,b)=>a+b,0);
+
+  let s=`<svg id="svg-${uid}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  // Contour gris
+  s+=`<polygon points="${ptStr}" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linejoin="round"/>`;
+  // Segments animés individuellement
+  sides.forEach(({x1,y1,x2,y2},i)=>{
+    const len=dxArr[i].toFixed(1);
+    s+=`<line id="seg-${uid}-${i}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--primary)" stroke-width="3.5" stroke-linecap="round" style="stroke-dasharray:${len};stroke-dashoffset:${len}"/>`;
+  });
+  // Mesures (visibles dès le début)
+  sides.forEach(({label,lx,ly,anchor})=>{
+    s+=`<text x="${lx}" y="${ly}" text-anchor="${anchor}" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--primary)">${label}</text>`;
+  });
+  s+=`</svg>`;
+  return `<div style="display:flex;justify-content:center">${s}</div>`;
+}
+
+function lancerPentagoneCalc(uid, calcId, resultId){
+  const labels=['6','4','5','5','4'];
+  const total=24;
+  const calcEl=document.getElementById(calcId);
+  const resultEl=document.getElementById(resultId);
+  if(calcEl) calcEl.textContent='';
+  if(resultEl){ resultEl.style.opacity='0'; resultEl.textContent=''; }
+
+  const ox=20, oy=10;
+  const A=[ox,oy+140],B=[ox+120,oy+140],C=[ox+120,oy+60],D=[ox+60,oy+10],E=[ox,oy+60];
+  const pxSides=[[A,B],[B,C],[C,D],[D,E],[E,A]].map(([[x1,y1],[x2,y2]])=>Math.sqrt((x2-x1)**2+(y2-y1)**2));
+
+  pxSides.forEach((px,i)=>{
+    const seg=document.getElementById(`seg-${uid}-${i}`);
+    if(seg){seg.style.transition='none';seg.style.strokeDashoffset=px.toFixed(1);}
+  });
+
+  function animerCote(idx){
+    if(idx>=5) return;
+    const px=pxSides[idx];
+    const dur=px/SPEED*1000;
+    const seg=document.getElementById(`seg-${uid}-${idx}`);
+    if(seg){
+      seg.style.transition=`stroke-dashoffset ${dur.toFixed(0)}ms linear`;
+      seg.style.strokeDashoffset=0;
+    }
+    // À mi-côté : ajouter le terme au calcul
+    setTimeout(()=>{
+      if(calcEl){
+        const parts=labels.slice(0,idx+1).map(l=>l+' cm');
+        calcEl.textContent=parts.join(' + ');
+      }
+    }, dur/2);
+    // À la fin du côté : passer au suivant, et si dernier afficher résultat
+    setTimeout(()=>{
+      if(idx===4){
+        if(calcEl) calcEl.textContent=labels.map(l=>l+' cm').join(' + ')+` = ${total} cm`;
+        if(resultEl){ resultEl.textContent=`Périmètre → ${total} cm`; resultEl.style.opacity='1'; }
+      }
+      animerCote(idx+1);
+    }, dur);
+  }
+  animerCote(0);
+}
+
+const STEPS=[
+
+// PAGE 1
+()=>`
+<div class="step-title pop">💡 Calculer le périmètre d'un polygone</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> On mesure le périmètre en lui donnant un nombre pour avoir une information précise sur ce périmètre.</div>
+<p class="step-text fade-in">Le périmètre d'un polygone, c'est la mesure de son contour. Pour le calculer, on <strong>additionne les longueurs de tous ses côtés</strong>.</p>
+<div class="info primary fade-in">📐 Pour pouvoir mesurer un périmètre, il faut d'abord choisir une unité : quand il y a un quadrillage, on peut choisir de compter à l'aide des carreaux.</div>
+`,
+
+// PAGE 2 — polygone sur quadrillage
+()=>`
+<div class="step-title pop">✏️ Sur un quadrillage</div>
+<p class="step-text fade-in" style="color:#475569">On choisit comme unité le côté d'un carreau, et il suffit de les compter sur le contour.</p>
+${svgPolygoneComptage('p2', PTS_P2, 4, 4)}
+<button class="btn-anim fade-in" onclick="lancerComptagePerim('p2',PTS_P2)">▶ Compter le contour</button>
+`,
+
+// PAGE 3 — rectangle sur quadrillage, mesures + calcul progressif
+()=>`
+<div class="step-title pop">✏️ Grâce au quadrillage on connaît ses côtés</div>
+<p class="step-text fade-in" style="color:#475569">Le quadrillage nous donne directement la mesure de chaque côté.</p>
+${svgRectGrille('p3')}
+<button class="btn-anim fade-in" onclick="lancerRectCalc('p3','calc-p3')">▶ Lancer l'animation</button>
+<div id="calc-p3" class="calcul-ligne fade-in">Périmètre →</div>
+`,
+
+// PAGE 4 — pentagone sans quadrillage, mesures données
+()=>`
+<div class="step-title pop">✏️ Si on connaît les mesures de ses côtés</div>
+<p class="step-text fade-in" style="color:#475569">Les longueurs des côtés sont données directement sur la figure.</p>
+${svgPolygoneMesures('p4')}
+<button class="btn-anim fade-in" onclick="lancerPentagoneCalc('p4','calc-p4','result-p4')">▶ Lancer l'animation</button>
+<div style="display:flex;flex-direction:column;align-items:center;gap:4px;width:100%">
+  <div class="calcul-ligne fade-in"><span id="calc-p4"></span></div>
+  <div id="result-p4" class="calcul-ligne" style="opacity:0;transition:opacity 0.5s;color:var(--primary)"></div>
+</div>
+`,
+
+// PAGE 5
+()=>`
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  ${[
+    ['var(--primary)','Le <strong>périmètre</strong> d\'un polygone, c\'est la somme des longueurs de tous ses côtés.'],
+    ['var(--bleu)','Sur un quadrillage, on peut compter les <strong>côtés de carreaux</strong> le long du contour pour mesurer le périmètre.'],
+    ['var(--primary)','Quand on travaille sur le périmètre, notre cerveau peut nous donner envie de penser à l\'aire. Il faut se forcer à penser : <em>« on travaille sur le périmètre et pas sur l\'aire »</em>.'],
+  ].map(([c,t],i)=>`
+    <div class="recap-item fade-in" style="animation-delay:${i*.08}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${i+1}</div>
+      <span>${t}</span>
+    </div>`).join('')}
+</div>
+`,
+];
+
+let cur=0; const N=STEPS.length;
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur](); card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(N-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator'); ind.innerHTML='';
+  for(let i=0;i<N;i++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(i===cur?' active':i<cur?' done':'');
+    d.textContent=i<cur?'✓':i+1; ind.appendChild(d);
+  }
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${N}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===N-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===N-1?0:cur+1;render();}
+function prev(){if(cur>0){cur--;render();}}
+render();
+</script>
+</body>
+</html>

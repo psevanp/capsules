@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>GM5 — Déterminer l'aire à l'aide d'un quadrillage</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --primary:#e11d48;--primary2:#fb7185;--primary-clair:#ffe4e6;
+  --bg:#fff1f2;--cote:#9f1239;
+  --bleu:#1a73e8;--bleu-clair:#e8f0fe;
+  --orange:#ea580c;--orange-clair:#ffedd5;
+  --vert:#16a34a;--vert-clair:#f0fdf4;
+  --violet:#7c3aed;--violet-clair:#f5f3ff;
+  --gris:#94a3b8;
+  --teal:#0d9488;--teal-clair:#f0fdfa;
+  --card:#fff;--texte:#1e293b;--border:#e2e8f0;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+header{display:flex;justify-content:center;margin-bottom:22px;}
+.header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+.badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--primary);background:var(--primary-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--primary);flex-shrink:0;}
+.tache-label{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--primary);line-height:1.3;}
+.progress-bar-wrap{width:100%;max-width:680px;background:var(--primary-clair);border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .5s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+.step-dot{width:34px;height:34px;border-radius:50%;background:var(--primary-clair);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--primary2);transition:all .4s;border:2px solid transparent;}
+.step-dot.active{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+.card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:360px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(0,0,0,.07);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .45s ease both;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;color:var(--primary);text-align:center;line-height:1.3;}
+.step-text{font-size:.97rem;line-height:1.7;text-align:center;max-width:580px;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:580px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 16px;font-weight:600;font-size:.92rem;line-height:1.6;max-width:580px;width:100%;}
+.info.primary{background:var(--primary-clair);border-left:4px solid var(--primary);}
+.info.vert{background:var(--vert-clair);border-left:4px solid var(--vert);color:#14532d;}
+.info.bleu{background:var(--bleu-clair);border-left:4px solid var(--bleu);color:#1e3a5f;}
+.info.violet{background:var(--violet-clair);border-left:4px solid var(--violet);color:#4c1d95;}
+.btn-complete{border:2px solid var(--vert);background:var(--vert-clair);color:var(--vert);font-family:'Baloo 2',cursive;font-size:1rem;font-weight:700;border-radius:10px;padding:10px 22px;cursor:pointer;transition:all .2s;}
+.btn-complete:hover{background:var(--vert);color:#fff;}
+.btn-anim{border:2px solid var(--bleu);background:var(--bleu-clair);color:var(--bleu);font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;transition:all .2s;}
+.btn-anim:hover{background:var(--bleu);color:#fff;}
+.recap-list{display:flex;flex-direction:column;gap:12px;width:100%;max-width:580px;}
+.recap-item{display:flex;gap:12px;align-items:flex-start;background:#f8faff;border-radius:12px;padding:11px 16px;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;}
+.nav{display:flex;align-items:center;justify-content:space-between;max-width:680px;width:100%;margin-top:20px;gap:12px;}
+.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;border-radius:12px;padding:11px 22px;cursor:pointer;transition:all .25s;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-prev:disabled{opacity:.35;cursor:default;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;}
+.btn-next:hover{opacity:.9;}
+.step-counter{font-family:'Baloo 2',cursive;font-weight:700;color:var(--primary);font-size:.95rem;white-space:nowrap;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">GM5</div>
+    <div class="tache-label">Déterminer l'aire à l'aide d'un quadrillage</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+const CS=24; // px par carreau (plus grand pour l'aire)
+const DELAY=200; // ms entre chaque carreau
+
+// ── Carreaux d'une forme (liste [col,row]) ────────────────────────────────────
+// Contour + remplissage animable
+function svgAire(uid, cells, gridW, gridH){
+  const ox=14, oy=14;
+  const W=gridW*CS+28, H=gridH*CS+28+20;
+  const cellSet=new Set(cells.map(([c,r])=>`${c},${r}`));
+
+  let s=`<svg id="svg-${uid}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  s+=`<defs><pattern id="gr-${uid}" width="${CS}" height="${CS}" patternUnits="userSpaceOnUse" x="${ox}" y="${oy}">
+    <path d="M ${CS} 0 L 0 0 0 ${CS}" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+  </pattern></defs>`;
+
+  // Fond de grille + carreaux
+  cells.forEach(([c,r],i)=>{
+    const x=ox+c*CS, y=oy+r*CS;
+    s+=`<rect x="${x}" y="${y}" width="${CS}" height="${CS}" fill="white"/>`;
+    s+=`<rect x="${x}" y="${y}" width="${CS}" height="${CS}" fill="none" stroke="#e2e8f0" stroke-width="1"/>`;
+    s+=`<rect id="cell-${uid}-${i}" x="${x+1}" y="${y+1}" width="${CS-2}" height="${CS-2}" fill="var(--bleu)" opacity="0"/>`;
+    const cx=x+CS/2, cy=y+CS/2+4;
+    s+=`<text id="nh-${uid}-${i}" x="${cx}" y="${cy}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="white" stroke="white" stroke-width="3" paint-order="stroke" opacity="0">${i+1}</text>`;
+    s+=`<text id="nm-${uid}-${i}" x="${cx}" y="${cy}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="#1251a3" opacity="0">${i+1}</text>`;
+  });
+
+  // Contour extérieur
+  const dirs=[{dc:0,dr:-1,ax:0,ay:0,bx:1,by:0},{dc:1,dr:0,ax:1,ay:0,bx:1,by:1},{dc:0,dr:1,ax:0,ay:1,bx:1,by:1},{dc:-1,dr:0,ax:0,ay:0,bx:0,by:1}];
+  cells.forEach(([c,r])=>{
+    dirs.forEach(({dc,dr,ax,ay,bx,by})=>{
+      if(!cellSet.has(`${c+dc},${r+dr}`))
+        s+=`<line x1="${ox+c*CS+ax*CS}" y1="${oy+r*CS+ay*CS}" x2="${ox+c*CS+bx*CS}" y2="${oy+r*CS+by*CS}" stroke="#64748b" stroke-width="2" stroke-linecap="square"/>`;
+    });
+  });
+  s+=`<text id="total-${uid}" x="${W/2}" y="${gridH*CS+oy+16}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--bleu)" opacity="0">Aire → ${cells.length} carreaux</text>`;
+  s+=`</svg>`;
+  return `<div style="display:flex;justify-content:center">${s}</div>`;
+}
+
+function lancerComptageAire(uid, cells){
+  // Reset
+  cells.forEach((_,i)=>{
+    ['cell-','nh-','nm-'].forEach(p=>{
+      const el=document.getElementById(p+uid+'-'+i);
+      if(el){el.style.transition='none';el.style.opacity='0';}
+    });
+  });
+  const tot=document.getElementById('total-'+uid);
+  if(tot){tot.style.transition='none';tot.style.opacity='0';}
+  // Animer
+  cells.forEach((_,i)=>{
+    setTimeout(()=>{
+      const cell=document.getElementById('cell-'+uid+'-'+i);
+      const nh=document.getElementById('nh-'+uid+'-'+i);
+      const nm=document.getElementById('nm-'+uid+'-'+i);
+      if(cell){cell.style.transition='opacity 0.15s';cell.style.opacity='0.38';}
+      if(nh){nh.style.transition='opacity 0.15s';nh.style.opacity='1';}
+      if(nm){nm.style.transition='opacity 0.15s';nm.style.opacity='1';}
+    }, i*DELAY);
+  });
+  setTimeout(()=>{
+    if(tot){tot.style.transition='opacity 0.4s';tot.style.opacity='1';}
+  }, cells.length*DELAY+200);
+}
+
+// ── Page 2 : forme simple (L, 10 carreaux) ───────────────────────────────────
+const CELLS_P2 = [
+  [0,0],[1,0],[2,0],[3,0],
+  [0,1],[1,1],[2,1],[3,1],
+  [0,2],[1,2],
+];
+
+// ── Page 3 : forme avec demi-carreaux (triangle sur quadrillage) ─────────────
+// On utilise un triangle rectangle 4×3 :
+//   Carreaux entiers : 6
+//   Demi-carreaux (sur la diagonale) : 4 → valent 2 carreaux
+//   Aire totale = 6 + 2 = 8 carreaux (= ½ × 4 × 4)
+// Pour la représentation, on dessine le triangle en SVG avec des demi-carreaux colorés différemment
+
+function svgTriangle(uid){
+  const ox=14, oy=14, cols=5, rows=4;
+  const W=cols*CS+28, H=rows*CS+28+24;
+  // Triangle : (0,4) → (4,4) → (0,0) en carreaux → en px : (ox,oy+4CS)(ox+4CS,oy+4CS)(ox,oy)
+  const x0=ox, y0=oy+4*CS, x1=ox+4*CS, y1=oy+4*CS, x2=ox, y2=oy;
+
+  // Carreaux entiers (intérieur du triangle, hors diagonale)
+  // row 1 : col 0 (1), row 2 : col 0-1 (2), row 3 : col 0-2 (3) = 6 carreaux entiers
+  const entiers=[[0,1],[0,2],[1,2],[0,3],[1,3],[2,3]];
+  // Demi-carreaux (sur la diagonale) : (0,0),(1,1),(2,2),(3,3)
+  const demis=[[0,0],[1,1],[2,2],[3,3]];
+
+  let s=`<svg id="svg-${uid}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  s+=`<defs>
+    <pattern id="gr-${uid}" width="${CS}" height="${CS}" patternUnits="userSpaceOnUse" x="${ox}" y="${oy}">
+      <path d="M ${CS} 0 L 0 0 0 ${CS}" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+    </pattern>
+    <clipPath id="tri-clip-${uid}">
+      <polygon points="${x0},${y0} ${x1},${y1} ${x2},${y2}"/>
+    </clipPath>
+  </defs>`;
+
+  // Quadrillage clippé dans le triangle
+  s+=`<rect x="${ox}" y="${oy}" width="${4*CS}" height="${4*CS}" fill="url(#gr-${uid})" clip-path="url(#tri-clip-${uid})"/>`;
+
+  // Carreaux entiers (bleu)
+  entiers.forEach(([c,r],i)=>{
+    const x=ox+c*CS, y=oy+r*CS;
+    s+=`<rect id="ent-${uid}-${i}" x="${x+1}" y="${y+1}" width="${CS-2}" height="${CS-2}" fill="var(--bleu)" opacity="0"/>`;
+    const cx=x+CS/2, cy=y+CS/2+4;
+    s+=`<text id="enh-${uid}-${i}" x="${cx}" y="${cy}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="white" stroke="white" stroke-width="3" paint-order="stroke" opacity="0">${i+1}</text>`;
+    s+=`<text id="enm-${uid}-${i}" x="${cx}" y="${cy}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="#1251a3" opacity="0">${i+1}</text>`;
+  });
+
+  // Demi-carreaux (violet clair — triangle du bas-gauche du carreau)
+  demis.forEach(([c,r],i)=>{
+    const x=ox+c*CS, y=oy+r*CS;
+    // Triangle bas-gauche : (x,y+CS),(x+CS,y+CS),(x,y)
+    s+=`<polygon id="dem-${uid}-${i}" points="${x+1},${y+CS-1} ${x+CS-1},${y+CS-1} ${x+1},${y+1}" fill="var(--violet)" opacity="0"/>`;
+    const cx=x+CS/4, cy=y+CS*3/4+2;
+    s+=`<text id="dnh-${uid}-${i}" x="${cx}" y="${cy}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="9" font-weight="800" fill="white" stroke="white" stroke-width="3" paint-order="stroke" opacity="0">½</text>`;
+    s+=`<text id="dnm-${uid}-${i}" x="${cx}" y="${cy}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="9" font-weight="800" fill="#4c1d95" opacity="0">½</text>`;
+  });
+
+  // Contour du triangle
+  s+=`<polygon points="${x0},${y0} ${x1},${y1} ${x2},${y2}" fill="none" stroke="#64748b" stroke-width="2"/>`;
+  s+=`</svg>`;
+  return `<div style="display:flex;justify-content:center">${s}</div>`;
+}
+
+function lancerTriangle(uid){
+  const NE=6, ND=4;
+  // Reset
+  for(let i=0;i<NE;i++) ['ent-','enh-','enm-'].forEach(p=>{const el=document.getElementById(p+uid+'-'+i);if(el){el.style.transition='none';el.style.opacity='0';}});
+  for(let i=0;i<ND;i++) ['dem-','dnh-','dnm-'].forEach(p=>{const el=document.getElementById(p+uid+'-'+i);if(el){el.style.transition='none';el.style.opacity='0';}});
+  const tot=document.getElementById('total-tri-'+uid);
+  if(tot){tot.style.transition='none';tot.style.opacity='0';}
+
+  // Carreaux entiers d'abord
+  for(let i=0;i<NE;i++){
+    setTimeout(()=>{
+      ['ent-','enh-','enm-'].forEach(p=>{const el=document.getElementById(p+uid+'-'+i);if(el){el.style.transition='opacity 0.15s';el.style.opacity=p==='ent-'?'0.38':'1';}});
+    }, i*DELAY);
+  }
+  // Puis demi-carreaux
+  for(let i=0;i<ND;i++){
+    setTimeout(()=>{
+      ['dem-','dnh-','dnm-'].forEach(p=>{const el=document.getElementById(p+uid+'-'+i);if(el){el.style.transition='opacity 0.15s';el.style.opacity=p==='dem-'?'0.5':'1';}});
+    }, NE*DELAY+i*DELAY);
+  }
+  setTimeout(()=>{
+    const res=document.getElementById('res-p3');
+    if(res){res.style.opacity='1';}
+  }, (NE+ND)*DELAY+200);
+}
+
+// SVG spécial pour le rectangle page 4 : avec labels dimensions apparaissant à la fin
+function svgAireRect(uid, cells, gridW, gridH){
+  // gridW=8 cols, gridH=4 rows → rectangle horizontal
+  const ox=18, oy=36; // offset : haut pour la double flèche + label
+  const W=gridW*CS+36, H=gridH*CS+oy+36;
+  const cellSet=new Set(cells.map(([c,r])=>`${c},${r}`));
+
+  let s=`<svg id="svg-${uid}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  s+=`<defs>
+    <pattern id="gr-${uid}" width="${CS}" height="${CS}" patternUnits="userSpaceOnUse" x="${ox}" y="${oy}">
+      <path d="M ${CS} 0 L 0 0 0 ${CS}" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+    </pattern>
+    <marker id="arr2-${uid}" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--bleu)"/></marker>
+    <marker id="arr2b-${uid}" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto-start-reverse"><path d="M0,0 L6,3 L0,6 Z" fill="var(--bleu)"/></marker>
+  </defs>`;
+
+  cells.forEach(([c,r],i)=>{
+    const x=ox+c*CS, y=oy+r*CS;
+    s+=`<rect x="${x}" y="${y}" width="${CS}" height="${CS}" fill="white"/>`;
+    s+=`<rect x="${x}" y="${y}" width="${CS}" height="${CS}" fill="none" stroke="#e2e8f0" stroke-width="1"/>`;
+    s+=`<rect id="cell-${uid}-${i}" x="${x+1}" y="${y+1}" width="${CS-2}" height="${CS-2}" fill="var(--bleu)" opacity="0"/>`;
+    const cx=x+CS/2, cy=y+CS/2+4;
+    s+=`<text id="nh-${uid}-${i}" x="${cx}" y="${cy}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="white" stroke="white" stroke-width="3" paint-order="stroke" opacity="0">${i+1}</text>`;
+    s+=`<text id="nm-${uid}-${i}" x="${cx}" y="${cy}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="#1251a3" opacity="0">${i+1}</text>`;
+  });
+
+  // Contour extérieur
+  const dirs=[{dc:0,dr:-1,ax:0,ay:0,bx:1,by:0},{dc:1,dr:0,ax:1,ay:0,bx:1,by:1},{dc:0,dr:1,ax:0,ay:1,bx:1,by:1},{dc:-1,dr:0,ax:0,ay:0,bx:0,by:1}];
+  cells.forEach(([c,r])=>{
+    dirs.forEach(({dc,dr,ax,ay,bx,by})=>{
+      if(!cellSet.has(`${c+dc},${r+dr}`))
+        s+=`<line x1="${ox+c*CS+ax*CS}" y1="${oy+r*CS+ay*CS}" x2="${ox+c*CS+bx*CS}" y2="${oy+r*CS+by*CS}" stroke="#64748b" stroke-width="2" stroke-linecap="square"/>`;
+    });
+  });
+
+  // Double flèche horizontale (au-dessus, invisible au départ)
+  const rw=gridW*CS, rh=gridH*CS;
+  const ayH=oy-18;
+  s+=`<g id="dim-larg-${uid}" opacity="0">
+    <line x1="${ox}" y1="${ayH}" x2="${ox+rw}" y2="${ayH}" stroke="var(--bleu)" stroke-width="2" marker-start="url(#arr2b-${uid})" marker-end="url(#arr2-${uid})"/>
+    <text x="${ox+rw/2}" y="${ayH-6}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--bleu)">8</text>
+  </g>`;
+
+  // Double flèche verticale (à droite, invisible au départ)
+  const axV=ox+rw+18;
+  s+=`<g id="dim-long-${uid}" opacity="0">
+    <line x1="${axV}" y1="${oy}" x2="${axV}" y2="${oy+rh}" stroke="var(--bleu)" stroke-width="2" marker-start="url(#arr2b-${uid})" marker-end="url(#arr2-${uid})"/>
+    <text x="${axV+8}" y="${oy+rh/2+5}" text-anchor="start" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--bleu)">4</text>
+  </g>`;
+
+  s+=`<text id="total-${uid}" x="${W/2}" y="${oy+rh+20}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--bleu)" opacity="0">Aire → ${cells.length} carreaux</text>`;
+  s+=`</svg>`;
+  return `<div style="display:flex;justify-content:center">${s}</div>`;
+}
+
+const CELLS_P4 = [];
+for(let r=0;r<4;r++) for(let c=0;c<8;c++) CELLS_P4.push([c,r]);
+
+function lancerComptageRapide(uid, cells){
+  const FAST = 60; // ms par carreau (rapide)
+  cells.forEach((_,i)=>{
+    ['cell-','nh-','nm-'].forEach(p=>{const el=document.getElementById(p+uid+'-'+i);if(el){el.style.transition='none';el.style.opacity='0';}});
+  });
+  const tot=document.getElementById('total-'+uid);
+  if(tot){tot.style.transition='none';tot.style.opacity='0';}
+  ['dim-larg-','dim-long-'].forEach(p=>{const el=document.getElementById(p+uid);if(el){el.style.transition='none';el.style.opacity='0';}});
+
+  cells.forEach((_,i)=>{
+    setTimeout(()=>{
+      const cell=document.getElementById('cell-'+uid+'-'+i);
+      const nh=document.getElementById('nh-'+uid+'-'+i);
+      const nm=document.getElementById('nm-'+uid+'-'+i);
+      if(cell){cell.style.transition='opacity 0.1s';cell.style.opacity='0.38';}
+      if(nh){nh.style.transition='opacity 0.1s';nh.style.opacity='1';}
+      if(nm){nm.style.transition='opacity 0.1s';nm.style.opacity='1';}
+    }, i*FAST);
+  });
+  // Dimensions apparaissent à mi-chemin
+  setTimeout(()=>{
+    ['dim-larg-','dim-long-'].forEach(p=>{const el=document.getElementById(p+uid);if(el){el.style.transition='opacity 0.4s';el.style.opacity='1';}});
+  }, cells.length*FAST/2);
+  setTimeout(()=>{
+    if(tot){tot.style.transition='opacity 0.4s';tot.style.opacity='1';}
+  }, cells.length*FAST+200);
+}
+
+const STEPS=[
+
+// PAGE 1
+()=>`
+<div class="step-title pop">💡 Mesurer une aire avec un quadrillage</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> Pour étudier une aire, il peut être utile de la mesurer. C'est à dire lui donner un nombre. Pour cela, un quadrillage peut nous aider.</div>
+<p class="step-text fade-in">L'aire d'une figure, c'est la mesure de sa surface. Sur un quadrillage, on choisit <strong>un carreau comme unité</strong>, et on compte combien de carreaux rentrent dans la figure.</p>
+<div class="info bleu fade-in">💡 On choisit souvent un carreau comme unité d'aire. L'aire s'exprime alors en <strong>carreaux</strong>.</div>
+<div class="info primary fade-in" style="margin-top:-4px">⚠️ Attention : on mesure la surface <strong>intérieure</strong>, pas le contour !</div>
+`,
+
+// PAGE 2 — comptage simple
+()=>`
+<div class="step-title pop">✏️ Compter les carreaux</div>
+<p class="step-text fade-in" style="color:#475569">On peut choisir la surface d'un carreau comme unité d'aire. Il suffit donc de compter les carreaux pour mesurer l'aire.</p>
+${svgAire('p2', CELLS_P2, 4, 3)}
+<button class="btn-anim fade-in" onclick="lancerComptageAire('p2',CELLS_P2)">🔢 Compter</button>
+`,
+
+// PAGE 3 — demi-carreaux
+()=>`
+<div class="step-title pop">✏️ Des carreaux pas entiers</div>
+<p class="step-text fade-in" style="color:#475569">Si on choisit la surface d'un carreau comme unité d'aire, certains morceaux ne sont pas des carreaux entiers. Il faut les assembler.</p>
+${svgTriangle('p3')}
+<button class="btn-anim fade-in" onclick="lancerTriangle('p3')">🔢 Compter</button>
+<div id="res-p3" style="opacity:0;transition:opacity 0.5s;display:flex;flex-direction:column;align-items:center;gap:2px;width:100%">
+  <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:1rem;color:var(--bleu)">6 carreaux + <span style="color:var(--violet)">4 demi-carreaux</span></div>
+  <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:1rem;color:var(--bleu)">6 carreaux + <span style="color:var(--violet)">2 carreaux</span></div>
+  <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:1.1rem;color:#4338ca">Aire → 8 carreaux</div>
+</div>
+`,
+
+// PAGE 4 — rectangle 4×8
+()=>`
+<div class="step-title pop">✏️ À ton tour</div>
+<p class="step-text fade-in" style="color:#475569">Compte les carreaux à l'intérieur de ce rectangle pour trouver son aire.</p>
+${svgAireRect('p4', CELLS_P4, 8, 4)}
+<button class="btn-anim fade-in" onclick="lancerComptageRapide('p4',CELLS_P4)">🔢 Compter</button>
+<button id="btn-comp-p4" class="btn-complete" onclick="completerP4()">✏️ Autre technique</button>
+<div id="expl-p4" class="info vert" style="opacity:0;transition:opacity 0.4s">Pour mesurer l'aire d'un rectangle, il suffit de multiplier la largeur par la longueur.<br>On trouve : 4 × 8 = <strong>32 carreaux</strong></div>
+`,
+
+// PAGE 5
+()=>`
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  ${[
+    ['var(--bleu)','L\'<strong>aire</strong> d\'une figure, c\'est la mesure de sa surface intérieure. Sur un quadrillage, on compte les <strong>carreaux</strong> à l\'intérieur.'],
+    ['var(--violet)','Si la figure coupe des carreaux en deux, on regroupe les <strong>demi-carreaux</strong> par paires pour obtenir des carreaux entiers.'],
+    ['var(--primary)','Quand on travaille sur l\'aire, notre cerveau peut nous donner envie de penser au périmètre. Il faut se forcer à penser : <em>« on travaille sur l\'aire et pas sur le périmètre »</em>.'],
+  ].map(([c,t],i)=>`
+    <div class="recap-item fade-in" style="animation-delay:${i*.08}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${i+1}</div>
+      <span>${t}</span>
+    </div>`).join('')}
+</div>
+`,
+];
+
+let cur=0,revealed=false; const N=STEPS.length;
+function completerP2(){ document.getElementById('btn-comp-p2').style.display='none'; document.getElementById('expl-p2').style.opacity='1'; }
+function completerP3(){ document.getElementById('btn-comp-p3').style.display='none'; document.getElementById('expl-p3').style.opacity='1'; }
+function completerP4(){ document.getElementById('btn-comp-p4').style.display='none'; document.getElementById('expl-p4').style.opacity='1'; }
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur](); card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(N-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator'); ind.innerHTML='';
+  for(let i=0;i<N;i++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(i===cur?' active':i<cur?' done':'');
+    d.textContent=i<cur?'✓':i+1; ind.appendChild(d);
+  }
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${N}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===N-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===N-1?0:cur+1;revealed=false;render();}
+function prev(){if(cur>0){cur--;revealed=false;render();}}
+render();
+</script>
+</body>
+</html>

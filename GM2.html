@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>GM2 — Comparer ou ranger des périmètres</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --primary:#e11d48;--primary2:#fb7185;--primary-clair:#ffe4e6;
+  --bg:#fff1f2;--cote:#9f1239;
+  --bleu:#1a73e8;--bleu-clair:#e8f0fe;
+  --orange:#ea580c;--orange-clair:#ffedd5;
+  --vert:#16a34a;--vert-clair:#f0fdf4;
+  --violet:#7c3aed;--violet-clair:#f5f3ff;
+  --gris:#94a3b8;
+  --teal:#0d9488;--teal-clair:#f0fdfa;
+  --card:#fff;--texte:#1e293b;--border:#e2e8f0;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+header{display:flex;justify-content:center;margin-bottom:22px;}
+.header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+.badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--primary);background:var(--primary-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--primary);flex-shrink:0;}
+.tache-label{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--primary);line-height:1.3;}
+.progress-bar-wrap{width:100%;max-width:680px;background:var(--primary-clair);border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .5s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+.step-dot{width:34px;height:34px;border-radius:50%;background:var(--primary-clair);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--primary2);transition:all .4s;border:2px solid transparent;}
+.step-dot.active{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+.card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:360px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(0,0,0,.07);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .45s ease both;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;color:var(--primary);text-align:center;line-height:1.3;}
+.step-text{font-size:.97rem;line-height:1.7;text-align:center;max-width:580px;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:580px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 16px;font-weight:600;font-size:.92rem;line-height:1.6;max-width:580px;width:100%;}
+.info.primary{background:var(--primary-clair);border-left:4px solid var(--primary);}
+.info.vert{background:var(--vert-clair);border-left:4px solid var(--vert);color:#14532d;}
+.info.bleu{background:var(--bleu-clair);border-left:4px solid var(--bleu);color:#1e3a5f;}
+.info.orange{background:var(--orange-clair);border-left:4px solid var(--orange);color:#7c2d12;}
+.btn-complete{border:2px solid var(--vert);background:var(--vert-clair);color:var(--vert);font-family:'Baloo 2',cursive;font-size:1rem;font-weight:700;border-radius:10px;padding:10px 22px;cursor:pointer;transition:all .2s;}
+.btn-complete:hover{background:var(--vert);color:#fff;}
+.btn-anim{border:2px solid var(--primary);background:var(--primary-clair);color:var(--primary);font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;transition:all .2s;}
+.btn-anim:hover{background:var(--primary);color:#fff;}
+.recap-list{display:flex;flex-direction:column;gap:12px;width:100%;max-width:580px;}
+.recap-item{display:flex;gap:12px;align-items:flex-start;background:#f8faff;border-radius:12px;padding:11px 16px;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;}
+.nav{display:flex;align-items:center;justify-content:space-between;max-width:680px;width:100%;margin-top:20px;gap:12px;}
+.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;border-radius:12px;padding:11px 22px;cursor:pointer;transition:all .25s;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-prev:disabled{opacity:.35;cursor:default;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;}
+.btn-next:hover{opacity:.9;}
+.step-counter{font-family:'Baloo 2',cursive;font-weight:700;color:var(--primary);font-size:.95rem;white-space:nowrap;}
+.deux-fig{display:flex;gap:20px;width:100%;max-width:560px;justify-content:center;align-items:center;}
+.fig-col{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;}
+.fig-label{font-family:'Baloo 2',cursive;font-weight:800;font-size:1rem;color:var(--primary);}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">GM2</div>
+    <div class="tache-label">Comparer ou ranger des périmètres</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+// ── Vitesse constante pour les contours ──
+const SPEED = 80; // px/s — vitesse de coloriage du contour
+
+// Lance simultanément le contour de deux éléments path/polygon
+// La durée est proportionnelle à leur périmètre (même vitesse px/s)
+function lancerDeux(uid1, perim1, uid2, perim2){
+  [uid1, uid2].forEach((uid, idx)=>{
+    const perim = idx===0 ? perim1 : perim2;
+    const el = document.getElementById('perim-'+uid);
+    if(!el) return;
+    const dur = (perim / SPEED * 1000).toFixed(0)+'ms';
+    el.style.transition='none';
+    el.style.strokeDashoffset = perim;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      el.style.transition=`stroke-dashoffset ${dur} linear`;
+      el.style.strokeDashoffset = 0;
+    }));
+  });
+}
+
+// Lance le contour d'un seul élément
+function lancerContour(uid, perim){
+  const el = document.getElementById('perim-'+uid);
+  if(!el) return;
+  const dur = (perim / SPEED * 1000).toFixed(0)+'ms';
+  el.style.transition='none';
+  el.style.strokeDashoffset = perim;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    el.style.transition=`stroke-dashoffset ${dur} linear`;
+    el.style.strokeDashoffset = 0;
+  }));
+}
+
+// ── PAGE 2 — Carré plein vs carré à 3 côtés creusés ──
+// Carré de base : 100×100, unité carreau = 20px → 5×5 carreaux
+// Périmètre carré = 400px (4×100)
+// Forme creusée : carré 100×100, mais 3 côtés ont chacun un carré 20×20 creusé vers l'intérieur
+// côté haut : (20,0)→(20,20)→(40,20)→(40,0)→(60,0)→(60,20)→(80,20)→(80,0)
+// côté droit : (100,20)→(80,20)→(80,40)→(100,40)→...→(100,60)→(80,60)→(80,80)→(100,80)
+// côté bas : (80,100)→(80,80)→(60,80)→(60,100)→(40,100)→(40,80)→(20,80)→(20,100)
+// côté gauche : intact (0,0)→(0,100)
+// Points dans l'ordre (sens horaire depuis coin haut-gauche) :
+// (0,0),(20,0),(20,20),(40,20),(40,0),(60,0),(60,20),(80,20),(80,0),(100,0)
+// (100,20),(80,20),(80,40),(100,40),(100,60),(80,60),(80,80),(100,80),(100,100)
+// (80,100),(80,80),(60,80),(60,100),(40,100),(40,80),(20,80),(20,100),(0,100)
+// Périmètre creusé = 4×20 de côté gauche intact + contours des niches :
+// Côté gauche : 100. Côté haut : 20+20+20+20+20+20+20+20 = 8×20=160 mais on part de (0,0) à droite
+// Plus simple : compter les segments
+// Périmètre = gauche 100 + haut creusé + droit creusé + bas creusé
+// Haut : (0,0)→(20,0)=20, (20,0)→(20,20)=20,(20,20)→(40,20)=20,(40,20)→(40,0)=20,
+//         (40,0)→(60,0)=20,(60,0)→(60,20)=20,(60,20)→(80,20)=20,(80,20)→(80,0)=20,(80,0)→(100,0)=20 → 9×20=180
+// Droit : (100,0)→(100,20)=20,(100,20)→(80,20)=20,(80,20)→(80,40)=20,(80,40)→(100,40)=20,
+//          (100,40)→(100,60)=20,(100,60)→(80,60)=20,(80,60)→(80,80)=20,(80,80)→(100,80)=20,(100,80)→(100,100)=20 → 9×20=180
+// Bas : (100,100)→(80,100)=20,(80,100)→(80,80)=20,(80,80)→(60,80)=20,(60,80)→(60,100)=20,
+//        (60,100)→(40,100)=20,(40,100)→(40,80)=20,(40,80)→(20,80)=20,(20,80)→(20,100)=20,(20,100)→(0,100)=20 → 9×20=180
+// Gauche : (0,100)→(0,0) = 100 → 5×20=100
+// Total = 180+180+180+100 = 640
+
+const CS = 20; // taille d'un carreau en px
+const SQ = 5;  // nb carreaux côté
+
+function calcPerim(pts){
+  let p=0;
+  for(let i=0;i<pts.length;i++){
+    const a=pts[i],b=pts[(i+1)%pts.length];
+    p+=Math.sqrt((b[0]-a[0])**2+(b[1]-a[1])**2);
+  }
+  return p;
+}
+
+// Points du carré plein (en carreaux, ×CS)
+const PTS_PLEIN = [[0,0],[5,0],[5,5],[0,5]].map(([x,y])=>[x*CS,y*CS]);
+
+// Points de la forme creusée : UN seul carré 1×1 creusé au milieu de chaque côté (haut, droit, bas)
+// Côté haut : niche en (2,0)→(2,1)→(3,1)→(3,0)
+// Côté droit : niche en (5,2)→(4,2)→(4,3)→(5,3)
+// Côté bas : niche en (3,5)→(3,4)→(2,4)→(2,5)
+// Côté gauche : intact
+// Points (sens horaire depuis (0,0)) :
+// (0,0)(2,0)(2,1)(3,1)(3,0)(5,0) → haut
+// (5,2)(4,2)(4,3)(5,3)(5,5) → droit
+// (3,5)(3,4)(2,4)(2,5)(0,5) → bas + gauche
+// Périmètre : 
+// haut : 2+1+1+1+2 = 7 (au lieu de 5) → +2
+// droit : 2+1+1+1+2 = 7 → +2
+// bas : 2+1+1+1+2 = 7 → +2
+// gauche : 5 intact
+// Total = 7+7+7+5 = 26 carreaux = 520px (vs 400)
+const PTS_CREUSE_P2 = [
+  [0,0],[2,0],[2,1],[3,1],[3,0],[5,0],
+  [5,2],[4,2],[4,3],[5,3],[5,5],
+  [3,5],[3,4],[2,4],[2,5],[0,5]
+].map(([x,y])=>[x*CS, y*CS]);
+
+const PERIM_PLEIN = 4*SQ*CS; // 400px = 20 carreaux
+const PERIM_CREUSE_P2 = calcPerim(PTS_CREUSE_P2); // 520px = 26 carreaux
+
+function ptsStr(pts, ox, oy){
+  return pts.map(([x,y])=>`${x+ox},${y+oy}`).join(' ');
+}
+function ptsPathStr(pts, ox, oy){
+  return pts.map(([x,y],i)=>(i===0?'M':'L')+`${x+ox},${y+oy}`).join(' ')+' Z';
+}
+
+// Grille de carreaux (fond quadrillé) dans la bounding box
+function grille(ox, oy, cols, rows, cs, uid){
+  let s=`<defs><pattern id="gr-${uid}" width="${cs}" height="${cs}" patternUnits="userSpaceOnUse" x="${ox}" y="${oy}"><path d="M ${cs} 0 L 0 0 0 ${cs}" fill="none" stroke="#e2e8f0" stroke-width="1"/></pattern></defs>`;
+  s+=`<rect x="${ox}" y="${oy}" width="${cols*cs}" height="${rows*cs}" fill="url(#gr-${uid})"/>`;
+  return s;
+}
+
+// SVG carré plein (page 2) — uniquement quadrillage et contour animé
+function svgPlein(uid){
+  const ox=10, oy=10, W=SQ*CS+20, H=SQ*CS+20;
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  // fond blanc
+  s+=`<polygon points="${ptsStr(PTS_PLEIN,ox,oy)}" fill="white" stroke="none"/>`;
+  // pas de quadrillage page 2
+  // contour gris fixe
+  s+=`<polygon points="${ptsStr(PTS_PLEIN,ox,oy)}" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>`;
+  // contour animé rouge
+  s+=`<path id="perim-${uid}" d="${ptsPathStr(PTS_PLEIN,ox,oy)}" fill="none" stroke="var(--primary)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" style="stroke-dasharray:${PERIM_PLEIN};stroke-dashoffset:${PERIM_PLEIN}"/>`;
+  s+=`</svg>`;
+  return s;
+}
+
+// SVG forme creusée (page 2)
+function svgCreuse(uid){
+  const ox=10, oy=10, W=SQ*CS+20, H=SQ*CS+20;
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  s+=`<polygon points="${ptsStr(PTS_CREUSE_P2,ox,oy)}" fill="white" stroke="none"/>`;
+  s+=`<polygon points="${ptsStr(PTS_CREUSE_P2,ox,oy)}" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>`;
+  s+=`<path id="perim-${uid}" d="${ptsPathStr(PTS_CREUSE_P2,ox,oy)}" fill="none" stroke="var(--primary)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" style="stroke-dasharray:${Math.ceil(PERIM_CREUSE_P2)};stroke-dashoffset:${Math.ceil(PERIM_CREUSE_P2)}"/>`;
+  s+=`</svg>`;
+  return s;
+}
+
+// ── PAGE 3 — Rectangle vs rectangle aux coins creusés (même périmètre = 14 carreaux) ──
+// Forme F : rectangle 4×3 carreaux
+// Périmètre = 2×(4+3) = 14 carreaux ✓
+const PTS_F = [[0,0],[4,0],[4,3],[0,3]].map(([x,y])=>[x*CS,y*CS]);
+const GRID_F_W = 4, GRID_F_H = 3;
+
+// Forme G : rectangle 4×3, mais les 4 coins sont creusés d'un carré 1×1
+// Résultat : (1,0)(3,0)(3,1)(4,1)(4,2)(3,2)(3,3)(1,3)(1,2)(0,2)(0,1)(1,1)
+// Périmètre : chaque coin de 90° est remplacé par 2 segments de 1 → même périmètre total
+// Vérif : haut (1→3) = 2, coin haut-droit : 1+1+1=3 remplace 1+1=2 mais enlève le coin...
+// En fait creuser un coin 1×1 : on enlève 2 segments de 1 et on en ajoute 2 → périmètre INCHANGÉ
+// Mais l'aire diminue. C'est l'exemple parfait !
+const PTS_G = [
+  [1,0],[3,0],[3,1],[4,1],[4,2],[3,2],[3,3],[1,3],[1,2],[0,2],[0,1],[1,1]
+].map(([x,y])=>[x*CS,y*CS]);
+const GRID_G_W = 4, GRID_G_H = 3;
+
+// Périmètre en carreaux
+function perimC(pts){ let p=0; const n=pts.length; for(let i=0;i<n;i++){const a=pts[i],b=pts[(i+1)%n]; p+=Math.abs(b[0]-a[0])/CS+Math.abs(b[1]-a[1])/CS;} return p; }
+const PERIM_F_C = perimC(PTS_F); // 14
+const PERIM_G_C = perimC(PTS_G); // 14 aussi !
+const PERIM_F_PX = calcPerim(PTS_F);
+const PERIM_G_PX = calcPerim(PTS_G);
+
+// Décompose un segment de longueur N carreaux en N sous-segments de 1 carreau
+function decomposerSegs(pts){
+  const subs=[];
+  const n=pts.length;
+  for(let i=0;i<n;i++){
+    const a=pts[i], b=pts[(i+1)%n];
+    const dx=(b[0]-a[0])/CS, dy=(b[1]-a[1])/CS;
+    const steps=Math.abs(dx)+Math.abs(dy); // nb de carreaux
+    const sx=dx===0?0:Math.sign(dx)*CS, sy=dy===0?0:Math.sign(dy)*CS;
+    for(let s=0;s<steps;s++){
+      subs.push({
+        x1: a[0]+s*sx, y1: a[1]+s*sy,
+        x2: a[0]+(s+1)*sx, y2: a[1]+(s+1)*sy
+      });
+    }
+  }
+  return subs;
+}
+
+// SVG avec quadrillage + comptage 1 par 1 côté de carreau
+function svgFormeComptage(uid, pts, gridW, gridH){
+  const ox=14, oy=14;
+  const W=gridW*CS+28, H=gridH*CS+42; // +42 pour le total en bas
+  const subs = decomposerSegs(pts);
+  let s=`<svg id="svg-${uid}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  s+=`<defs>
+    <pattern id="gr-${uid}" width="${CS}" height="${CS}" patternUnits="userSpaceOnUse" x="${ox}" y="${oy}">
+      <path d="M ${CS} 0 L 0 0 0 ${CS}" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+    </pattern>
+    <clipPath id="clip-${uid}"><polygon points="${ptsStr(pts,ox,oy)}"/></clipPath>
+  </defs>`;
+  // fond quadrillé clippé
+  s+=`<rect x="${ox}" y="${oy}" width="${gridW*CS}" height="${gridH*CS}" fill="url(#gr-${uid})" clip-path="url(#clip-${uid})"/>`;
+  // contour fixe gris
+  s+=`<polygon points="${ptsStr(pts,ox,oy)}" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>`;
+  // Contour animé rouge — dessiné AVANT les chiffres pour être sous eux
+  s+=`<polygon id="perim-${uid}" points="${ptsStr(pts,ox,oy)}" fill="none" stroke="var(--primary)" stroke-width="3.5" stroke-linecap="square" stroke-linejoin="miter" style="stroke-dasharray:${Math.ceil(calcPerim(pts))};stroke-dashoffset:${Math.ceil(calcPerim(pts))}"/>`;
+  // Numéros centrés SUR le segment — dessinés après le trait pour être lisibles par-dessus
+  subs.forEach((seg,i)=>{
+    const mx=(seg.x1+seg.x2)/2+ox, my=(seg.y1+seg.y2)/2+oy;
+    // halo blanc épais en dessous
+    s+=`<text id="cnt-halo-${uid}-${i}" x="${mx}" y="${my+3}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="9" font-weight="800" fill="white" stroke="white" stroke-width="3" paint-order="stroke" opacity="0">${i+1}</text>`;
+    // texte rouge foncé par-dessus
+    s+=`<text id="cnt-${uid}-${i}" x="${mx}" y="${my+3}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="9" font-weight="800" fill="#9f1239" opacity="0">${i+1}</text>`;
+  });
+  // Total "Périmètre → N"
+  const perimCarr = Math.round(calcPerim(pts)/CS);
+  s+=`<text id="total-${uid}" x="${W/2}" y="${gridH*CS+oy+22}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--primary)" opacity="0">Périmètre → ${perimCarr}</text>`;
+  s+=`</svg>`;
+  return s;
+}
+
+function lancerComptage(uid, pts){
+  const perimPx = calcPerim(pts);
+  const subs = decomposerSegs(pts);
+  const nbSubs = subs.length;
+  const durTotale = nbSubs * (CS / SPEED) * 1000;
+
+  // Effacer tous les chiffres et le total avant de relancer
+  subs.forEach((seg,i)=>{
+    const halo=document.getElementById(`cnt-halo-${uid}-${i}`);
+    const lbl=document.getElementById(`cnt-${uid}-${i}`);
+    if(halo){ halo.style.transition='none'; halo.style.opacity='0'; }
+    if(lbl){ lbl.style.transition='none'; lbl.style.opacity='0'; }
+  });
+  const tot=document.getElementById(`total-${uid}`);
+  if(tot){ tot.style.transition='none'; tot.style.opacity='0'; }
+
+  const el=document.getElementById('perim-'+uid);
+  if(!el) return;
+  el.style.transition='none'; el.style.strokeDashoffset=perimPx;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    el.style.transition=`stroke-dashoffset ${durTotale.toFixed(0)}ms linear`;
+    el.style.strokeDashoffset=0;
+  }));
+  // Apparition des chiffres 1 par 1 au rythme du trait
+  subs.forEach((seg,i)=>{
+    const delay = i * (CS / SPEED) * 1000;
+    setTimeout(()=>{
+      const halo=document.getElementById(`cnt-halo-${uid}-${i}`);
+      const lbl=document.getElementById(`cnt-${uid}-${i}`);
+      if(halo){ halo.style.transition='opacity 0.15s'; halo.style.opacity='1'; }
+      if(lbl){ lbl.style.transition='opacity 0.15s'; lbl.style.opacity='1'; }
+    }, delay);
+  });
+  setTimeout(()=>{
+    const tot=document.getElementById(`total-${uid}`);
+    if(tot){ tot.style.transition='opacity 0.4s'; tot.style.opacity='1'; }
+  }, durTotale);
+}
+
+function lancerDeuxP3(){
+  lancerComptage('ff', PTS_F);
+  lancerComptage('fg', PTS_G);
+}
+
+const STEPS=[
+
+// PAGE 1 — Introduction
+()=>`
+<div class="step-title pop">💡 Comparer des périmètres</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> Comparer des périmètres permet de travailler sur le périmètre et de vérifier qu'on ne le confond pas avec l'aire.</div>
+<p class="step-text fade-in">Pour comparer des périmètres, on cherche quelle forme a le <strong>contour le plus long</strong>.</p>
+<div class="info primary fade-in">💡 Un exemple : imagine que ce sont des champs. Autour duquel faudra-t-il marcher <strong>le plus longtemps</strong> pour faire le tour ?</div>
+<div class="info bleu fade-in" style="margin-top:-4px">⚠️ Attention : quand on compare des périmètres, ce ne sont pas les aires qu'il faut comparer !</div>
+`,
+
+// PAGE 2 — Carré plein vs carré creusé (1 carré par côté)
+()=>`
+<div class="step-title pop">✏️ Quel polygone a le plus grand périmètre ?</div>
+<p class="step-text fade-in" style="color:#475569">Le polygone qui a le plus grand périmètre est celui qui a le contour le plus long.</p>
+<div class="deux-fig fade-in">
+  <div class="fig-col">
+    <div class="fig-label">Polygone A</div>
+    ${svgPlein('pa')}
+  </div>
+  <div class="fig-col">
+    <div class="fig-label">Polygone B</div>
+    ${svgCreuse('pb')}
+  </div>
+</div>
+<button class="btn-anim fade-in" onclick="lancerDeux('pa',${PERIM_PLEIN},'pb',${Math.ceil(PERIM_CREUSE_P2)})">▶ Tracer les contours</button>
+<button id="btn-comp-p2" class="btn-complete" onclick="completerP2()">✏️ Compléter</button>
+<div id="expl-p2" class="info vert" style="opacity:0;transition:opacity 0.4s">Le polygone B a un périmètre plus grand que le polygone A. Chaque « creux » rajoute un « détour » et allonge le périmètre.</div>
+`,
+
+// PAGE 3 — Rectangle vs rectangle coins creusés (même périmètre, aire différente)
+()=>`
+<div class="step-title pop">✏️ Quel polygone a le plus grand périmètre ?</div>
+<p class="step-text fade-in" style="color:#475569">Pour comparer les périmètres, ici on peut utiliser le quadrillage.</p>
+<div class="deux-fig fade-in" style="align-items:flex-start;gap:28px">
+  <div class="fig-col">
+    <div class="fig-label">Polygone F</div>
+    ${svgFormeComptage('ff', PTS_F, GRID_F_W, GRID_F_H)}
+  </div>
+  <div class="fig-col">
+    <div class="fig-label">Polygone G</div>
+    ${svgFormeComptage('fg', PTS_G, GRID_G_W, GRID_G_H)}
+  </div>
+</div>
+<button class="btn-anim fade-in" onclick="lancerDeuxP3()">▶ Compter les côtés</button>
+<button id="btn-comp-p3" class="btn-complete" onclick="completerP3()">✏️ Compléter</button>
+<div id="expl-p3" class="info vert" style="opacity:0;transition:opacity 0.4s">Les deux polygones ont le même périmètre.</div>
+`,
+
+// PAGE 4 — Ce qu'il faut retenir
+()=>`
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  ${[
+    ['var(--primary)','Le <strong>périmètre</strong>, c\'est la mesure du contour. Comparer des périmètres, c\'est comparer des <strong>longueurs de contours</strong>.'],
+    ['var(--vert)','Un exemple : imagine des champs. Autour duquel faut-il marcher le plus longtemps pour faire le tour ?'],
+    ['var(--violet)','Quand on travaille sur le périmètre, notre cerveau peut nous donner envie de penser à l\'aire. Il faut se forcer à penser : <em>« on travaille sur le périmètre et pas sur l\'aire »</em>.'],
+    ['var(--teal)','Sur un quadrillage, on peut <strong>compter les côtés de carreaux</strong> pour mesurer le périmètre.'],
+  ].map(([c,t],i)=>`
+    <div class="recap-item fade-in" style="animation-delay:${i*.08}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${i+1}</div>
+      <span>${t}</span>
+    </div>`).join('')}
+</div>
+`,
+];
+
+let cur=0,revealed=false;const N=STEPS.length;
+
+function completerP2(){
+  const btn=document.getElementById('btn-comp-p2');
+  if(btn) btn.style.display='none';
+  const expl=document.getElementById('expl-p2');
+  if(expl) expl.style.opacity='1';
+}
+
+function completerP3(){
+  const btn=document.getElementById('btn-comp-p3');
+  if(btn) btn.style.display='none';
+  const expl=document.getElementById('expl-p3');
+  if(expl) expl.style.opacity='1';
+}
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur]();card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(N-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator');ind.innerHTML='';
+  for(let i=0;i<N;i++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(i===cur?' active':i<cur?' done':'');
+    d.textContent=i<cur?'✓':i+1;ind.appendChild(d);
+  }
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${N}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===N-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===N-1?0:cur+1;revealed=false;render();}
+function prev(){if(cur>0){cur--;revealed=false;render();}}
+function completer(){revealed=true;render();}
+render();
+</script>
+</body>
+</html>

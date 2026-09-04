@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>N8 Liens entre unités, dizaines, centaines…</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme:light;
+    --bleu:#1a73e8; --bleu-clair:#e8f0fe; --bleu-fonce:#0d47a1;
+    --orange:#ea580c; --orange-clair:#ffedd5;
+    --vert:#16a34a; --vert-clair:#f0fdf4;
+    --violet:#7c3aed; --violet-clair:#f5f3ff;
+    --gris:#94a3b8; --bg:#f0f4ff;
+    --card:#ffffff; --texte:#1e293b; --border:#e2e8f0;
+    --cote:#1251a3;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Nunito',sans-serif; background:var(--bg); min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:20px 16px 40px; color:var(--texte); }
+  header { display:flex; justify-content:center; margin-bottom:22px; }
+  .header-row { display:flex; align-items:center; gap:14px; max-width:680px; width:100%; }
+  .badge-code { display:inline-flex; align-items:center; justify-content:center; min-width:48px; height:48px; border-radius:12px; border:2.5px solid var(--bleu); background:var(--bleu-clair); font-family:'Baloo 2',cursive; font-size:1.3rem; font-weight:800; color:var(--bleu); flex-shrink:0; }
+  .tache-label { font-family:'Baloo 2',cursive; font-size:1.1rem; font-weight:800; color:var(--bleu); line-height:1.3; }
+  .progress-bar-wrap { width:100%; max-width:680px; background:#dbeafe; border-radius:99px; height:10px; margin-bottom:18px; overflow:hidden; }
+  .progress-bar { height:100%; background:linear-gradient(90deg,var(--bleu),var(--violet)); border-radius:99px; transition:width 0.5s ease; }
+  .steps-indicator { display:flex; gap:10px; margin-bottom:20px; }
+  .step-dot { width:34px; height:34px; border-radius:50%; background:#dbeafe; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:#93c5fd; transition:all 0.4s; border:2px solid transparent; }
+  .step-dot.active { background:var(--bleu); color:white; border-color:var(--bleu); transform:scale(1.15); box-shadow:0 0 0 4px #bfdbfe; }
+  .step-dot.done   { background:var(--vert); color:white; border-color:var(--vert); }
+  .card { background:var(--card); border-radius:20px; padding:26px 28px; max-width:680px; width:100%; min-height:360px; display:flex; flex-direction:column; align-items:center; gap:14px; box-shadow:0 4px 24px rgba(26,115,232,0.10); position:relative; overflow:hidden; }
+  .card::before { content:''; position:absolute; top:0; left:0; right:0; height:5px; background:linear-gradient(90deg,var(--bleu),var(--violet)); border-radius:20px 20px 0 0; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation:fadeIn 0.4s ease both; }
+  @keyframes pop { 0%{transform:scale(0.8);opacity:0} 70%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
+  .pop { animation:pop 0.45s ease both; }
+  .step-title { font-family:'Baloo 2',cursive; font-size:1.2rem; font-weight:800; color:var(--bleu); text-align:center; line-height:1.3; }
+  .step-text  { font-size:0.97rem; color:var(--texte); text-align:center; line-height:1.75; max-width:540px; font-weight:600; }
+  .info { border-radius:12px; padding:12px 18px; font-size:0.93rem; font-weight:600; max-width:580px; width:100%; line-height:1.6; }
+  .info.bleu   { background:var(--bleu-clair);   color:var(--bleu);   border-left:4px solid var(--bleu); }
+  .info.violet { background:var(--violet-clair); color:var(--violet); border-left:4px solid var(--violet); }
+  .egal-result { font-family:'Baloo 2',cursive; font-size:1.2rem; font-weight:800; text-align:center; background:var(--vert-clair); border-radius:14px; padding:12px 20px; color:var(--vert); border:2px solid var(--vert); max-width:480px; width:100%; }
+  .recap-list { display:flex; flex-direction:column; gap:9px; max-width:580px; width:100%; }
+  .recap-item { display:flex; align-items:flex-start; gap:12px; background:#f8faff; border-radius:12px; padding:11px 16px; font-size:0.93rem; font-weight:600; color:var(--texte); animation:fadeIn 0.4s ease both; border-left:4px solid transparent; line-height:1.5; }
+  .recap-num  { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.82rem; font-weight:700; flex-shrink:0; color:white; margin-top:1px; }
+  .nav { display:flex; gap:14px; margin-top:10px; align-items:center; }
+  button { font-family:'Baloo 2',cursive; font-weight:700; font-size:1rem; border:none; cursor:pointer; border-radius:12px; padding:12px 28px; transition:all 0.2s; }
+  .btn-next { background:linear-gradient(135deg,var(--bleu),var(--violet)); color:white; box-shadow:0 4px 14px rgba(26,115,232,0.3); }
+  .btn-next:hover { transform:translateY(-2px); }
+  .btn-next:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+  .btn-prev { background:#e0e7ff; color:var(--bleu); }
+  .btn-prev:hover { background:#c7d2fe; }
+  .btn-complete { font-family:'Baloo 2',cursive; font-weight:700; font-size:0.95rem; border:2px solid var(--vert); cursor:pointer; border-radius:10px; padding:10px 22px; background:var(--vert-clair); color:var(--vert); transition:all 0.2s; }
+  .btn-complete:hover { background:var(--vert); color:white; }
+  .step-counter { font-size:0.85rem; color:var(--gris); font-weight:700; }
+  .pourquoi { position:relative; background:#f0fdfa; border-left:4px solid #0d9488; border-radius:10px; padding:12px 15px; font-size:0.92rem; font-weight:600; color:#134e4a; line-height:1.6; max-width:580px; width:100%; }
+  .pq-lead { font-family:'Baloo 2',cursive; font-weight:800; color:#0d9488; }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">N8</div>
+    <div class="tache-label">Établir des liens entre unités, dizaines, centaines, millions, milliards</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function tc(x,y,label,fs,strokeCol,anchor){ // texte avec contour
+  anchor=anchor||'middle';
+  return `<text x="${x}" y="${y}" text-anchor="${anchor}" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${strokeCol}" stroke="${strokeCol}" stroke-width="4" stroke-linejoin="round" paint-order="stroke">${label}</text>
+  <text x="${x}" y="${y}" text-anchor="${anchor}" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="white">${label}</text>`;
+}
+function ts(x,y,label,fs,col,anchor){ // texte simple
+  return `<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${col}">${label}</text>`;
+}
+function arrowH(x1,y,x2,col,label,mkId){ // flèche horizontale avec label
+  return `<defs><marker id="${mkId}" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="${col}"/></marker></defs>
+  <line x1="${x1}" y1="${y}" x2="${x2-2}" y2="${y}" stroke="${col}" stroke-width="2.2" marker-end="url(#${mkId})"/>
+  ${label?`<text x="${(x1+x2)/2}" y="${y-5}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="700" fill="${col}">${label}</text>`:''}`;
+}
+
+// ── Cote dessin technique ────────────────────────────────────────────────────
+function coteLine(x1,y1,x2,y2,label,col,t,lox,loy,anc){
+  const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
+  const nx=-dy/len,ny=dx/len; t=t||5;
+  const lx=(x1+x2)/2+(lox||0),ly=(y1+y2)/2+(loy||0);
+  return `
+    <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="${x1-nx*t}" y1="${y1-ny*t}" x2="${x1+nx*t}" y2="${y1+ny*t}" stroke="${col}" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="${x2-nx*t}" y1="${y2-ny*t}" x2="${x2+nx*t}" y2="${y2+ny*t}" stroke="${col}" stroke-width="1.8" stroke-linecap="round"/>
+    <polygon points="${x1},${y1} ${x1+dx/len*10+nx*4},${y1+dy/len*10+ny*4} ${x1+dx/len*10-nx*4},${y1+dy/len*10-ny*4}" fill="${col}"/>
+    <polygon points="${x2},${y2} ${x2-dx/len*10+nx*4},${y2-dy/len*10+ny*4} ${x2-dx/len*10-nx*4},${y2-dy/len*10-ny*4}" fill="${col}"/>
+    <text x="${lx}" y="${ly}" text-anchor="${anc||'middle'}" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="${col}">${label}</text>`;
+}
+
+// ── Tableau page 1 : 3 lignes, 10 encadré, flèches obliques droites ──────────
+function tableauPage1(){
+  const cols=['Milliers','Centaines','Dizaines','Unités'];
+  const N=cols.length, CW=72, HDR=24, ROW=48, TH=HDR+ROW*3, W=N*CW;
+  // data : [col_10, col_1] pour chaque ligne
+  const lignes=[
+    {c10:2, c1:1, col10:'var(--orange)', col1:'var(--bleu)'},   // ligne 1 : U→D
+    {c10:1, c1:0, col10:'var(--bleu)',   col1:'var(--bleu)'},   // ligne 2 : D→C
+    {c10:0, c1:null, c10bis:1, col10:'var(--bleu)', col1:'var(--bleu)'}, // ligne 3 : C→M (sauf le 1 est à col 0 mais 10 est à col 1)
+  ];
+  // Correction : ligne 3 → 10 en centaines (col 1), 1 en milliers (col 0)
+  const data=[
+    // row 0 : 10 unités → 1 dizaine
+    [{},{},{val:'1',col:'var(--bleu)'},{val:'10',col:'var(--orange)',box:true}],
+    // row 1 : 10 dizaines → 1 centaine
+    [{},{val:'1',col:'var(--bleu)'},{val:'10',col:'var(--orange)',box:true},{}],
+    // row 2 : 10 centaines → 1 millier
+    [{val:'1',col:'var(--bleu)'},{val:'10',col:'var(--orange)',box:true},{},{}],
+  ];
+  // col_10 et col_1 par ligne
+  const arrows=[
+    {from:3,to:2,col:'var(--orange)'},
+    {from:2,to:1,col:'var(--orange)'},
+    {from:1,to:0,col:'var(--orange)'},
+  ];
+
+  let s=`<svg width="${W}" height="${TH}" viewBox="0 0 ${W} ${TH}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  s+=`<rect x="0" y="0" width="${W}" height="${TH}" rx="12" fill="white" stroke="var(--border)" stroke-width="2"/>`;
+  for(let i=0;i<3;i++) s+=`<line x1="0" y1="${HDR+ROW*(i+1)}" x2="${W}" y2="${HDR+ROW*(i+1)}" stroke="var(--border)" stroke-width="1.5"/>`;
+  for(let i=1;i<N;i++) s+=`<line x1="${i*CW}" y1="0" x2="${i*CW}" y2="${TH}" stroke="var(--border)" stroke-width="1.5"/>`;
+  cols.forEach((c,i)=>{
+    s+=`<rect x="${i*CW}" y="0" width="${CW}" height="${HDR}" fill="#f8faff"/>`;
+    s+=`<text x="${i*CW+CW/2}" y="${HDR-7}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="700" fill="var(--gris)" letter-spacing="0.3">${c.toUpperCase()}</text>`;
+  });
+
+  data.forEach((row,ri)=>{
+    const y0=HDR+ri*ROW;
+    row.forEach((d,ci)=>{
+      if(!d||!d.val) return;
+      if(d.box){
+        const bw=36, bh=30, bx=ci*CW+CW/2-bw/2, by=y0+ROW/2-bh/2;
+        s+=`<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="6" fill="var(--orange-clair)" stroke="var(--orange)" stroke-width="2"/>`;
+      }
+      s+=`<text x="${ci*CW+CW/2}" y="${y0+ROW/2+9}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="22" font-weight="800" fill="${d.col}">${d.val}</text>`;
+    });
+
+    // flèche oblique droite depuis bord droit du cadre "10" vers côté gauche du "1"
+    const a=arrows[ri];
+    const bw=36;
+    // départ : bord gauche du cadre "10"
+    const x1=a.from*CW+CW/2-bw/2, y1=y0+ROW/2;
+    // arrivée : juste à droite du "1" (centre de la cellule - un peu)
+    const x2=a.to*CW+CW/2+16, y2=y0+ROW/2;
+    const mkId=`mk1r${ri}`;
+    s+=`<defs><marker id="${mkId}" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="${a.col}"/></marker></defs>`;
+    s+=`<line x1="${x1}" y1="${y1}" x2="${x2+2}" y2="${y2}" stroke="${a.col}" stroke-width="2.2" marker-end="url(#${mkId})"/>`;
+  });
+
+  s+=`<rect x="0" y="0" width="${W}" height="${TH}" rx="12" fill="none" stroke="var(--border)" stroke-width="2"/></svg>`;
+  return `<div class="fade-in" style="display:flex;justify-content:center;width:100%">${s}</div>`;
+}
+
+// ── Grille N lignes de 10 carrés avec cotes et labels contourés ──────────────
+function grille15dizaines(reveal){
+  const SQ=13, GAP=2, rowStep=SQ+GAP+2;
+  const perRow=10, barW=perRow*(SQ+GAP)-GAP;
+  const LM=46, TM=44;
+  const blueCount=10, orangeCount=5, total=15;
+  const blueH=blueCount*rowStep-2, orangeH=orangeCount*rowStep-2;
+  const totalH_px=total*rowStep;
+  const W=LM+barW+6;
+  const H=TM+totalH_px+10;
+
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;overflow:visible">`;
+
+  for(let r=0;r<blueCount;r++){
+    const y=TM+r*rowStep;
+    s+=`<rect x="${LM}" y="${y}" width="${barW}" height="${SQ}" rx="2" fill="var(--bleu)" opacity="0.15"/>`;
+    for(let c=0;c<perRow;c++)
+      s+=`<rect x="${LM+c*(SQ+GAP)}" y="${y}" width="${SQ}" height="${SQ}" rx="2" fill="var(--bleu)" opacity="0.78"/>`;
+  }
+  for(let r=0;r<orangeCount;r++){
+    const y=TM+blueCount*rowStep+r*rowStep;
+    s+=`<rect x="${LM}" y="${y}" width="${barW}" height="${SQ}" rx="2" fill="${reveal?'var(--orange)':'var(--bleu)'}" opacity="0.15"/>`;
+    for(let c=0;c<perRow;c++)
+      s+=`<rect x="${LM+c*(SQ+GAP)}" y="${y}" width="${SQ}" height="${SQ}" rx="2" fill="${reveal?'var(--orange)':'var(--bleu)'}" opacity="0.82"/>`;
+  }
+
+  // labels "10 dizaines" / "1 centaine" / "5 dizaines" : au clic seulement
+  if(reveal){
+    s+=tc(LM+barW/2, TM+blueH/2-2, '10 dizaines', '11', '#0d3d8a');
+    s+=tc(LM+barW/2, TM+blueH/2+16, '1 centaine', '16', '#0d3d8a');
+    const oy=TM+blueCount*rowStep;
+    s+=tc(LM+barW/2, oy+orangeH/2+6, '5 dizaines', '13', '#7c2d00');
+  }
+
+  // cote horizontale sur toute la largeur du rectangle
+  s+=coteLine(LM, TM-18, LM+barW, TM-18, '1 dizaine', '#1251a3', 4, 0, -8, 'middle');
+
+  // cote verticale "15"
+  s+=coteLine(LM-20, TM, LM-20, TM+totalH_px-2, '15', '#1251a3', 4, -20, 0, 'middle');
+
+  s+=`</svg>`;
+  return `<div class="fade-in" style="display:flex;justify-content:center">${s}</div>`;
+}
+
+// ── Grille N lignes de 10 carrés, avec couleurs par groupe (générique) ────────
+function grille(groups, labelTotal){
+  const SQ=13, GAP=2, rowStep=SQ+GAP+2, LM=10, TM=12;
+  const perRow=10, barW=perRow*(SQ+GAP)-GAP;
+  const total=groups.reduce((s,g)=>s+g.count,0);
+  const H=TM+total*rowStep+26;
+  const W=LM+barW+6;
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;overflow:visible">`;
+  let r=0;
+  groups.forEach(g=>{
+    for(let i=0;i<g.count;i++){
+      const y=TM+r*rowStep;
+      s+=`<rect x="${LM}" y="${y}" width="${barW}" height="${SQ}" rx="2" fill="${g.col}" opacity="0.15"/>`;
+      for(let c=0;c<perRow;c++)
+        s+=`<rect x="${LM+c*(SQ+GAP)}" y="${y}" width="${SQ}" height="${SQ}" rx="2" fill="${g.col}" opacity="${g.op||0.78}"/>`;
+      r++;
+    }
+  });
+  if(labelTotal) s+=tc(LM+barW/2, TM+total*rowStep/2+8, labelTotal, '18', '#0d3d8a');
+  let ry=0;
+  groups.forEach(g=>{
+    s+=`<text x="${LM+barW/2}" y="${TM+ry*rowStep+g.count*rowStep+18}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="10" font-weight="700" fill="${g.col}">${g.label||''}</text>`;
+    ry+=g.count;
+  });
+  s+=`</svg>`;
+  return `<div class="fade-in" style="display:flex;justify-content:center">${s}</div>`;
+}
+
+// ── Tableau à 2 lignes avec 2 flèches depuis la 1re ligne ────────────────────
+// cols : [{label}]
+// row1 : [{val,col,bg,hl}]  — ligne source (ex: 15 dans dizaines)
+// row2 : [{val,col,bg,hl}]  — ligne cible
+// arrows: [{from,to}] — flèches de row1→row2
+function tableauFlech2(cols, row1, row2, arrows, uid){
+  const N=cols.length, CW=72, HDR=24, ROW=62, TH=HDR+ROW*2, W=N*CW;
+  let s=`<svg width="${W}" height="${TH}" viewBox="0 0 ${W} ${TH}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  s+=`<rect x="0" y="0" width="${W}" height="${TH}" rx="12" fill="white" stroke="var(--border)" stroke-width="2"/>`;
+  s+=`<line x1="0" y1="${HDR+ROW}" x2="${W}" y2="${HDR+ROW}" stroke="var(--border)" stroke-width="1.5"/>`;
+  for(let i=1;i<N;i++) s+=`<line x1="${i*CW}" y1="0" x2="${i*CW}" y2="${TH}" stroke="var(--border)" stroke-width="1.5"/>`;
+  cols.forEach((c,i)=>{
+    s+=`<rect x="${i*CW}" y="0" width="${CW}" height="${HDR}" fill="#f8faff"/>`;
+    s+=`<text x="${i*CW+CW/2}" y="${HDR-7}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="700" fill="var(--gris)" letter-spacing="0.3">${c.label.toUpperCase()}</text>`;
+  });
+  // 1. Fonds colorés
+  [row1,row2].forEach((row,ri)=>{
+    const y0=HDR+ri*ROW;
+    row.forEach((d,ci)=>{
+      if(!d) return;
+      if(d.bg) s+=`<rect x="${ci*CW+1}" y="${y0+1}" width="${CW-2}" height="${ROW-2}" rx="4" fill="${d.bg}"/>`;
+    });
+  });
+  // 2. Flèches obliques (dessinées avant les textes)
+  arrows.forEach((a,ai)=>{
+    const mkId=`${uid}a${ai}`;
+    const x1=a.from*CW+CW/2, x2=a.to*CW+CW/2;
+    const y1=HDR+ROW/2+16, y2=HDR+ROW+ROW/2-16;
+    const col=a.col||'var(--bleu)';
+    // Si même colonne (flèche verticale), décaler un peu pour la rendre visible
+    const dx = (x1===x2) ? 10 : 0;
+    s+=`<defs><marker id="${mkId}" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="${col}"/></marker></defs>`;
+    s+=`<line x1="${x1+dx}" y1="${y1}" x2="${x2+dx}" y2="${y2}" stroke="${col}" stroke-width="2.8" marker-end="url(#${mkId})"/>`;
+  });
+  // 3. Textes par-dessus les flèches
+  [row1,row2].forEach((row,ri)=>{
+    const y0=HDR+ri*ROW;
+    row.forEach((d,ci)=>{
+      if(!d) return;
+      if(d.val!==undefined&&d.val!=='')
+        s+=`<text x="${ci*CW+CW/2}" y="${y0+ROW/2+10}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${String(d.val).length>3?'18':'24'}" font-weight="800" fill="${d.col||'var(--texte)'}">${d.val}</text>`;
+    });
+  });
+  s+=`<rect x="0" y="0" width="${W}" height="${TH}" rx="12" fill="none" stroke="var(--border)" stroke-width="2"/>`;
+  s+=`</svg>`;
+  return `<div class="fade-in" style="display:flex;justify-content:center;width:100%">${s}</div>`;
+}
+
+// ── Blocs carrés (page 4 et 5) ───────────────────────────────────────────────
+// blocks : [{col, label1 (simple), label2 (contour)}]
+function blocsCarres(blocks, reveal){
+  const BW=100, BH=100, GAP=12, LM=10, TM=10;
+  const W=LM+blocks.length*(BW+GAP)-GAP+LM;
+  const H=TM+BH+10;
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  blocks.forEach((b,i)=>{
+    const x=LM+i*(BW+GAP);
+    s+=`<rect x="${x}" y="${TM}" width="${BW}" height="${BH}" rx="8" fill="${reveal?b.col:'var(--bleu)'}" opacity="${b.op||0.82}"/>`;
+    s+=ts(x+BW/2, TM+BH/2-8, b.label1, '11', 'white');
+    if(reveal) s+=tc(x+BW/2, TM+BH/2+14, b.label2, '13', b.strokeCol||'#0d3d8a');
+  });
+  s+=`</svg>`;
+  return `<div class="fade-in" style="display:flex;justify-content:center;overflow-x:auto;width:100%">${s}</div>`;
+}
+
+// ── 23 centaines : 3 rectangles plats avec labels ────────────────────────────
+function grille23centaines(reveal){
+  const BH=22, BGAP=3, BW=150, LM=46, TM=20;
+  const groups=[
+    {count:10,col:'var(--bleu)',     op:0.78, strokeCol:'#0d3d8a', label1:'10 centaines', label2:'1 millier',    contour:true},
+    {count:10,col:'var(--bleu-fonce)',op:0.58,strokeCol:'#0a2d6e', label1:'10 centaines', label2:'1 millier',    contour:true},
+    {count:3, col:'var(--orange)',   op:0.82, strokeCol:'#7c2d00', label1:'3 centaines',  label2:'',             contour:true},
+  ];
+  const totalRows=23, totalH=totalRows*(BH+BGAP)-BGAP;
+  const H=TM+totalH+10;
+  const W=LM+BW+80; // espace pour étiquette droite
+
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;overflow:visible">`;
+  let r=0;
+  groups.forEach((g,gi)=>{
+    const y0=TM+r*(BH+BGAP);
+    const gh=g.count*(BH+BGAP)-BGAP;
+    // fond de groupe
+    s+=`<rect x="${LM}" y="${y0}" width="${BW}" height="${gh}" rx="5" fill="${reveal?g.col:'var(--bleu)'}" opacity="${g.op}"/>`;
+    // lignes "100" à l'intérieur
+    for(let i=0;i<g.count;i++){
+      const y=y0+i*(BH+BGAP);
+      if(i>0) s+=`<line x1="${LM+4}" y1="${y}" x2="${LM+BW-4}" y2="${y}" stroke="white" stroke-width="0.8" opacity="0.5"/>`;
+      s+=ts(LM+BW/2, y+BH/2+5, '100', '10', 'white');
+    }
+    // labels au centre
+    const midY=y0+gh/2;
+    if(reveal){
+      if(g.label2){
+        s+=tc(LM+BW/2, midY-4, g.label1, '11', g.strokeCol);
+        s+=tc(LM+BW/2, midY+13, g.label2, '14', g.strokeCol);
+      } else {
+        s+=tc(LM+BW/2, midY+6, g.label1, '14', g.strokeCol);
+      }
+    }
+
+    r+=g.count;
+  });
+
+  // cote verticale "23" à gauche
+  s+=coteLine(LM-18, TM, LM-18, TM+totalH, '23', '#1251a3', 4, -22, 0, 'middle');
+  // cote horizontale "1 centaine" au-dessus
+  s+=coteLine(LM, TM-18, LM+BW, TM-18, '1 centaine', '#1251a3', 4, 0, -8, 'middle');
+
+  s+=`</svg>`;
+  return `<div class="fade-in" style="display:flex;justify-content:center">${s}</div>`;
+}
+
+// ── Tableau 1 ligne millions → milliers avec dégradé et flèches visibles ─────
+function tableauMillions(){
+  const cols=[
+    {label:'Millions',    val:'1',     col:'#7c3aed'},
+    {label:'C. milliers', val:'10',    col:'#5b4fd4'},
+    {label:'D. milliers', val:'100',   col:'#3a64bb'},
+    {label:'Milliers',    val:'1 000', col:'#1a73e8'},
+  ];
+  const fontSizes=[24, 22, 19, 16];
+  const CW=76, HDR=24, ROW=56, TH=HDR+ROW, W=cols.length*CW;
+  let s=`<svg width="${W}" height="${TH}" viewBox="0 0 ${W} ${TH}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  s+=`<rect x="0" y="0" width="${W}" height="${TH}" rx="12" fill="white" stroke="var(--border)" stroke-width="2"/>`;
+  for(let i=1;i<cols.length;i++) s+=`<line x1="${i*CW}" y1="0" x2="${i*CW}" y2="${TH}" stroke="var(--border)" stroke-width="1.5"/>`;
+  s+=`<line x1="0" y1="${HDR}" x2="${W}" y2="${HDR}" stroke="var(--border)" stroke-width="1.5"/>`;
+  // headers
+  cols.forEach((c,i)=>{
+    s+=`<rect x="${i*CW}" y="0" width="${CW}" height="${HDR}" fill="#f8faff"/>`;
+    const fs=c.label.length>8?'8':'9.5';
+    s+=`<text x="${i*CW+CW/2}" y="${HDR-7}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="${fs}" font-weight="700" fill="${c.col}" letter-spacing="0.2">${c.label.toUpperCase()}</text>`;
+  });
+  // flèches D'ABORD (avant les textes pour ne pas être cachées)
+  cols.forEach((c,i)=>{
+    if(i<cols.length-1){
+      const mkId=`mktm${i}`;
+      // flèche qui part du quart gauche de la cellule et arrive au quart droit de la suivante
+      const x1=i*CW+CW-16, x2=(i+1)*CW+16, ym=HDR+ROW/2;
+      const col=cols[i+1].col;
+      s+=`<defs><marker id="${mkId}" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="${col}"/></marker></defs>`;
+      s+=`<line x1="${x1}" y1="${ym}" x2="${x2-2}" y2="${ym}" stroke="${col}" stroke-width="2.5" marker-end="url(#${mkId})"/>`;
+
+    }
+  });
+  // valeurs PAR-DESSUS les flèches (texte simple, sans stroke blanc)
+  cols.forEach((c,i)=>{
+    s+=`<text x="${i*CW+CW/2}" y="${HDR+ROW/2+10}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fontSizes[i]}" font-weight="800" fill="${c.col}">${c.val}</text>`;
+  });
+  s+=`<rect x="0" y="0" width="${W}" height="${TH}" rx="12" fill="none" stroke="var(--border)" stroke-width="2"/>`;
+  s+=`</svg>`;
+  return `<div class="fade-in" style="display:flex;justify-content:center;width:100%">${s}</div>`;
+}
+
+// ── Ligne numérique avec doubles flèches et labels ───────────────────────────
+// grads  : [{v, label?, above?, col?}]  — graduations
+// spans  : [{v1, v2, label, col}]  — doubles flèches au-dessus
+function ligneNumerique(grads, spans, uid){
+  const W=500, LM=28, RM=28, lineW=W-LM-RM;
+  const lineY=62, tickH=7, totalH=lineY+36;
+  const vMin=grads[0].v, vMax=grads[grads.length-1].v;
+  function xOf(v){ return LM+(v-vMin)/(vMax-vMin)*lineW; }
+
+  let s=`<svg width="${W}" height="${totalH}" viewBox="0 0 ${W} ${totalH}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  s+=`<line x1="${LM}" y1="${lineY}" x2="${LM+lineW}" y2="${lineY}" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round"/>`;
+  grads.forEach(g=>{
+    const x=xOf(g.v);
+    const col=g.col||'#94a3b8';
+    s+=`<line x1="${x}" y1="${lineY-tickH}" x2="${x}" y2="${lineY+tickH}" stroke="${col}" stroke-width="1.5" stroke-linecap="round"/>`;
+    if(g.label!==false && g.label!==undefined){
+      const lbl=g.label!==true?(g.label):(g.v.toLocaleString('fr-FR'));
+      const ly = g.above ? lineY-tickH-5 : lineY+tickH+13;
+      const anch = g.above ? 'middle' : 'middle';
+      s+=`<text x="${x}" y="${ly}" text-anchor="${anch}" font-family="Baloo 2,cursive" font-size="10" font-weight="700" fill="${col}">${lbl}</text>`;
+    }
+  });
+  spans.forEach(sp=>{
+    const x1=xOf(sp.v1), x2=xOf(sp.v2);
+    const y=lineY-20;
+    const col=sp.col||'#1251a3';
+    const t=4;
+    s+=`<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${col}" stroke-width="1.8" stroke-linecap="round"/>`;
+    s+=`<line x1="${x1}" y1="${y-t}" x2="${x1}" y2="${y+t}" stroke="${col}" stroke-width="1.8" stroke-linecap="round"/>`;
+    s+=`<line x1="${x2}" y1="${y-t}" x2="${x2}" y2="${y+t}" stroke="${col}" stroke-width="1.8" stroke-linecap="round"/>`;
+    const aw=9, ah=4;
+    s+=`<polygon points="${x1},${y} ${x1+aw},${y-ah} ${x1+aw},${y+ah}" fill="${col}"/>`;
+    s+=`<polygon points="${x2},${y} ${x2-aw},${y-ah} ${x2-aw},${y+ah}" fill="${col}"/>`;
+    s+=`<text x="${(x1+x2)/2}" y="${y-7}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="10" font-weight="800" fill="${col}">${sp.label}</text>`;
+  });
+  s+=`</svg>`;
+  return `<div class="fade-in" style="display:flex;justify-content:center;width:100%;overflow-x:auto">${s}</div>`;
+}
+
+// ── Ligne numérique logarithmique (4 points espacés visuellement) ─────────────
+// points : [{v, label, col, above}]  v doit être >0 (on utilise log10)
+function ligneNumeriqueLog(points){
+  const W=500, LM=36, RM=36, lineW=W-LM-RM;
+  const lineY=58, tickH=8, totalH=lineY+36;
+  const logMin=Math.log10(points[0].v), logMax=Math.log10(points[points.length-1].v);
+  function xOf(v){ return LM+(Math.log10(v)-logMin)/(logMax-logMin)*lineW; }
+
+  let s=`<svg width="${W}" height="${totalH}" viewBox="0 0 ${W} ${totalH}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  s+=`<line x1="${LM}" y1="${lineY}" x2="${LM+lineW}" y2="${lineY}" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round"/>`;
+  points.forEach(g=>{
+    const x=xOf(g.v);
+    const col=g.col||'#94a3b8';
+    const th=g.above?10:8;
+    s+=`<line x1="${x}" y1="${lineY-th}" x2="${x}" y2="${lineY+th}" stroke="${col}" stroke-width="2" stroke-linecap="round"/>`;
+    const lbl=g.label;
+    const ly=g.above?lineY-th-6:lineY+th+13;
+    s+=`<text x="${x}" y="${ly}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="10" font-weight="800" fill="${col}">${lbl}</text>`;
+  });
+  s+=`</svg>`;
+  return `<div class="fade-in" style="display:flex;justify-content:center;width:100%">${s}</div>`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+const STEPS = [
+
+// 0 — L'idée
+() => `
+<div class="step-title pop">💡 Un seul principe : grouper par 10</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> Les nombres sont construits avec des paquets de 10 : dix unités font une dizaine, dix dizaines une centaine… Comprendre ces échanges, c'est comprendre comment les nombres sont construits et mieux réussir à les utiliser.</div>
+<p class="step-text fade-in">
+  Pour compter de grandes quantités, on regroupe par <strong style="color:var(--bleu)">10</strong>.<br>
+  Chaque rang vaut <strong style="color:var(--bleu)">10 fois plus</strong> que le rang à sa droite.
+</p>
+<p class="step-text fade-in" style="font-size:0.92rem">
+  10 unités forment 1 dizaine.<br>
+  10 dizaines forment 1 centaine.<br>
+  10 centaines forment 1 millier.
+</p>
+${tableauPage1()}
+`,
+
+// 1 — exemple 15 dizaines
+() => `
+<div class="step-title pop">✏️ Exemple : 15 dizaines</div>
+${revealed?`<p class="step-text fade-in">
+  15 dizaines, c'est <strong style="color:var(--bleu)">10 dizaines</strong>
+  + <strong style="color:var(--orange)">5 dizaines</strong>.
+</p>`:''}
+${grille15dizaines(revealed)}
+${tableauFlech2(
+  [{label:'Centaines'},{label:'Dizaines'},{label:'Unités'}],
+  [null,{val:'15',col:'var(--bleu)',bg:'var(--bleu-clair)'},null],
+  revealed?[{val:'1',col:'var(--bleu)',bg:'var(--bleu-clair)'},{val:'5',col:'var(--orange)',bg:'var(--orange-clair)'},null]:[],
+  revealed?[{from:1,to:0,col:'var(--bleu)'},{from:1,to:1,col:'var(--orange)'}]:[],
+  'p2'
+)}
+${ligneNumerique(
+  [0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150].map(v=>({
+    v,
+    label:[0,10,30,50,100,150].includes(v)?String(v):false,
+    col:[0,100].includes(v)?'#1e293b':[10,30,50,150].includes(v)?'#94a3b8':'#cbd5e1'
+  })),
+  revealed?[
+    {v1:0,   v2:100, label:'10 dizaines = 1 centaine', col:'var(--bleu)'},
+    {v1:100, v2:150, label:'5 dizaines',                col:'var(--orange)'},
+  ]:[], 'ln2'
+)}
+<div class="egal-result fade-in">${revealed?'15 dizaines = 1 centaine + 5 dizaines':'15 dizaines = … centaine(s) + … dizaines'}</div>
+${revealed?'':'<button class="btn-complete" onclick="completer()">✏️ Compléter</button>'}
+`,
+
+// 2 — exemple 23 centaines
+() => `
+<div class="step-title pop">✏️ Exemple : 23 centaines</div>
+${revealed?`<p class="step-text fade-in">
+  23 centaines, c'est <strong style="color:var(--bleu)">10 centaines</strong>
+  + <strong style="color:var(--bleu-fonce)">10 centaines</strong>
+  + <strong style="color:var(--orange)">3 centaines</strong>.
+</p>`:''}
+${grille23centaines(revealed)}
+${tableauFlech2(
+  [{label:'Milliers'},{label:'Centaines'},{label:'Dizaines'},{label:'Unités'}],
+  [null,{val:'23',col:'var(--bleu)',bg:'var(--bleu-clair)'},null,null],
+  revealed?[{val:'2',col:'var(--bleu)',bg:'var(--bleu-clair)'},{val:'3',col:'var(--orange)',bg:'var(--orange-clair)'},null,null]:[],
+  revealed?[{from:1,to:0,col:'var(--bleu)'},{from:1,to:1,col:'var(--orange)'}]:[],
+  'p3'
+)}
+${ligneNumerique(
+  [{v:0,label:'0'},{v:100,label:'100'},{v:200,label:false},{v:300,label:'300'},{v:400,label:false},{v:500,label:'500'},{v:600,label:false},{v:700,label:false},{v:800,label:false},{v:900,label:false},{v:1000,label:'1000'},{v:1100,label:false},{v:1200,label:false},{v:1300,label:false},{v:1400,label:false},{v:1500,label:'1500'},{v:1600,label:false},{v:1700,label:false},{v:1800,label:false},{v:1900,label:false},{v:2000,label:'2000'},{v:2100,label:false},{v:2200,label:false},{v:2300,label:'2300'}],
+  revealed?[
+    {v1:0,    v2:1000, label:'1 millier',   col:'var(--bleu)'},
+    {v1:1000, v2:2000, label:'1 millier',   col:'var(--bleu-fonce)'},
+    {v1:2000, v2:2300, label:'3 centaines', col:'var(--orange)'},
+  ]:[], 'ln3'
+)}
+<div class="egal-result fade-in">${revealed?'23 centaines = 2 milliers + 3 centaines':'23 centaines = … millier(s) + … centaines'}</div>
+${revealed?'':'<button class="btn-complete" onclick="completer()">✏️ Compléter</button>'}
+`,
+
+// 3 — 10 centaines = 1 millier — exemple 4 centaines = ... dizaines
+() => `
+<div class="step-title pop">✏️ Exemple : 4 centaines = combien de dizaines ?</div>
+${revealed?`<p class="step-text fade-in">
+  1 centaine, c'est <strong style="color:var(--orange)">10 dizaines</strong>.<br>
+  4 centaines, c'est donc <strong style="color:var(--orange)">4 × 10 = 40 dizaines</strong>.
+</p>`:''}
+${blocsCarres([
+  {col:'var(--bleu)',     op:0.72, label1:'1 centaine',  label2:'10 dizaines', strokeCol:'#c2410c'},
+  {col:'var(--bleu-fonce)',op:0.55,label1:'1 centaine',  label2:'10 dizaines', strokeCol:'#c2410c'},
+  {col:'var(--bleu)',     op:0.72, label1:'1 centaine',  label2:'10 dizaines', strokeCol:'#c2410c'},
+  {col:'var(--bleu-fonce)',op:0.55,label1:'1 centaine',  label2:'10 dizaines', strokeCol:'#c2410c'},
+], revealed)}
+${tableauFlech2(
+  [{label:'Centaines'},{label:'Dizaines'},{label:'Unités'}],
+  [{val:'4',col:'var(--bleu)',bg:'var(--bleu-clair)'},null,null],
+  revealed?[null,{val:'40',col:'var(--orange)',bg:'var(--orange-clair)'},null]:[],
+  revealed?[{from:0,to:1,col:'var(--bleu)'}]:[],
+  'p4'
+)}
+${ligneNumerique(
+  [0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300,310,320,330,340,350,360,370,380,390,400].map(v=>({
+    v, label:[0,10,30,50,100,150,200,250,300,350,400].includes(v)?String(v):false
+  })),
+  revealed?[
+    {v1:0,   v2:100, label:'1 centaine', col:'var(--bleu)'},
+    {v1:100, v2:200, label:'1 centaine', col:'var(--bleu)'},
+    {v1:200, v2:300, label:'1 centaine', col:'var(--bleu)'},
+    {v1:300, v2:400, label:'1 centaine', col:'var(--bleu)'},
+  ]:[], 'ln4'
+)}
+<div class="egal-result fade-in">${revealed?'4 centaines = 40 dizaines':'4 centaines = … dizaines'}</div>
+${revealed?'':'<button class="btn-complete" onclick="completer()">✏️ Compléter</button>'}
+`,
+
+// 4 — 3 millions = ... milliers
+() => `
+<div class="step-title pop">✏️ Exemple : 3 millions = combien de milliers ?</div>
+${revealed?`<p class="step-text fade-in">
+  1 million, c'est <strong style="color:var(--violet)">1 000 milliers</strong>.<br>
+  3 millions, c'est donc <strong style="color:var(--violet)">3 000 milliers</strong>.
+</p>`:''}
+${blocsCarres([
+  {col:'var(--violet)',   op:0.72, label1:'1 million',  label2:'1 000 milliers', strokeCol:'#3b0764'},
+  {col:'#6d28d9',        op:0.55, label1:'1 million',  label2:'1 000 milliers', strokeCol:'#3b0764'},
+  {col:'var(--violet)',  op:0.72, label1:'1 million',  label2:'1 000 milliers', strokeCol:'#3b0764'},
+], revealed)}
+${tableauMillions()}
+${ligneNumerique(
+  [
+    {v:0,    label:'0',     col:'#1e293b'},
+    {v:10,   label:'10',    col:'var(--bleu)',   above:true},
+    {v:100,  label:'100',   col:'var(--bleu)'},
+    {v:1000, label:'1 000', col:'var(--bleu)',   above:true},
+  ], [], 'ln5a'
+)}
+${ligneNumerique(
+  [
+    {v:0,    label:'0',             col:'#1e293b'},
+    {v:10,   label:'10 milliers',  col:'var(--bleu)',   above:true},
+    {v:100,  label:'100 milliers', col:'var(--bleu)'},
+    {v:1000, label:'1 million',    col:'var(--violet)', above:true},
+  ], [], 'ln5b'
+)}
+<div class="egal-result fade-in">${revealed?'3 millions = 3 000 milliers':'3 millions = … milliers'}</div>
+${revealed?'':'<button class="btn-complete" onclick="completer()">✏️ Compléter</button>'}
+`,
+
+// 5 — Récap
+() => `
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  ${[
+    ['var(--bleu)',   '10 unités = 1 dizaine<br>10 dizaines = 1 centaine<br>10 centaines = 1 millier'],
+    ['var(--violet)', '1 000 milliers = 1 million<br>1 000 millions = 1 milliard'],
+    ['var(--orange)', 'C\'est <strong>toujours le même principe</strong> : chaque rang vaut 10 fois plus que le rang à sa droite.'],
+    ['var(--vert)',   'Ces relations permettent de <strong>comprendre la valeur des chiffres</strong> selon leur position et de passer d\'un rang à l\'autre.'],
+  ].map(([c,t],i)=>`
+    <div class="recap-item" style="animation-delay:${i*0.09}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${i+1}</div>
+      <span>${t}</span>
+    </div>`).join('')}
+</div>
+`,
+];
+
+let cur=0, revealed=false; const N=STEPS.length;
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur](); card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(N-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator'); ind.innerHTML='';
+  for(let i=0;i<N;i++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(i===cur?' active':i<cur?' done':'');
+    d.textContent=i<cur?'✓':i+1; ind.appendChild(d);
+  }
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${N}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===N-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===N-1?0:cur+1;revealed=false;render();}
+function prev(){if(cur>0){cur--;revealed=false;render();}}
+function completer(){revealed=true;render();}
+render();
+</script>
+</body>
+</html>

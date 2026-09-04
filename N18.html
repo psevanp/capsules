@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>N18 Multiplier une fraction par un entier</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme:light;
+    --bleu:#1a73e8; --bleu-clair:#e8f0fe;
+    --vert:#16a34a; --vert-clair:#dcfce7;
+    --rouge:#dc2626; --rouge-clair:#fee2e2;
+    --orange:#ea580c; --orange-clair:#ffedd5;
+    --violet:#7c3aed; --violet-clair:#f5f3ff;
+    --gris:#94a3b8; --bg:#f0f4ff;
+    --card:#ffffff; --texte:#1e293b; --border:#e2e8f0;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Nunito',sans-serif; background:var(--bg); min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:20px 16px 40px; color:var(--texte); }
+  header { display:flex; justify-content:center; margin-bottom:22px; }
+  .header-row { display:flex; align-items:center; gap:14px; max-width:680px; width:100%; }
+  .badge-code { display:inline-flex; align-items:center; justify-content:center; min-width:48px; height:48px; border-radius:12px; border:2.5px solid var(--bleu); background:var(--bleu-clair); font-family:'Baloo 2',cursive; font-size:1.3rem; font-weight:800; color:var(--bleu); flex-shrink:0; }
+  .tache-label { font-family:'Baloo 2',cursive; font-size:1.05rem; font-weight:800; color:var(--bleu); line-height:1.3; }
+  .progress-bar-wrap { width:100%; max-width:680px; background:#dbeafe; border-radius:99px; height:10px; margin-bottom:18px; overflow:hidden; }
+  .progress-bar { height:100%; background:linear-gradient(90deg,var(--bleu),var(--violet)); border-radius:99px; transition:width 0.5s ease; }
+  .steps-indicator { display:flex; gap:10px; margin-bottom:20px; }
+  .step-dot { width:34px; height:34px; border-radius:50%; background:#dbeafe; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:#93c5fd; transition:all 0.4s; border:2px solid transparent; }
+  .step-dot.active { background:var(--bleu); color:white; border-color:var(--bleu); transform:scale(1.15); box-shadow:0 0 0 4px #bfdbfe; }
+  .step-dot.done { background:var(--vert); color:white; border-color:var(--vert); }
+  .card { background:var(--card); border-radius:20px; padding:26px 24px; max-width:680px; width:100%; min-height:360px; display:flex; flex-direction:column; align-items:center; gap:16px; box-shadow:0 4px 24px rgba(26,115,232,0.10); position:relative; overflow-x:auto; }
+  .card::before { content:''; position:absolute; top:0; left:0; right:0; height:5px; background:linear-gradient(90deg,var(--bleu),var(--violet)); border-radius:20px 20px 0 0; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation:fadeIn 0.4s ease both; }
+  @keyframes pop { 0%{transform:scale(0.8);opacity:0} 70%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
+  .pop { animation:pop 0.45s ease both; }
+  .step-title { font-family:'Baloo 2',cursive; font-size:1.2rem; font-weight:800; color:var(--bleu); text-align:center; line-height:1.3; display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; }
+  .step-text { font-size:0.97rem; color:var(--texte); text-align:center; line-height:1.7; font-weight:600; max-width:540px; }
+  .info { border-radius:12px; padding:12px 16px; font-weight:600; max-width:580px; width:100%; line-height:1.55; font-size:0.9rem; }
+  .info.bleu   { background:var(--bleu-clair);   color:var(--bleu);   border-left:4px solid var(--bleu); }
+  .info.violet { background:var(--violet-clair); color:var(--violet); border-left:4px solid var(--violet); }
+  .btn-complete { font-family:'Baloo 2',cursive; font-weight:700; font-size:0.95rem; border:2px solid var(--vert); cursor:pointer; border-radius:10px; padding:10px 22px; background:var(--vert-clair); color:var(--vert); transition:all 0.2s; }
+  .btn-complete:hover { background:var(--vert); color:white; }
+  .recap-list { display:flex; flex-direction:column; gap:9px; max-width:580px; width:100%; }
+  .recap-item { display:flex; align-items:flex-start; gap:12px; background:#f8faff; border-radius:12px; padding:11px 16px; font-size:0.92rem; font-weight:600; color:var(--texte); animation:fadeIn 0.4s ease both; border-left:4px solid transparent; line-height:1.5; }
+  .recap-num { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.82rem; font-weight:700; flex-shrink:0; color:white; margin-top:1px; }
+  .nav { display:flex; gap:14px; margin-top:10px; align-items:center; }
+  button.btn-nav { font-family:'Baloo 2',cursive; font-weight:700; font-size:1rem; border:none; cursor:pointer; border-radius:12px; padding:12px 28px; transition:all 0.2s; }
+  .btn-next { background:linear-gradient(135deg,var(--bleu),var(--violet)); color:white; box-shadow:0 4px 14px rgba(26,115,232,0.3); }
+  .btn-next:hover { transform:translateY(-2px); }
+  .btn-next:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+  .btn-prev { background:#e0e7ff; color:var(--bleu); }
+  .btn-prev:hover { background:#c7d2fe; }
+  .step-counter { font-size:0.85rem; color:var(--gris); font-weight:700; }
+
+  .calc { display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:center; font-family:'Baloo 2',cursive; font-size:1.5rem; font-weight:800; }
+  .calc .op { color:var(--gris); }
+  .trou { display:inline-flex; align-items:center; justify-content:center; min-width:54px; height:56px; border-radius:12px; border:3px dashed var(--border); color:transparent; font-weight:800; transition:all 0.5s ease; }
+  .trou.plein { border:3px solid var(--vert); background:var(--vert-clair); }
+  .lettres { font-size:0.82rem; color:var(--gris); font-weight:600; font-style:italic; text-align:center; line-height:1.6; }
+  .pourquoi { position:relative; background:#f0fdfa; border-left:4px solid #0d9488; border-radius:10px; padding:12px 15px; font-size:0.92rem; font-weight:600; color:#134e4a; line-height:1.6; max-width:580px; width:100%; }
+  .pq-lead { font-family:'Baloo 2',cursive; font-weight:800; color:#0d9488; }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">N18</div>
+    <div class="tache-label">Multiplier une fraction par un nombre entier</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+function fracSVG(num, den, col, fsNum, fsDen){
+  col = col||'var(--texte)'; fsNum=fsNum||22; fsDen=fsDen||22;
+  const W = Math.max(String(num).length,String(den).length)*fsNum*0.62 + 8;
+  const yNum = fsNum;
+  const yTrait = yNum + Math.round(fsNum*0.28);
+  const yDen = yTrait + 3 + Math.round(fsDen*0.93);
+  const H = yDen + 4;
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:inline-block;vertical-align:middle;overflow:visible">
+    <text x="${W/2}" y="${yNum}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fsNum}" font-weight="800" fill="${col}">${num}</text>
+    <rect x="0" y="${yTrait}" width="${W}" height="3" rx="1" fill="${col}"/>
+    <text x="${W/2}" y="${yDen}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fsDen}" font-weight="800" fill="${col}">${den}</text>
+  </svg>`;
+}
+function fracInline(num, den, col, fs){
+  fs = fs||13; col=col||'#16a34a';
+  const w = Math.max(String(num).length, String(den).length)*fs*0.65 + 4;
+  const yN=fs, yT=fs+3, yD=fs+3+3+fs;
+  return `<svg width="${w}" height="${yD+3}" viewBox="0 0 ${w} ${yD+3}" style="display:block;overflow:visible">
+    <text x="${w/2}" y="${yN}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${col}">${num}</text>
+    <rect x="1" y="${yT}" width="${w-2}" height="2" fill="${col}"/>
+    <text x="${w/2}" y="${yD}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${col}">${den}</text>
+  </svg>`;
+}
+function nomFrac(num, den){
+  const noms = {2:'demi',3:'tiers',4:'quart',5:'cinquième',6:'sixième',7:'septième',8:'huitième',9:'neuvième',10:'dixième'};
+  let nom = noms[den] || (den+'ème');
+  if(num>1 && den!==3) nom += 's';
+  if(den===3) nom='tiers';
+  return num+' '+nom;
+}
+
+const EXOS = {};
+
+// cfg = { facteur, fNum, fDen, lettres (bool), blocLabel }
+function drawMul(cfg, completed){
+  const k=cfg.facteur, fN=cfg.fNum, den=cfg.fDen;
+  const totalN = k*fN;             // numérateur résultat
+  const maxVal = totalN/den;
+  let unites = Math.ceil(maxVal);
+  let extra=0;
+  if(maxVal===Math.floor(maxVal)) extra=0; // pile sur entier -> dépassement via lineOver
+  const UWmax=140;
+  const UW=Math.min(UWmax, 430/Math.max(unites,1));
+  const PADL=24, PADR=20, partH=15;
+  const fleche1=34;
+  const topPad = 14 + fleche1;
+  const lineY = topPad + partH + 10;
+  const lineEnd = PADL + UW*unites;
+  const lineOver = lineEnd + UW*0.12;
+  const W = PADL + UW*unites + PADR + UW*0.12;
+  const H = lineY + 46;
+  const pw = UW/den;
+
+  function xOf(valParts){ return PADL + (valParts/den)*UW; }
+  function tc(x,y,t,fs,col){
+    return `<text x="${x}" y="${y}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${col}" stroke="white" stroke-width="3.5" stroke-linejoin="round" paint-order="stroke">${t}</text>`;
+  }
+
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+
+  const partY = lineY - partH - 11;
+
+  if(completed){
+    // parts : alternance par UNITE (rouge / rouge foncé)
+    for(let p=0;p<totalN;p++){
+      const x=PADL+p*pw;
+      const uIndex=Math.floor(p/den), even=uIndex%2===1;
+      const fill = even?'#fecaca':'#fee2e2', stroke='#dc2626';
+      s+=`<rect x="${x}" y="${partY}" width="${pw-2}" height="${partH}" rx="3" fill="${fill}" stroke="${stroke}" stroke-width="1.2"/>`;
+    }
+    // lignes verticales violet clair aux extrémités des blocs
+    for(let b=0;b<=k;b++){
+      const x=xOf(b*fN);
+      s+=`<line x1="${x}" y1="${partY-13}" x2="${x}" y2="${lineY}" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="5,3"/>`;
+    }
+    // doubles flèches : un bloc de fN parts répété k fois (toutes à la même hauteur)
+    for(let b=0;b<k;b++){
+      const xa=xOf(b*fN), xb=xOf((b+1)*fN);
+      const fy = partY - 12;
+      s+=`<line x1="${xa+3}" y1="${fy}" x2="${xb-3}" y2="${fy}" stroke="#7c3aed" stroke-width="1.6"/>`;
+      s+=`<polygon points="${xa},${fy} ${xa+5},${fy-3.5} ${xa+5},${fy+3.5}" fill="#7c3aed"/>`;
+      s+=`<polygon points="${xb},${fy} ${xb-5},${fy-3.5} ${xb-5},${fy+3.5}" fill="#7c3aed"/>`;
+      // étiquette : fraction SVG ou texte
+      if(cfg.blocFrac){
+        const [bn,bd]=cfg.blocFrac;
+        const fw=Math.max(String(bn).length,String(bd).length)*11*0.62+6;
+        // mini fraction centrée au-dessus de la flèche
+        const cx=(xa+xb)/2, ly=fy-20;
+        s+=`<text x="${cx}" y="${ly+9}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="#7c3aed" stroke="white" stroke-width="2.5" stroke-linejoin="round" paint-order="stroke">${bn}</text>`;
+        s+=`<rect x="${cx-fw/2}" y="${ly+11}" width="${fw}" height="1.6" fill="#7c3aed"/>`;
+        s+=`<text x="${cx}" y="${ly+22}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="#7c3aed" stroke="white" stroke-width="2.5" stroke-linejoin="round" paint-order="stroke">${bd}</text>`;
+      } else {
+        s+=`<text x="${(xa+xb)/2}" y="${fy-4}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="#7c3aed" stroke="white" stroke-width="2.5" stroke-linejoin="round" paint-order="stroke">${cfg.blocLabel}</text>`;
+      }
+    }
+  }
+
+  // ligne
+  s+=`<line x1="${PADL}" y1="${lineY}" x2="${lineOver}" y2="${lineY}" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>`;
+
+  // point résultat (vert)
+  if(completed){
+    const px=xOf(totalN);
+    const estEnt = totalN%den===0;
+    s+=`<line x1="${px}" y1="${lineY-10}" x2="${px}" y2="${lineY+14}" stroke="#16a34a" stroke-width="3"/>`;
+    const fr=fracInline(totalN,den,'#16a34a',13);
+    const frW=Math.max(String(totalN).length,String(den).length)*13*0.65+4;
+    // si le résultat tombe sur une graduation entière, décaler l'étiquette plus bas
+    const labelDy = estEnt ? 30 : 16;
+    s+=`<g transform="translate(${px-frW/2}, ${lineY+labelDy})">${fr}</g>`;
+  }
+
+  // graduations entières
+  for(let u=0;u<=unites;u++){
+    const x=PADL+u*UW;
+    s+=`<line x1="${x}" y1="${lineY-6}" x2="${x}" y2="${lineY+6}" stroke="#334155" stroke-width="2"/>`;
+    s+=tc(x, lineY+22, u, 13, '#1e293b');
+  }
+
+  s+=`</svg>`;
+  return s;
+}
+
+function exoBlock(uid, cfg){
+  EXOS[uid]=cfg;
+  const totalN=cfg.facteur*cfg.fNum;
+  const svg0=drawMul(cfg,false);
+  if(cfg.lettres){
+    return `
+<div id="wrap-${uid}" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px">
+  <div id="svg-${uid}" class="fade-in" style="width:100%">${svg0}</div>
+  <div class="calc fade-in" style="font-size:1.15rem">
+    <span style="color:var(--texte)">${cfg.facteur}</span>
+    <span class="op">×</span>
+    <span style="color:var(--rouge)">${nomFrac(cfg.fNum,cfg.fDen)}</span>
+    <span class="op">=</span>
+    <span class="trou" id="trou-${uid}" style="min-width:100px"></span>
+  </div>
+  <div id="lettres-${uid}" class="lettres" style="display:none">
+    <span class="calc" style="font-size:0.95rem;color:var(--gris)">
+      <span>${cfg.facteur}</span><span class="op">×</span>
+      ${fracSVG(cfg.fNum,cfg.fDen,'var(--gris)',18,18)}
+      <span class="op">=</span>
+      ${fracSVG(totalN,cfg.fDen,'var(--gris)',18,18)}
+    </span>
+  </div>
+  <button class="btn-complete" onclick="completer('${uid}')">✏️ Calculer</button>
+  <div id="res-${uid}" style="display:none;width:100%">
+    <div class="info bleu fade-in" style="font-size:0.9rem">${cfg.explication}</div>
+  </div>
+</div>`;
+  }
+  return `
+<div id="wrap-${uid}" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px">
+  <div id="svg-${uid}" class="fade-in" style="width:100%">${svg0}</div>
+  <div class="calc fade-in">
+    <span style="color:var(--texte)">${cfg.facteur}</span>
+    <span class="op">×</span>
+    ${fracSVG(cfg.fNum,cfg.fDen,'var(--rouge)',26,26)}
+    <span class="op">=</span>
+    <span class="trou" id="trou-${uid}"></span>
+  </div>
+  <div id="lettres-${uid}" class="lettres" style="display:none"></div>
+  <button class="btn-complete" onclick="completer('${uid}')">✏️ Calculer</button>
+  <div id="res-${uid}" style="display:none;width:100%">
+    <div class="info bleu fade-in" style="font-size:0.9rem">${cfg.explication}</div>
+  </div>
+</div>`;
+}
+
+function completer(uid){
+  const cfg=EXOS[uid];
+  const totalN=cfg.facteur*cfg.fNum;
+  const den=cfg.fDen;
+  document.getElementById('svg-'+uid).innerHTML=drawMul(cfg,true);
+  const trou=document.getElementById('trou-'+uid);
+  // résultat : entier si totalN multiple de den, sinon fraction
+  const estEntier = totalN%den===0;
+  if(cfg.lettres){
+    trou.innerHTML = `<span style="color:var(--vert);font-size:1.1rem">${estEntier?(totalN/den):nomFrac(totalN,den)}</span>`;
+  } else {
+    trou.innerHTML = estEntier
+      ? `<span style="color:var(--vert);font-size:1.5rem">${totalN/den}</span>`
+      : fracSVG(totalN,den,'var(--vert)',24,24);
+  }
+  trou.className='trou plein';
+  const lettresEl=document.getElementById('lettres-'+uid);
+  if(!cfg.lettres){
+    if(cfg.lettresCustom){
+      lettresEl.innerHTML = cfg.lettresCustom;
+    } else {
+      lettresEl.textContent = `${cfg.facteur} × ${nomFrac(cfg.fNum,den)} = ${estEntier? (totalN/den)+(totalN/den>1?' unités':' unité') : nomFrac(totalN,den)}`;
+    }
+  }
+  lettresEl.style.display='block';
+  document.getElementById('wrap-'+uid).querySelector('.btn-complete').style.display='none';
+  document.getElementById('res-'+uid).style.display='block';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+const STEPS = [
+
+// 0 — règle
+()=>`
+<div class="step-title pop">💡 Multiplier une fraction par un entier</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> Les fractions sont des nombres : comme avec les entiers, on peut avoir besoin dans certaines situations de les multiplier.</div>
+<div class="info bleu fade-in">
+  On multiplie le <strong>numérateur</strong> par ce nombre entier.<br>
+  Par exemple, 3 × 4 cinquièmes = 12 cinquièmes.
+</div>
+`,
+
+// 1 — 2 × 4 tiers (lettres)
+()=>`
+<div class="step-title pop">✏️ 2 × 4 tiers</div>
+${exoBlock('ex1', {facteur:2, fNum:4, fDen:3, lettres:true, blocLabel:'4 tiers',
+  explication:`On multiplie le numérateur par 2 : 2 × 4 = 8. Le résultat est 8 tiers.`})}`,
+
+// 2 — 4 × 3 cinquièmes (lettres)
+()=>`
+<div class="step-title pop">✏️ 4 × 3 cinquièmes</div>
+${exoBlock('ex2', {facteur:4, fNum:3, fDen:5, lettres:true, blocLabel:'3 cinq.', blocFrac:[3,5],
+  explication:`On multiplie le numérateur par 4 : 4 × 3 = 12. Le résultat est 12 cinquièmes.`})}`,
+
+// 3 — 5 × 3/4 (trait)
+()=>`
+<div class="step-title pop">✏️ 5 × ${fracSVG(3,4,'var(--rouge)',22,22)}</div>
+${exoBlock('ex3', {facteur:5, fNum:3, fDen:4, lettres:false, blocLabel:'3 quarts', blocFrac:[3,4],
+  explication:`On multiplie le numérateur par 5 : 5 × 3 = 15, donc le résultat est ${fracSVG(15,4,'var(--vert)',15,15)}.`})}`,
+
+// 4 — 4 × 7/4 = 7 (trait)
+()=>`
+<div class="step-title pop">✏️ 4 × ${fracSVG(7,4,'var(--rouge)',22,22)}</div>
+${exoBlock('ex4', {facteur:4, fNum:7, fDen:4, lettres:false, blocLabel:'7 quarts', blocFrac:[7,4], lettresCustom:'4 × 7 quarts = 28 quarts,<br>et 28 quarts = 7 unités',
+  explication:`On multiplie le numérateur par 4 : 4 × 7 = 28, donc ${fracSVG(28,4,'var(--vert)',15,15)}. Comme on multiplie par le dénominateur (4), le résultat est l'entier <strong>7</strong>.`})}`,
+
+// 5 — Bilan
+()=>`
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  ${[
+    ['var(--rouge)', 'Pour multiplier une fraction par un entier, on multiplie le <strong>numérateur</strong> par cet entier.'],
+    ['var(--bleu)',  'Le <strong>dénominateur ne change pas</strong>.'],
+    ['var(--violet)','Si on multiplie par le <strong>même nombre que le dénominateur</strong>, le numérateur donne le nombre d\'unités (le résultat est un entier).'],
+  ].map(([c,t],i)=>`
+    <div class="recap-item" style="animation-delay:${i*0.09}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${i+1}</div>
+      <span>${t}</span>
+    </div>`).join('')}
+</div>`,
+];
+
+let cur=0; const N=STEPS.length;
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur](); card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(N-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator'); ind.innerHTML='';
+  for(let i=0;i<N;i++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(i===cur?' active':i<cur?' done':'');
+    d.textContent=i<cur?'✓':i+1; ind.appendChild(d);
+  }
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${N}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===N-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===N-1?0:cur+1;render();}
+function prev(){if(cur>0){cur--;render();}}
+render();
+</script>
+</body>
+</html>

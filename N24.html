@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>N24 Comparer, encadrer, intercaler des fractions décimales</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{color-scheme:light;--bleu:#1a73e8;--bleu-clair:#e8f0fe;--violet:#7c3aed;--violet-clair:#f5f3ff;--vert:#16a34a;--vert-clair:#dcfce7;--orange:#ea580c;--orange-clair:#ffedd5;--gris:#94a3b8;--bg:#f0f4ff;--card:#fff;--texte:#1e293b;--border:#e2e8f0;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+  header{display:flex;justify-content:center;margin-bottom:22px;}
+  .header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+  .badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--bleu);background:var(--bleu-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--bleu);flex-shrink:0;}
+  .tache-label{font-family:'Baloo 2',cursive;font-size:1.02rem;font-weight:800;color:var(--bleu);line-height:1.3;}
+  .progress-bar-wrap{width:100%;max-width:680px;background:#dbeafe;border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+  .progress-bar{height:100%;background:linear-gradient(90deg,var(--bleu),var(--violet));border-radius:99px;transition:width .5s ease;}
+  .steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+  .step-dot{width:32px;height:32px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:#93c5fd;transition:all .4s;border:2px solid transparent;}
+  .step-dot.active{background:var(--bleu);color:#fff;border-color:var(--bleu);transform:scale(1.15);box-shadow:0 0 0 4px #bfdbfe;}
+  .step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+  .card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:340px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(26,115,232,.10);position:relative;overflow-x:auto;}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--bleu),var(--violet));border-radius:20px 20px 0 0;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .fade-in{animation:fadeIn .4s ease both;}
+  @keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+  .pop{animation:pop .45s ease both;}
+  .step-title{font-family:'Baloo 2',cursive;font-size:1.12rem;font-weight:800;color:var(--bleu);text-align:center;line-height:1.3;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;}
+  .info{border-radius:12px;padding:12px 16px;font-weight:600;max-width:580px;width:100%;line-height:1.6;font-size:.9rem;}
+  .info.bleu{background:var(--bleu-clair);color:var(--bleu);border-left:4px solid var(--bleu);}
+  .info.violet{background:var(--violet-clair);color:var(--violet);border-left:4px solid var(--violet);}
+  .info.vert{background:var(--vert-clair);color:var(--vert);border-left:4px solid var(--vert);}
+  .btn-complete{font-family:'Baloo 2',cursive;font-weight:700;font-size:.95rem;border:2px solid var(--vert);cursor:pointer;border-radius:10px;padding:10px 22px;background:var(--vert-clair);color:var(--vert);transition:all .2s;}
+  .btn-complete:hover{background:var(--vert);color:#fff;}
+  .btn-zoom{font-family:'Baloo 2',cursive;font-weight:700;font-size:.9rem;border:2px solid var(--violet);cursor:pointer;border-radius:10px;padding:8px 18px;background:var(--violet-clair);color:var(--violet);transition:all .2s;align-items:center;gap:6px;}
+  .btn-zoom:hover{background:var(--violet);color:#fff;}
+  .recap-list{display:flex;flex-direction:column;gap:9px;max-width:580px;width:100%;}
+  .recap-item{display:flex;align-items:flex-start;gap:12px;background:#f8faff;border-radius:12px;padding:11px 16px;font-size:.92rem;font-weight:600;color:var(--texte);animation:fadeIn .4s ease both;border-left:4px solid transparent;line-height:1.5;}
+  .recap-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:700;flex-shrink:0;color:#fff;margin-top:1px;}
+  .calc{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;font-family:'Baloo 2',cursive;font-size:1.12rem;font-weight:800;}
+  .calc .op{color:var(--gris);}
+  .calc-box{background:#f1f5f9;border:2px solid #cbd5e1;border-radius:14px;padding:13px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;font-family:'Baloo 2',cursive;font-size:1.12rem;font-weight:800;width:100%;max-width:520px;transition:background .3s,border-color .3s;}
+  .calc-box .op{color:var(--gris);}
+  .calc-box.bleu{background:var(--bleu-clair);border-color:var(--bleu);}
+  .calc-box.bleu .op{color:var(--bleu);}
+  .calc-box.violet{background:var(--violet-clair);border-color:var(--violet);}
+  .calc-box.violet .op{color:var(--violet);}
+  .calc-box.vert{background:var(--vert-clair);border-color:var(--vert);}
+  .calc-box.vert .op{color:var(--vert);}
+  .nav{display:flex;gap:14px;margin-top:10px;align-items:center;}
+  button.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;cursor:pointer;border-radius:12px;padding:12px 28px;transition:all .2s;}
+  .btn-next{background:linear-gradient(135deg,var(--bleu),var(--violet));color:#fff;box-shadow:0 4px 14px rgba(26,115,232,.3);}
+  .btn-next:hover{transform:translateY(-2px);}
+  .btn-next:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+  .btn-prev{background:#e0e7ff;color:var(--bleu);}
+  .btn-prev:hover{background:#c7d2fe;}
+  .step-counter{font-size:.85rem;color:var(--gris);font-weight:700;}
+  .pourquoi { position:relative; background:#f0fdfa; border-left:4px solid #0d9488; border-radius:10px; padding:12px 15px; font-size:0.92rem; font-weight:600; color:#134e4a; line-height:1.6; max-width:580px; width:100%; }
+  .pq-lead { font-family:'Baloo 2',cursive; font-weight:800; color:#0d9488; }
+</style>
+</head>
+<body>
+<header><div class="header-row">
+  <div class="badge-code">N24</div>
+  <div class="tache-label">Comparer, encadrer, intercaler des fractions décimales</div>
+</div></header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+const EXOS={};
+
+// ── Fraction barre horizontale SVG ───────────────────────────────────────────
+function fracSVG(n,d,col,fs1,fs2){
+  col=col||'var(--texte)';fs1=fs1||22;fs2=fs2||22;
+  const W=Math.max(String(n).length,String(d).length)*fs1*.62+8;
+  const yN=fs1,yT=yN+Math.round(fs1*.28),yD=yT+3+Math.round(fs2*.93),H=yD+4;
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:inline-block;vertical-align:middle;overflow:visible">
+    <text x="${W/2}" y="${yN}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs1}" font-weight="800" fill="${col}">${n}</text>
+    <rect x="0" y="${yT}" width="${W}" height="3" rx="1" fill="${col}"/>
+    <text x="${W/2}" y="${yD}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs2}" font-weight="800" fill="${col}">${d}</text>
+  </svg>`;
+}
+
+// ── COMPARAISON : une fraction au-dessus (bleu), une en dessous (violet/vert) ──
+// cfg: {top:{num,den}, bot:{num,den,kind:'cent'|'mil'}, maxUnit}
+function drawCompare(cfg, completed){
+  const maxUnit=cfg.maxUnit||1;
+  const PADL=24,PADR=20,avail=360;
+  const UW=avail/maxUnit;
+  const barH=18;
+  const topLabH=24;
+  const topBarY=topLabH;             // 24
+  const topBarBot=topBarY+barH;      // 42
+  const lineY=topBarBot+5;           // 47
+  const botBarY=lineY+5;             // 52
+  const botBarBot=botBarY+barH;      // 70
+  const unitNumY=botBarBot+15;       // 85  (entiers, halo blanc)
+  const botLabY=botBarBot+22;        // 92  (étiquette fraction du bas)
+  const lineEnd=PADL+avail+UW*0.12;
+  const W=lineEnd+PADR, H=botLabY+28;
+
+  const top=cfg.top, bot=cfg.bot, botKind=bot.kind||'cent';
+  const botStroke=botKind==='mil'?'#16a34a':'#7c3aed';
+
+  // étiquette fraction style N22 (boîte mise en valeur si hl)
+  function fLab(cx,y,n,d,col,fs,hl){
+    fs=fs||10;
+    const fw=Math.max(String(n).length,String(d).length)*fs*.65+6;
+    const yN=fs,yT=fs+2,yD=yT+2+fs,lH=yD+3;
+    let r='';
+    if(hl){const bg=col==='#1a73e8'?'#dbeafe':col==='#16a34a'?'#dcfce7':'#ede9fe';
+      r+=`<rect x="${cx-fw/2-3}" y="${y-1}" width="${fw+6}" height="${lH+2}" rx="5" fill="${bg}" stroke="${col}" stroke-width="1.5"/>`;}
+    r+=`<text x="${cx}" y="${y+yN}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${col}">${n}</text>`;
+    r+=`<rect x="${cx-fw/2+1}" y="${y+yT}" width="${fw-2}" height="2" fill="${col}"/>`;
+    r+=`<text x="${cx}" y="${y+yD}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${col}">${d}</text>`;
+    return r;
+  }
+
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+
+  // ── barre du haut : dixièmes (bleu) — 3 niveaux ──
+  const topSeg=maxUnit*10, topW=avail/topSeg, topNum=Math.round((top.num/top.den)*10);
+  const topPrvSeg=(!completed&&cfg.previewUnit)?cfg.previewUnit*10:topSeg;
+  const topBarOutW=(!completed&&cfg.previewUnit)?(cfg.previewUnit/maxUnit)*avail:avail;
+  for(let p=0;p<topPrvSeg;p++){
+    const x=PADL+p*topW, dark=p%2===1;
+    let fill;
+    if(!completed)      fill=dark?'#a8c8f0':'#c0d8f6';
+    else if(p<topNum)   fill=dark?'#6a9ee8':'#a0c4f0';
+    else                fill=dark?'#d8e8f8':'#e8f2fc';
+    s+=`<rect x="${x}" y="${topBarY}" width="${topW}" height="${barH}" fill="${fill}"/>`;
+  }
+  s+=`<rect x="${PADL}" y="${topBarY}" width="${topBarOutW}" height="${barH}" fill="none" stroke="#1a73e8" stroke-width="1.5" rx="1"/>`;
+
+  // ── barre du bas : centièmes (violet, 100/unité) ou millièmes (vert, 300/unité → fins) ──
+  const botSeg=botKind==='mil'?maxUnit*300:maxUnit*100;
+  const botW=avail/botSeg;
+  const botFB=botKind==='mil'?(bot.num/bot.den)*300:(bot.num/bot.den)*100;
+  const grpSize=botKind==='mil'?30:10;  // 30 rects = 1 centième-groupe pour les millièmes
+  // si previewUnit : centièmes toujours limités à previewUnit (même après clic)
+  const botPrvSeg=cfg.previewUnit?cfg.previewUnit*(botKind==='mil'?300:100):botSeg;
+  const botBarOutW=cfg.previewUnit?(cfg.previewUnit/maxUnit)*avail:avail;
+  const PV={f:['#e0d8ff','#cec2fa','#a898e8','#7c64d8'], e:['#f0ecfc','#e8e2f8','#d8d0f0','#c8bce8'], p:['#e8e2f8','#dcd4f2','#c0b0ea','#a898e0']};
+  const VR={f:['#bbf7d0','#86efac','#4ade80','#22c55e'], e:['#f0fdf4','#dcfce7','#bbf7d0','#a7f3c0'], p:['#dcfce7','#cdf5da','#a7eebf','#86dba0']};
+  const PAL=botKind==='mil'?VR:PV;
+  for(let p=0;p<botPrvSeg;p++){
+    const x=PADL+p*botW, grpDark=Math.floor(p/grpSize)%2===1, odd=p%2===1;
+    const set=!completed?PAL.p:(p<botFB?PAL.f:PAL.e);
+    const fill=grpDark?(odd?set[3]:set[2]):(odd?set[1]:set[0]);
+    s+=`<rect x="${x}" y="${botBarY}" width="${botW}" height="${barH}" fill="${fill}"/>`;
+  }
+  s+=`<rect x="${PADL}" y="${botBarY}" width="${botBarOutW}" height="${barH}" fill="none" stroke="${botStroke}" stroke-width="1.5" rx="1"/>`;
+
+  // ── ligne numérique (pas de flèche, dépasse un peu) ──
+  s+=`<line x1="${PADL}" y1="${lineY}" x2="${lineEnd}" y2="${lineY}" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>`;
+
+  // graduations dixièmes (grises, courtes) — supprimées si previewUnit
+  if(!cfg.previewUnit){
+    for(let d=0;d<=maxUnit*10;d++){
+      if(d%10===0) continue;
+      const x=PADL+d*UW/10;
+      s+=`<line x1="${x}" y1="${lineY-4}" x2="${x}" y2="${lineY+4}" stroke="#94a3b8" stroke-width="1"/>`;
+    }
+  }
+  // graduations unités — masquer les entiers au-delà de previewUnit avant clic
+  const uMax=(!completed&&cfg.previewUnit)?cfg.previewUnit:maxUnit;
+  for(let u=0;u<=uMax;u++){
+    const x=PADL+u*UW;
+    s+=`<line x1="${x}" y1="${topBarY-2}" x2="${x}" y2="${botBarBot+2}" stroke="#1e293b" stroke-width="2"/>`;
+    s+=`<text x="${x}" y="${unitNumY}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="#1e293b" stroke="white" stroke-width="3" stroke-linejoin="round" paint-order="stroke">${u}</text>`;
+  }
+
+  // ── marqueurs + étiquettes après clic (style N22) ──
+  if(completed){
+    const topX=PADL+(top.num/top.den)*UW;
+    s+=`<line x1="${topX}" y1="${topBarY-2}" x2="${topX}" y2="${lineY}" stroke="#1a73e8" stroke-width="2.5"/>`;
+    for(let u=1;u<maxUnit;u++){ s+=fLab(PADL+u*UW, 2, u*top.den, top.den, '#94a3b8', 8, false); }
+    s+=fLab(topX, 2, top.num, top.den, '#1a73e8', 10, true);
+
+    const botX=PADL+(bot.num/bot.den)*UW;
+    s+=`<line x1="${botX}" y1="${lineY}" x2="${botX}" y2="${botBarBot+2}" stroke="${botStroke}" stroke-width="2.5"/>`;
+    for(let u=1;u<maxUnit;u++){ s+=fLab(PADL+u*UW, botLabY, u*bot.den, bot.den, '#94a3b8', 8, false); }
+    s+=fLab(botX, botLabY, bot.num, bot.den, botStroke, 10, true);
+  }
+
+  s+=`</svg>`;
+  return s;
+}
+
+// ── ENCADREMENT avec ZOOM (centièmes au-dessus, millièmes en dessous) ─────────
+// Encadre 26/1000 entre 2/100 et 3/100. Zoom [0,1] → [0, 10/100].
+function drawEncadreZoom(completed, uid){
+  const PADL=0, PADR=16, avail=384;
+  const barH=14;
+  const centBarY=22;                 // 22px de marge pour étiquettes au-dessus
+  const centBarBot=centBarY+barH;    // 36
+  const lineY=centBarBot+4;          // 40
+  const milBarY=lineY+4;             // 44
+  const milBarBot=milBarY+barH;      // 58
+  const W=PADL+avail+8+PADR, H=82;  // H fixe : 82 = milBarBot+24
+  const cwFull=avail/100;            // 3.84 px/centième
+  const zoomCent=10;
+  const zoomW=PADL+zoomCent*cwFull+4; // 42.4
+  const svgId='zsvg-'+uid;
+  const lowC=2, upC=3, milNum=26, milInC=milNum/10;
+
+  const pct =x=>(x/W*100).toFixed(3);
+  const pctZ=x=>(x/zoomW*100).toFixed(3);
+  const topPct=y=>(y/H*100).toFixed(2);
+
+  let s=`<div style="overflow:hidden;width:100%;position:relative;padding-bottom:${(H/W*100).toFixed(2)}%">`;
+  s+=`<svg id="${svgId}" data-uid="${uid}" data-fullw="${W}" data-zoomw="${zoomW}" data-h="${H}" data-zoom="${completed?1:0}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%">`;
+
+  // barre centièmes (violet)
+  for(let p=0;p<100;p++){
+    const x=PADL+p*cwFull, odd=p%2===1;
+    let fill;
+    if(!completed) fill=odd?'#c4b5fd':'#ddd6fe';
+    else if(p<upC) fill=odd?'#8b6cf5':'#bcabfa';
+    else fill=odd?'#e8e0ff':'#f0ecfc';
+    s+=`<rect x="${x}" y="${centBarY}" width="${cwFull}" height="${barH}" fill="${fill}"/>`;
+  }
+  s+=`<rect x="${PADL}" y="${centBarY}" width="${avail}" height="${barH}" fill="none" stroke="#7c3aed" stroke-width="1.2" rx="1" vector-effect="non-scaling-stroke"/>`;
+
+  // barre millièmes (vert) — alternance simple 2 couleurs → vraiment fins après zoom
+  if(completed){
+    const mw=cwFull/10;
+    for(let p=0;p<1000;p++){
+      const x=PADL+p*mw, odd=p%2===1;
+      let fill;
+      if(p<milNum) fill=odd?'#22c55e':'#4ade80';
+      else fill=odd?'#dcfce7':'#f0fdf4';
+      s+=`<rect x="${x}" y="${milBarY}" width="${mw}" height="${barH}" fill="${fill}"/>`;
+    }
+    // traits de séparation aux frontières centièmes uniquement
+    for(let c=1;c<100;c++){
+      const x=PADL+c*cwFull;
+      s+=`<line x1="${x}" y1="${milBarY}" x2="${x}" y2="${milBarBot}" stroke="#16a34a" stroke-width="0.5" opacity="0.45" vector-effect="non-scaling-stroke"/>`;
+    }
+    s+=`<rect x="${PADL}" y="${milBarY}" width="${avail}" height="${barH}" fill="none" stroke="#16a34a" stroke-width="1.2" rx="1" vector-effect="non-scaling-stroke"/>`;
+  }
+
+  // ligne numérique
+  s+=`<line x1="${PADL}" y1="${lineY}" x2="${PADL+avail+4}" y2="${lineY}" stroke="#64748b" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`;
+
+  // graduations centièmes — toutes avec vector-effect (évite l'épaississement à l'animation)
+  for(let p=0;p<=100;p++){
+    const x=PADL+p*cwFull;
+    const isUnit=(p===0||p===100), isDix=(p%10===0);
+    s+=`<line x1="${x}" y1="${isDix?centBarY:lineY-3}" x2="${x}" y2="${lineY+(isDix?4:2)}" stroke="${isUnit?'#1e293b':'#7c3aed'}" stroke-width="${isUnit?1.8:isDix?1:0.35}" opacity="${isDix?1:0.45}" vector-effect="non-scaling-stroke"/>`;
+  }
+
+  // marqueurs d'encadrement après clic
+  if(completed){
+    [lowC,upC].forEach(c=>{
+      const x=PADL+c*cwFull;
+      s+=`<line x1="${x}" y1="${centBarY-2}" x2="${x}" y2="${milBarBot+2}" stroke="#7c3aed" stroke-width="1.5" vector-effect="non-scaling-stroke"/>`;
+    });
+    const xv=PADL+milInC*cwFull;
+    s+=`<line x1="${xv}" y1="${lineY}" x2="${xv}" y2="${milBarBot+2}" stroke="#16a34a" stroke-width="1.5" vector-effect="non-scaling-stroke"/>`;
+  }
+
+  s+=`</svg>`;
+
+  // Labels 0 et 1 — en HTML sous les barres (pas dans le SVG qui se déforme)
+  const unitTop=topPct(milBarBot+5);
+  s+=`<div style="position:absolute;left:2px;top:${unitTop}%;font-family:'Baloo 2',cursive;font-weight:800;font-size:11px;color:#1e293b">0</div>`;
+  s+=`<div id="labOne-${uid}" data-ls="${pct(PADL+avail)}" data-le="${pctZ(PADL+avail)}" style="position:absolute;left:${pct(PADL+avail)}%;top:${unitTop}%;transform:translateX(-50%);font-family:'Baloo 2',cursive;font-weight:800;font-size:11px;color:#1e293b">1</div>`;
+
+  if(completed){
+    const xl=PADL+lowC*cwFull, xu=PADL+upC*cwFull, xv=PADL+milInC*cwFull, x10=PADL+10*cwFull;
+    const tTop=topPct(2), bTop=topPct(milBarBot+3);
+    // 2/100
+    s+=`<div id="lab2-${uid}" data-ls="${pct(xl)}" data-le="${pctZ(xl)}" data-fade="1" style="position:absolute;left:${pct(xl)}%;top:${tTop}%;transform:translateX(-50%);opacity:0;font-family:'Baloo 2',cursive;font-weight:800;font-size:11px;color:#7c3aed;line-height:1.05;text-align:center;white-space:nowrap">2<div style="border-top:1.5px solid #7c3aed;margin:1px 0"></div>100</div>`;
+    // 3/100
+    s+=`<div id="lab3-${uid}" data-ls="${pct(xu)}" data-le="${pctZ(xu)}" data-fade="1" style="position:absolute;left:${pct(xu)}%;top:${tTop}%;transform:translateX(-50%);opacity:0;font-family:'Baloo 2',cursive;font-weight:800;font-size:11px;color:#7c3aed;line-height:1.05;text-align:center;white-space:nowrap">3<div style="border-top:1.5px solid #7c3aed;margin:1px 0"></div>100</div>`;
+    // 26/1000
+    s+=`<div id="labv-${uid}" data-ls="${pct(xv)}" data-le="${pctZ(xv)}" data-fade="1" style="position:absolute;left:${pct(xv)}%;top:${bTop}%;transform:translateX(-50%);opacity:0;background:#dcfce7;border:1.3px solid #16a34a;border-radius:5px;padding:1px 5px;font-family:'Baloo 2',cursive;font-weight:800;font-size:11px;color:#16a34a;line-height:1.05;text-align:center;white-space:nowrap;z-index:2">26<div style="border-top:1.5px solid #16a34a;margin:1px 0"></div>1000</div>`;
+    // 10/100 — apparaît en fin d'animation, à la graduation droite du zoom
+    s+=`<div id="lab4-${uid}" data-ls="${pct(x10)}" data-le="${pctZ(x10)}" data-fade-late="1" style="position:absolute;left:${pct(x10)}%;top:${tTop}%;transform:translateX(-50%);opacity:0;font-family:'Baloo 2',cursive;font-weight:800;font-size:11px;color:#7c3aed;line-height:1.05;text-align:center;white-space:nowrap">10<div style="border-top:1.5px solid #7c3aed;margin:1px 0"></div>100</div>`;
+  }
+  s+=`</div>`;
+  return s;
+}
+
+function animateZoom(){
+  const svg=document.querySelector('svg[data-zoom="1"]');
+  if(!svg) return;
+  const uid=svg.dataset.uid;
+  const btn=document.getElementById('zoombtn-'+uid);
+  if(btn) btn.style.display='none';
+  const labs=[...document.querySelectorAll('[id$="-'+uid+'"]')].filter(e=>e.dataset.ls!==undefined);
+  const W=+svg.dataset.fullw, ZW=+svg.dataset.zoomw, H=+svg.dataset.h;
+  const dur=3500, t0=performance.now();
+  function step(now){
+    let p=(now-t0)/dur; if(p<0)p=0; if(p>1)p=1;
+    svg.setAttribute('viewBox',`0 0 ${W+(ZW-W)*p} ${H}`);
+    labs.forEach(l=>{
+      const ls=+l.dataset.ls, le=+l.dataset.le;
+      l.style.left=(ls+(le-ls)*p)+'%';
+      if(l.dataset.fade)     l.style.opacity=Math.max(0,Math.min(1,(p-0.45)/0.3));
+      else if(l.dataset.fadeLate) l.style.opacity=Math.max(0,Math.min(1,(p-0.72)/0.22));
+    });
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// ── Bloc exercice ─────────────────────────────────────────────────────────────
+function exoBlock(uid,cfg){
+  EXOS[uid]=cfg;
+  const vis0=cfg.mode==='encadre'?drawEncadreZoom(false,uid):drawCompare(cfg,false);
+  return `
+<div id="wrap-${uid}" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:12px">
+  <div id="vis-${uid}" class="fade-in" style="width:100%">${vis0}</div>
+  ${cfg.mode==='encadre'?`<button id="zoombtn-${uid}" class="btn-zoom" style="display:none;align-items:center;gap:6px" onclick="animateZoom()">🔍 Zoom</button>`:''}
+  <div id="calc-${uid}" class="calc-box fade-in">${cfg.calcBefore}</div>
+  <button class="btn-complete" onclick="completer('${uid}')">✏️ Compléter</button>
+  <div id="res-${uid}" style="display:none;flex-direction:column;align-items:center;gap:10px;width:100%" class="fade-in">
+    ${cfg.resText?`<div style="font-family:'Baloo 2',cursive;font-size:.98rem;font-weight:700;color:var(--texte);text-align:center">${cfg.resText}</div>`:''}
+    <div class="info ${cfg.infoCol||'bleu'}" style="font-size:.88rem">${cfg.explication}</div>
+  </div>
+</div>`;
+}
+
+function completer(uid){
+  const c=EXOS[uid];
+  const html=c.mode==='encadre'?drawEncadreZoom(true,uid):drawCompare(c,true);
+  document.getElementById('vis-'+uid).innerHTML=html;
+  if(c.mode==='encadre'){const zb=document.getElementById('zoombtn-'+uid);if(zb)zb.style.display='inline-flex';}
+  const calcEl=document.getElementById('calc-'+uid);
+  calcEl.innerHTML=c.calcAfter;
+  calcEl.className='calc-box '+(c.infoCol||'bleu')+' fade-in';
+  document.getElementById('wrap-'+uid).querySelector('.btn-complete').style.display='none';
+  document.getElementById('res-'+uid).style.display='flex';
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+const STEPS=[
+
+// 0 — Règle
+()=>`
+<div class="step-title pop">💡 Comparer, encadrer, intercaler</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> Les fractions décimales représentent des quantités : il est important de pouvoir les comparer, les encadrer et en intercaler. Cela nous aidera à mieux comprendre les nombres décimaux.</div>
+<div class="recap-list">
+  ${[
+    ['var(--bleu)',`<strong>Comparer</strong> deux fractions, c'est chercher laquelle est la plus petite.`],
+    ['var(--violet)',`<strong>Encadrer</strong> une fraction, c'est chercher un nombre plus petit qu'elle et un autre plus grand.`],
+    ['var(--vert)',`<strong>Intercaler</strong> une fraction, c'est trouver une fraction située entre deux nombres donnés.`],
+  ].map(([c,t],i)=>`
+    <div class="recap-item fade-in" style="animation-delay:${i*.12}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${i+1}</div>
+      <span>${t}</span>
+    </div>`).join('')}
+</div>
+`,
+
+// 1 — Comparer 13 dixièmes et 40 centièmes
+()=>`
+<div class="step-title pop">✏️ Comparer 13 dixièmes et 40 centièmes</div>
+${exoBlock('ex0',{
+  top:{num:13,den:10}, bot:{num:40,den:100,kind:'cent'}, maxUnit:2, previewUnit:1, infoCol:'bleu',
+  calcBefore:`<span style="color:var(--bleu)">13 dixièmes</span> <span class="op">?</span> <span style="color:var(--violet)">40 centièmes</span>`,
+  calcAfter:`<span style="color:var(--bleu)">13 dixièmes</span> <span style="display:inline-block;font-size:1.4em;font-weight:900;color:#fff;background:var(--bleu);border-radius:7px;padding:0 8px;vertical-align:middle;line-height:1.5">&gt;</span> <span style="color:var(--violet)">40 centièmes</span>`,
+  resText:`13 dixièmes est plus grand que 40 centièmes`,
+  explication:`On commence par chercher combien il y a d'unités dans chaque fraction :<br>dans <strong>13 dixièmes</strong>, il y a <strong>1 unité</strong>,<br>dans <strong>40 centièmes</strong>, il n'y a <strong>pas d'unité</strong>.<br>C'est donc 13 dixièmes qui est plus grand.`,
+})}`,
+
+// 2 — Comparer 1 dixième et 5 centièmes
+()=>`
+<div class="step-title pop">✏️ Comparer 1 dixième et 5 centièmes</div>
+${exoBlock('ex1',{
+  top:{num:1,den:10}, bot:{num:5,den:100,kind:'cent'}, maxUnit:1, infoCol:'bleu',
+  calcBefore:`<span style="color:var(--bleu)">1 dixième</span> <span class="op">?</span> <span style="color:var(--violet)">5 centièmes</span>`,
+  calcAfter:`<span style="color:var(--bleu)">1 dixième</span> <span style="display:inline-block;font-size:1.4em;font-weight:900;color:#fff;background:var(--bleu);border-radius:7px;padding:0 8px;vertical-align:middle;line-height:1.5">&gt;</span> <span style="color:var(--violet)">5 centièmes</span>`,
+  resText:`1 dixième est plus grand que 5 centièmes`,
+  explication:`On transforme d'abord les dixièmes :<br><strong>1 dixième = 10 centièmes</strong>, puis on compare avec les 5 centièmes.<br>10 centièmes, c'est plus que 5 centièmes.`,
+})}`,
+
+// 2 — Comparer 12/10 et 161/100
+()=>`
+<div class="step-title pop">✏️ Comparer ${fracSVG(12,10,'var(--bleu)',16,16)} et ${fracSVG(161,100,'var(--violet)',16,16)}</div>
+${exoBlock('ex2',{
+  top:{num:12,den:10}, bot:{num:161,den:100,kind:'cent'}, maxUnit:2, infoCol:'bleu',
+  calcBefore:`${fracSVG(12,10,'var(--bleu)',18,18)} <span class="op">?</span> ${fracSVG(161,100,'var(--violet)',18,18)}`,
+  calcAfter:`${fracSVG(12,10,'var(--bleu)',18,18)} <span style="display:inline-block;font-size:1.4em;font-weight:900;color:#fff;background:var(--violet);border-radius:7px;padding:0 8px;vertical-align:middle;line-height:1.5">&lt;</span> ${fracSVG(161,100,'var(--violet)',18,18)}`,
+  resText:`12 dixièmes, c'est plus petit que 161 centièmes`,
+  explication:`On transforme d'abord les dixièmes :<br><strong>12 dixièmes = 120 centièmes</strong>, puis on compare avec les 161 centièmes.<br>120 centièmes, c'est moins que 161 centièmes.`,
+})}`,
+
+// 3 — Comparer 1 dixième et 78 millièmes
+()=>`
+<div class="step-title pop">✏️ Comparer 1 dixième et 78 millièmes</div>
+${exoBlock('ex3',{
+  top:{num:1,den:10}, bot:{num:78,den:1000,kind:'mil'}, maxUnit:1, infoCol:'bleu',
+  calcBefore:`<span style="color:var(--bleu)">1 dixième</span> <span class="op">?</span> <span style="color:var(--vert)">78 millièmes</span>`,
+  calcAfter:`<span style="color:var(--bleu)">1 dixième</span> <span style="display:inline-block;font-size:1.4em;font-weight:900;color:#fff;background:var(--bleu);border-radius:7px;padding:0 8px;vertical-align:middle;line-height:1.5">&gt;</span> <span style="color:var(--vert)">78 millièmes</span>`,
+  resText:`1 dixième est plus grand que 78 millièmes`,
+  explication:`On transforme d'abord les dixièmes :<br><strong>1 dixième = 100 millièmes</strong>, puis on compare avec les 78 millièmes.<br>100 millièmes, c'est plus que 78 millièmes.`,
+})}`,
+
+// 4 — Encadrer 26 millièmes (zoom)
+()=>`
+<div class="step-title pop">✏️ Encadrer 26 millièmes</div>
+${exoBlock('ex4',{
+  mode:'encadre', infoCol:'bleu',
+  calcBefore:`<span style="color:var(--gris)">… centièmes</span> <span class="op">&lt;</span> <span style="color:var(--vert)">26 millièmes</span> <span class="op">&lt;</span> <span style="color:var(--gris)">… centièmes</span>`,
+  calcAfter:`<span style="color:var(--violet)">2 centièmes</span> <span style="display:inline-block;font-size:1.4em;font-weight:900;color:#fff;background:var(--vert);border-radius:7px;padding:0 8px;vertical-align:middle;line-height:1.5">&lt;</span> <span style="color:var(--vert)">26 millièmes</span> <span style="display:inline-block;font-size:1.4em;font-weight:900;color:#fff;background:var(--vert);border-radius:7px;padding:0 8px;vertical-align:middle;line-height:1.5">&lt;</span> <span style="color:var(--violet)">3 centièmes</span>`,
+  resText:`20 millièmes &lt; 26 millièmes &lt; 30 millièmes`,
+  explication:`On transforme d'abord les 26 millièmes :<br><strong>26 millièmes = 2 centièmes + 6 millièmes</strong>.<br>26 millièmes est donc entre 2 centièmes et 3 centièmes.`,
+})}`,
+
+// 5 — Bilan
+()=>`
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  <div class="recap-item fade-in" style="animation-delay:0s;border-left-color:var(--bleu);flex-direction:column;gap:8px">
+    <div style="display:flex;align-items:flex-start;gap:12px">
+      <div class="recap-num" style="background:var(--bleu);flex-shrink:0">1</div>
+      <span>Pour <strong>comparer</strong> deux fractions décimales, on compare d'abord combien chacune a d'unités.</span>
+    </div>
+    <div style="margin-left:38px;padding:8px 12px;background:#dbeafe;border-radius:8px;font-size:.88rem;color:var(--bleu);line-height:1.5">
+      Si elles ont le même nombre d'unités, on les transforme pour qu'elles aient le même dénominateur.
+    </div>
+  </div>
+  <div class="recap-item fade-in" style="animation-delay:.09s;border-left-color:var(--violet);margin-left:20px">
+    <div class="recap-num" style="background:var(--violet)">2</div>
+    <span>Pour <strong>encadrer</strong> une fraction, on cherche entre quels dixièmes ou centièmes elle se trouve.</span>
+  </div>
+  <div class="recap-item fade-in" style="animation-delay:.18s;border-left-color:var(--vert);margin-left:20px">
+    <div class="recap-num" style="background:var(--vert)">3</div>
+    <span>Pour en <strong>intercaler</strong> une, on cherche une fraction entre les deux fractions données.</span>
+  </div>
+</div>
+`,
+];
+
+let cur=0;const N=STEPS.length;
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur]();card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(N-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator');ind.innerHTML='';
+  for(let i=0;i<N;i++){const d=document.createElement('div');d.className='step-dot'+(i===cur?' active':i<cur?' done':'');d.textContent=i<cur?'✓':i+1;ind.appendChild(d);}
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${N}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===N-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===N-1?0:cur+1;render();}
+function prev(){if(cur>0){cur--;render();}}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>GM6 — Calculer l'aire d'un rectangle</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --primary:#e11d48;--primary2:#fb7185;--primary-clair:#ffe4e6;
+  --bg:#fff1f2;--cote:#9f1239;
+  --bleu:#1a73e8;--bleu-clair:#e8f0fe;
+  --orange:#ea580c;--orange-clair:#ffedd5;
+  --vert:#16a34a;--vert-clair:#f0fdf4;
+  --violet:#7c3aed;--violet-clair:#f5f3ff;
+  --gris:#94a3b8;
+  --teal:#0d9488;--teal-clair:#f0fdfa;
+  --card:#fff;--texte:#1e293b;--border:#e2e8f0;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+header{display:flex;justify-content:center;margin-bottom:22px;}
+.header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+.badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--primary);background:var(--primary-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--primary);flex-shrink:0;}
+.tache-label{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--primary);line-height:1.3;}
+.progress-bar-wrap{width:100%;max-width:680px;background:var(--primary-clair);border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .5s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+.step-dot{width:34px;height:34px;border-radius:50%;background:var(--primary-clair);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--primary2);transition:all .4s;border:2px solid transparent;}
+.step-dot.active{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+.card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:360px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(0,0,0,.07);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .45s ease both;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;color:var(--primary);text-align:center;line-height:1.3;}
+.step-text{font-size:.97rem;line-height:1.7;text-align:center;max-width:580px;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:580px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 16px;font-weight:600;font-size:.92rem;line-height:1.6;max-width:580px;width:100%;}
+.info.primary{background:var(--primary-clair);border-left:4px solid var(--primary);}
+.info.vert{background:var(--vert-clair);border-left:4px solid var(--vert);color:#14532d;}
+.info.bleu{background:var(--bleu-clair);border-left:4px solid var(--bleu);color:#1e3a5f;}
+.info.violet{background:var(--violet-clair);border-left:4px solid var(--violet);color:#4c1d95;}
+.btn-complete{border:2px solid var(--vert);background:var(--vert-clair);color:var(--vert);font-family:'Baloo 2',cursive;font-size:1rem;font-weight:700;border-radius:10px;padding:10px 22px;cursor:pointer;transition:all .2s;}
+.btn-complete:hover{background:var(--vert);color:#fff;}
+.btn-anim{border:2px solid var(--bleu);background:var(--bleu-clair);color:var(--bleu);font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;transition:all .2s;}
+.btn-anim:hover{background:var(--bleu);color:#fff;}
+.recap-list{display:flex;flex-direction:column;gap:12px;width:100%;max-width:580px;}
+.recap-item{display:flex;gap:12px;align-items:flex-start;background:#f8faff;border-radius:12px;padding:11px 16px;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;}
+.nav{display:flex;align-items:center;justify-content:space-between;max-width:680px;width:100%;margin-top:20px;gap:12px;}
+.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;border-radius:12px;padding:11px 22px;cursor:pointer;transition:all .25s;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-prev:disabled{opacity:.35;cursor:default;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;}
+.btn-next:hover{opacity:.9;}
+.step-counter{font-family:'Baloo 2',cursive;font-weight:700;color:var(--primary);font-size:.95rem;white-space:nowrap;}
+.calcul-ligne{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--texte);text-align:center;min-height:1.6em;}
+.resultat-ligne{font-family:'Baloo 2',cursive;font-size:1.1rem;font-weight:800;color:var(--bleu);text-align:center;max-height:0;overflow:hidden;transition:max-height 0s, opacity 0.4s;opacity:0;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">GM6</div>
+    <div class="tache-label">Calculer l'aire d'un rectangle</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+const CS = 22; // px par carreau
+
+// ── SVG rectangle simple (sans flèches) pour page 1 ──
+function svgRectSimple(uid, cols, rows){
+  const ox=14, oy=14;
+  const rw=cols*CS, rh=rows*CS;
+  const W=rw+28, H=rh+oy+28;
+  let s=`<svg id="svg-${uid}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  s+=`<defs>
+    <pattern id="gr-${uid}" width="${CS}" height="${CS}" patternUnits="userSpaceOnUse" x="${ox}" y="${oy}">
+      <path d="M ${CS} 0 L 0 0 0 ${CS}" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+    </pattern>
+    <clipPath id="clip-${uid}"><rect x="${ox}" y="${oy}" width="${rw}" height="${rh}"/></clipPath>
+  </defs>`;
+  s+=`<rect x="${ox}" y="${oy}" width="${rw}" height="${rh}" fill="white"/>`;
+  s+=`<rect x="${ox}" y="${oy}" width="${rw}" height="${rh}" fill="url(#gr-${uid})"/>`;
+  // Remplissage bleu (déclenché automatiquement)
+  s+=`<rect id="fill-${uid}" x="${ox}" y="${oy}" width="${rw}" height="${rh}" fill="var(--bleu)" opacity="0" clip-path="url(#clip-${uid})" style="clip-path:polygon(0% 100%,100% 100%,100% 100%,0% 100%)"/>`;
+  s+=`<rect x="${ox}" y="${oy}" width="${rw}" height="${rh}" fill="url(#gr-${uid})" clip-path="url(#clip-${uid})"/>`;
+  s+=`<rect x="${ox}" y="${oy}" width="${rw}" height="${rh}" fill="none" stroke="#64748b" stroke-width="2"/>`;
+  s+=`</svg>`;
+  return `<div style="display:flex;justify-content:center">${s}</div>`;
+}
+
+// Lance le remplissage de la page 1 automatiquement
+function autoFillP1(){
+  const el=document.getElementById('fill-p1intro');
+  if(!el) return;
+  el.style.opacity='0.38';
+  el.style.clipPath='polygon(0% 100%,100% 100%,100% 100%,0% 100%)';
+  const start=performance.now();
+  const dur=1800;
+  requestAnimationFrame(function step(now){
+    const t=Math.min((now-start)/dur,1);
+    const ease=t<0.5?2*t*t:(4-2*t)*t-1;
+    const pct=(1-ease)*100;
+    el.style.clipPath=`polygon(0% ${pct}%,100% ${pct}%,100% 100%,0% 100%)`;
+    if(t<1) requestAnimationFrame(step);
+  });
+}
+
+// ── SVG rectangle sur quadrillage avec double flèches et animation continue ──
+function svgRectGrille(uid, cols, rows){
+  const ox=28, oy=34;
+  const rw=cols*CS, rh=rows*CS;
+  const W=rw+56, H=rh+oy+44;
+
+  let s=`<svg id="svg-${uid}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  s+=`<defs>
+    <pattern id="gr-${uid}" width="${CS}" height="${CS}" patternUnits="userSpaceOnUse" x="${ox}" y="${oy}">
+      <path d="M ${CS} 0 L 0 0 0 ${CS}" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+    </pattern>
+    <marker id="a1-${uid}" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--bleu)"/></marker>
+    <marker id="a2-${uid}" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto-start-reverse"><path d="M0,0 L6,3 L0,6 Z" fill="var(--bleu)"/></marker>
+    <clipPath id="clip-${uid}"><rect x="${ox}" y="${oy}" width="${rw}" height="${rh}"/></clipPath>
+  </defs>`;
+
+  // Fond blanc + quadrillage
+  s+=`<rect x="${ox}" y="${oy}" width="${rw}" height="${rh}" fill="white"/>`;
+  s+=`<rect x="${ox}" y="${oy}" width="${rw}" height="${rh}" fill="url(#gr-${uid})"/>`;
+
+  // Remplissage bleu continu (clip-path du bas vers le haut)
+  s+=`<rect id="fill-${uid}" x="${ox}" y="${oy}" width="${rw}" height="${rh}" fill="var(--bleu)" opacity="0" clip-path="url(#clip-${uid})" style="clip-path:polygon(0% 100%,100% 100%,100% 100%,0% 100%)"/>`;
+
+  // Quadrillage par-dessus le bleu
+  s+=`<rect x="${ox}" y="${oy}" width="${rw}" height="${rh}" fill="url(#gr-${uid})" clip-path="url(#clip-${uid})"/>`;
+
+  // Contour
+  s+=`<rect x="${ox}" y="${oy}" width="${rw}" height="${rh}" fill="none" stroke="#64748b" stroke-width="2"/>`;
+
+  // Formule et résultat centrés ensemble dans le rectangle (deux lignes)
+  // font-size 18 → line-height ~22px → décalage ±11px autour du centre
+  const cy = oy+rh/2;
+  s+=`<text id="form-${uid}" x="${ox+rw/2}" y="${cy-4}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="18" font-weight="800" fill="white" stroke="#1a73e8" stroke-width="3" paint-order="stroke" opacity="0">${cols} × ${rows}</text>`;
+  s+=`<text id="res-${uid}" x="${ox+rw/2}" y="${cy+20}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="22" font-weight="800" fill="white" stroke="#1a73e8" stroke-width="3" paint-order="stroke" opacity="0">${cols*rows}</text>`;
+
+  // Double flèche horizontale (invisible au départ, animée)
+  s+=`<line id="fh-${uid}" x1="${ox+rw/2}" y1="${oy-14}" x2="${ox+rw/2}" y2="${oy-14}" stroke="var(--bleu)" stroke-width="2" marker-start="url(#a2-${uid})" marker-end="url(#a1-${uid})"/>`;
+  s+=`<text id="lh-${uid}" x="${ox+rw/2}" y="${oy-18}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--bleu)" opacity="0">${cols}</text>`;
+
+  // Double flèche verticale (invisible au départ, animée)
+  s+=`<line id="fv-${uid}" x1="${ox-14}" y1="${oy+rh/2}" x2="${ox-14}" y2="${oy+rh/2}" stroke="var(--bleu)" stroke-width="2" marker-start="url(#a2-${uid})" marker-end="url(#a1-${uid})"/>`;
+  s+=`<text id="lv-${uid}" x="${ox-20}" y="${oy+rh/2+5}" text-anchor="end" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--bleu)" opacity="0">${rows}</text>`;
+
+  // "Aire →" sous le rectangle, dans le SVG
+  s+=`<text id="aire-svg-${uid}" x="${ox+rw/2}" y="${oy+rh+20}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--bleu)" opacity="0">Aire → ${cols*rows} carreaux</text>`;
+  s+=`</svg>`;
+  return `<div style="display:flex;justify-content:center">${s}</div>`;
+}
+
+function lancerGrille(uid, cols, rows){
+  // Reset flèches, labels, formule, résultat
+  const svgEl=document.getElementById('svg-'+uid);
+  const ox=28, oy=34, rw=cols*22, rh=rows*22;
+  const fh=document.getElementById('fh-'+uid);
+  const fv=document.getElementById('fv-'+uid);
+  const lh=document.getElementById('lh-'+uid);
+  const lv=document.getElementById('lv-'+uid);
+  const fillEl=document.getElementById('fill-'+uid);
+  const formEl=document.getElementById('form-'+uid);
+  const resInner=document.getElementById('res-'+uid);
+  [fh,fv].forEach(el=>{if(el){el.style.transition='none';}});
+  if(fh){fh.setAttribute('x1',ox+rw/2);fh.setAttribute('x2',ox+rw/2);}
+  if(fv){fv.setAttribute('y1',oy+rh/2);fv.setAttribute('y2',oy+rh/2);}
+  [lh,lv].forEach(el=>{if(el){el.style.transition='none';el.style.opacity='0';}});
+  if(fillEl){fillEl.style.transition='none';fillEl.style.opacity='0';fillEl.style.clipPath='polygon(0% 100%,100% 100%,100% 100%,0% 100%)';}
+  if(formEl){formEl.style.transition='none';formEl.style.opacity='0';}
+  if(resInner){resInner.style.transition='none';resInner.style.opacity='0';}
+  const aireEl0=document.getElementById('aire-svg-'+uid);
+  if(aireEl0){aireEl0.style.transition='none';aireEl0.style.opacity='0';}
+
+  const DUR_ARROW=700; // ms pour grandir
+  const start0=performance.now();
+
+  // Phase 1 : flèche horizontale grandit depuis le centre
+  requestAnimationFrame(function stepH(now){
+    const t=Math.min((now-start0)/DUR_ARROW,1);
+    const ease=t<0.5?2*t*t:(4-2*t)*t-1;
+    const half=rw/2*ease;
+    if(fh){fh.setAttribute('x1',ox+rw/2-half);fh.setAttribute('x2',ox+rw/2+half);}
+    if(t<1) requestAnimationFrame(stepH);
+    else{
+      // Label horizontal apparaît
+      if(lh){lh.style.transition='opacity 0.3s';lh.style.opacity='1';}
+      // Phase 2 : flèche verticale grandit
+      const start1=performance.now();
+      requestAnimationFrame(function stepV(now2){
+        const t2=Math.min((now2-start1)/DUR_ARROW,1);
+        const ease2=t2<0.5?2*t2*t2:(4-2*t2)*t2-1;
+        const half2=rh/2*ease2;
+        if(fv){fv.setAttribute('y1',oy+rh/2-half2);fv.setAttribute('y2',oy+rh/2+half2);}
+        if(t2<1) requestAnimationFrame(stepV);
+        else{
+          if(lv){lv.style.transition='opacity 0.3s';lv.style.opacity='1';}
+          // Phase 3 : remplissage bleu
+          setTimeout(()=>{
+            if(fillEl){fillEl.style.opacity='0.38';}
+            const start2=performance.now();
+            const dur=1800;
+            requestAnimationFrame(function stepF(now3){
+              const t3=Math.min((now3-start2)/dur,1);
+              const ease3=t3<0.5?2*t3*t3:(4-2*t3)*t3-1;
+              const pct=(1-ease3)*100;
+              if(fillEl) fillEl.style.clipPath=`polygon(0% ${pct}%,100% ${pct}%,100% 100%,0% 100%)`;
+              if(t3<1) requestAnimationFrame(stepF);
+              else{
+                if(formEl){formEl.style.transition='opacity 0.4s';formEl.style.opacity='1';}
+                setTimeout(()=>{
+                  if(resInner){resInner.style.transition='opacity 0.4s';resInner.style.opacity='1';}
+                  setTimeout(()=>{
+                    const aireEl=document.getElementById('aire-svg-'+uid);
+                    if(aireEl){aireEl.style.transition='opacity 0.4s';aireEl.style.opacity='1';}
+                  },500);
+                },500);
+              }
+            });
+          },300);
+        }
+      });
+    }
+  });
+}
+
+// ── SVG rectangle avec quadrillage, dimensions en cm, animation continue ──
+function svgRectCm(uid, larg, long, unite){
+  const SCALE=28; // px par cm
+  const PX_L=Math.round(larg*SCALE), PX_W=Math.round(long*SCALE);
+  const ox=28, oy=34;
+  const W=PX_L+56, H=PX_W+oy+44;
+  // Quadrillage : 1 carreau = SCALE px
+  let s=`<svg id="svg-${uid}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  s+=`<defs>
+    <pattern id="gr-${uid}" width="${SCALE}" height="${SCALE}" patternUnits="userSpaceOnUse" x="${ox}" y="${oy}">
+      <path d="M ${SCALE} 0 L 0 0 0 ${SCALE}" fill="none" stroke="#e2e8f0" stroke-width="0.9"/>
+    </pattern>
+    <marker id="a1c-${uid}" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--bleu)"/></marker>
+    <marker id="a2c-${uid}" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto-start-reverse"><path d="M0,0 L6,3 L0,6 Z" fill="var(--bleu)"/></marker>
+    <clipPath id="clip-${uid}"><rect x="${ox}" y="${oy}" width="${PX_L}" height="${PX_W}"/></clipPath>
+  </defs>`;
+  // Fond blanc + quadrillage
+  s+=`<rect x="${ox}" y="${oy}" width="${PX_L}" height="${PX_W}" fill="white"/>`;
+  s+=`<rect id="grille-${uid}" x="${ox}" y="${oy}" width="${PX_L}" height="${PX_W}" fill="url(#gr-${uid})" opacity="0"/>`;
+  // Remplissage bleu continu
+  s+=`<rect id="fill-${uid}" x="${ox}" y="${oy}" width="${PX_L}" height="${PX_W}" fill="var(--bleu)" opacity="0" clip-path="url(#clip-${uid})" style="clip-path:polygon(0% 100%,100% 100%,100% 100%,0% 100%)"/>`;
+  // Quadrillage par-dessus le bleu (invisible au départ)
+  s+=`<rect id="grille2-${uid}" x="${ox}" y="${oy}" width="${PX_L}" height="${PX_W}" fill="url(#gr-${uid})" clip-path="url(#clip-${uid})" opacity="0"/>`;
+  // Contour
+  s+=`<rect x="${ox}" y="${oy}" width="${PX_L}" height="${PX_W}" fill="none" stroke="#64748b" stroke-width="2"/>`;
+  // Formule au centre (invisible au départ)
+  const res=larg*long;
+  const resStr=Number.isInteger(res)?res:res.toFixed(1);
+  const formStr=`${larg} ${unite} × ${String(long).replace('.',',')} ${unite}`;
+  const cy=oy+PX_W/2;
+  s+=`<text id="form-${uid}" x="${ox+PX_L/2}" y="${cy-4}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="15" font-weight="800" fill="white" stroke="#1a73e8" stroke-width="3" paint-order="stroke" opacity="0">${formStr}</text>`;
+  s+=`<text id="res-${uid}" x="${ox+PX_L/2}" y="${cy+20}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="19" font-weight="800" fill="white" stroke="#1a73e8" stroke-width="3" paint-order="stroke" opacity="0">${resStr} ${unite}²</text>`;
+  // Double flèche horizontale
+  s+=`<line x1="${ox}" y1="${oy-14}" x2="${ox+PX_L}" y2="${oy-14}" stroke="var(--bleu)" stroke-width="2" marker-start="url(#a2c-${uid})" marker-end="url(#a1c-${uid})"/>`;
+  s+=`<text x="${ox+PX_L/2}" y="${oy-18}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--bleu)">${larg} ${unite}</text>`;
+  // Double flèche verticale
+  s+=`<line x1="${ox+PX_L+14}" y1="${oy}" x2="${ox+PX_L+14}" y2="${oy+PX_W}" stroke="var(--bleu)" stroke-width="2" marker-start="url(#a2c-${uid})" marker-end="url(#a1c-${uid})"/>`;
+  s+=`<text x="${ox+PX_L+22}" y="${oy+PX_W/2+5}" text-anchor="start" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--bleu)">${String(long).replace('.',',')} ${unite}</text>`;
+  // "Aire →" sous le rectangle dans le SVG
+  const aireStr=`Aire → ${resStr} ${unite}²`;
+  s+=`<text id="aire-svg-${uid}" x="${ox+PX_L/2}" y="${oy+PX_W+20}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--bleu)" opacity="0">${aireStr}</text>`;
+  s+=`</svg>`;
+  return `<div style="display:flex;justify-content:center">${s}</div>`;
+}
+
+function lancerRemplissage(uid, larg, long, unite){
+  const fillEl=document.getElementById('fill-'+uid);
+  const formEl=document.getElementById('form-'+uid);
+  const resInner=document.getElementById('res-'+uid);
+  const gr1=document.getElementById('grille-'+uid);
+  const gr2=document.getElementById('grille2-'+uid);
+  // Reset
+  [formEl,resInner,gr1,gr2].forEach(el=>{if(el){el.style.transition='none';el.style.opacity='0';}});
+  if(fillEl){fillEl.style.transition='none';fillEl.style.opacity='0';fillEl.style.clipPath='polygon(0% 100%,100% 100%,100% 100%,0% 100%)';}
+  const aireEl0=document.getElementById('aire-svg-'+uid);
+  if(aireEl0){aireEl0.style.transition='none';aireEl0.style.opacity='0';}
+  const explEl0=document.getElementById('expl-'+uid);
+  if(explEl0){explEl0.style.transition='none';explEl0.style.opacity='0';explEl0.style.display='none';}
+  // 1. Quadrillage apparaît en balayage depuis le bas (1s après le clic)
+  setTimeout(()=>{
+    [gr1,gr2].forEach(el=>{
+      if(!el) return;
+      el.style.clipPath='polygon(0% 100%,100% 100%,100% 100%,0% 100%)';
+      el.style.opacity='1';
+      const s2=performance.now();
+      requestAnimationFrame(function sweepG(n){
+        const t=Math.min((n-s2)/700,1);
+        const ease=t<0.5?2*t*t:(4-2*t)*t-1;
+        const pct=(1-ease)*100;
+        el.style.clipPath=`polygon(0% ${pct}%,100% ${pct}%,100% 100%,0% 100%)`;
+        if(t<1) requestAnimationFrame(sweepG);
+        else el.style.clipPath='none';
+      });
+    });
+    // 2. Puis remplissage bleu
+    setTimeout(()=>{
+      if(fillEl){fillEl.style.opacity='0.38';}
+      const start=performance.now();
+      const dur=1800;
+      requestAnimationFrame(function step(now){
+        const t=Math.min((now-start)/dur,1);
+        const ease=t<0.5?2*t*t:(4-2*t)*t-1;
+        const pct=(1-ease)*100;
+        if(fillEl) fillEl.style.clipPath=`polygon(0% ${pct}%,100% ${pct}%,100% 100%,0% 100%)`;
+        if(t<1) requestAnimationFrame(step);
+        else{
+          // 3. Calcul
+          if(formEl){formEl.style.transition='opacity 0.4s';formEl.style.opacity='1';}
+          // 4. Résultat SVG
+          setTimeout(()=>{
+            if(resInner){resInner.style.transition='opacity 0.4s';resInner.style.opacity='1';}
+            // 5. "Aire →" sous le dessin
+            setTimeout(()=>{
+              const aireEl=document.getElementById('aire-svg-'+uid);
+              if(aireEl){aireEl.style.transition='opacity 0.4s';aireEl.style.opacity='1';}
+              const explEl=document.getElementById('expl-'+uid);
+              if(explEl){explEl.style.display='block';requestAnimationFrame(()=>requestAnimationFrame(()=>{explEl.style.opacity='1';explEl.style.transition='opacity 0.4s';}));}
+            },500);
+          },500);
+        }
+      });
+    }, 700);
+  }, 1000);
+}
+
+const STEPS=[
+
+// PAGE 1
+()=>{
+  setTimeout(()=>autoFillP1(), 2000);
+  return `
+<div class="step-title pop">💡 Calculer l'aire d'un rectangle</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> L'aire d'un rectangle est plus facile à trouver que l'aire d'autres formes géométriques. Savoir calculer l'aire des rectangles nous permettra plus tard de trouver les aires de formes plus compliquées.</div>
+${svgRectSimple('p1intro', 6, 3)}
+<p class="step-text fade-in" style="margin-top:-4px">On reconnaît la représentation d'une multiplication.</p>
+<p class="step-text fade-in">Une multiplication nous permet de trouver le nombre de carreaux dans le rectangle.</p>
+`;},
+
+// PAGE 2 — quadrillage 8×4, animation continue
+()=>`
+<div class="step-title pop">✏️ Une multiplication</div>
+<p class="step-text fade-in" style="color:#475569">Pour trouver l'aire d'un rectangle, on peut compter combien il y a de carreaux dedans : c'est la représentation des multiplications.</p>
+${svgRectGrille('p2', 8, 4)}
+<button class="btn-anim fade-in" onclick="lancerGrille('p2',8,4)">▶ Calculer l'aire</button>
+`,
+
+// PAGE 3 — rectangle entier en cm
+()=>`
+<div class="step-title pop">✏️ Si on connaît les dimensions du rectangle</div>
+<p class="step-text fade-in" style="color:#475569">On cherche l'aire d'un rectangle de 7 cm par 4 cm.</p>
+${svgRectCm('p3', 7, 4, 'cm')}
+<button class="btn-anim fade-in" onclick="lancerRemplissage('p3',7,4,'cm')">▶ Calculer l'aire</button>
+<div id="expl-p3" class="info vert" style="display:none">Des « centimètres » multipliés par des « centimètres » nous donnent des « centimètres carrés ».<br>cm × cm = cm²</div>
+`,
+
+// PAGE 4 — dimension non entière (4,5 m)
+()=>`
+<div class="step-title pop">✏️ Et si une dimension n'est pas entière ?</div>
+<p class="step-text fade-in" style="color:#475569">On calcule l'aire d'un rectangle de 6 m × 4,5 m.</p>
+${svgRectCm('p4', 6, 4.5, 'm')}
+<button class="btn-anim fade-in" onclick="lancerRemplissage('p4',6,4.5,'m')">▶ Calculer l'aire</button>
+<div id="expl-p4" class="info vert" style="display:none">Des « mètres » multipliés par des « mètres » nous donnent des « mètres carrés ».<br>m × m = m²</div>
+`,
+
+// PAGE 5
+()=>`
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  ${[
+    ['var(--bleu)','Pour calculer l\'aire d\'un rectangle, il suffit de multiplier la longueur par la largeur.'],
+    ['var(--bleu)','Des cm multipliés par des cm nous donnent des cm².<br>Des m multipliés par des m nous donnent des m².'],
+    ['var(--primary)','Quand on travaille sur l\'aire, notre cerveau peut nous donner envie de penser au périmètre. Il faut se forcer à penser : <em>« on travaille sur l\'aire et pas sur le périmètre »</em>.'],
+  ].map(([c,t],i)=>`
+    <div class="recap-item fade-in" style="animation-delay:${i*.08}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${i+1}</div>
+      <span>${t}</span>
+    </div>`).join('')}
+</div>
+`,
+];
+
+let cur=0,revealed=false; const N=STEPS.length;
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur](); card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(N-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator'); ind.innerHTML='';
+  for(let i=0;i<N;i++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(i===cur?' active':i<cur?' done':'');
+    d.textContent=i<cur?'✓':i+1; ind.appendChild(d);
+  }
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${N}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===N-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===N-1?0:cur+1;revealed=false;render();}
+function prev(){if(cur>0){cur--;revealed=false;render();}}
+render();
+</script>
+</body>
+</html>

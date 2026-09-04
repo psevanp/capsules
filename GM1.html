@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>GM1 — Différencier le périmètre et l'aire</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --primary:#e11d48;--primary2:#fb7185;--primary-clair:#ffe4e6;
+  --bg:#fff1f2;--cote:#9f1239;
+  --bleu:#1a73e8;--bleu-clair:#e8f0fe;
+  --orange:#ea580c;--orange-clair:#ffedd5;
+  --vert:#16a34a;--vert-clair:#f0fdf4;
+  --violet:#7c3aed;--violet-clair:#f5f3ff;
+  --gris:#94a3b8;
+  --teal:#0d9488;--teal-clair:#f0fdfa;
+  --card:#fff;--texte:#1e293b;--border:#e2e8f0;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+header{display:flex;justify-content:center;margin-bottom:22px;}
+.header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+.badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--primary);background:var(--primary-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--primary);flex-shrink:0;}
+.tache-label{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--primary);line-height:1.3;}
+.progress-bar-wrap{width:100%;max-width:680px;background:var(--primary-clair);border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .5s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+.step-dot{width:34px;height:34px;border-radius:50%;background:var(--primary-clair);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--primary2);transition:all .4s;border:2px solid transparent;}
+.step-dot.active{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+.card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:360px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(0,0,0,.07);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .45s ease both;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.2rem;font-weight:800;color:var(--primary);text-align:center;line-height:1.3;}
+.step-text{font-size:.97rem;line-height:1.7;text-align:center;max-width:580px;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:580px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 16px;font-weight:600;font-size:.92rem;line-height:1.6;max-width:580px;width:100%;}
+.info.vert{background:var(--vert-clair);border-left:4px solid var(--vert);color:#14532d;}
+.info.bleu{background:var(--bleu-clair);border-left:4px solid var(--bleu);color:#1e3a5f;}
+.info.primary{background:var(--primary-clair);border-left:4px solid var(--primary);}
+.btn-complete{border:2px solid var(--vert);background:var(--vert-clair);color:var(--vert);font-family:'Baloo 2',cursive;font-size:1rem;font-weight:700;border-radius:10px;padding:10px 22px;cursor:pointer;transition:all .2s;}
+.btn-complete:hover{background:var(--vert);color:#fff;}
+.btn-transformer{font-family:'Baloo 2',cursive;font-size:.97rem;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;transition:all .2s;border:2px solid var(--violet);background:var(--violet-clair);color:var(--violet);}
+.btn-transformer:hover{background:var(--violet);color:#fff;}
+.btn-viz{font-family:'Baloo 2',cursive;font-size:.88rem;font-weight:700;border-radius:8px;padding:7px 14px;cursor:pointer;transition:all .2s;}
+.btn-viz.perim{border:2px solid var(--primary);background:var(--primary-clair);color:var(--primary);}
+.btn-viz.perim:hover{background:var(--primary);color:#fff;}
+.btn-viz.aire{border:2px solid var(--bleu);background:var(--bleu-clair);color:var(--bleu);}
+.btn-viz.aire:hover{background:var(--bleu);color:#fff;}
+.recap-list{display:flex;flex-direction:column;gap:12px;width:100%;max-width:580px;}
+.recap-item{display:flex;gap:12px;align-items:flex-start;background:#f8faff;border-radius:12px;padding:11px 16px;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;}
+.nav{display:flex;align-items:center;justify-content:space-between;max-width:680px;width:100%;margin-top:20px;gap:12px;}
+.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;border-radius:12px;padding:11px 22px;cursor:pointer;transition:all .25s;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-prev:disabled{opacity:.35;cursor:default;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;}
+.btn-next:hover{opacity:.9;}
+.step-counter{font-family:'Baloo 2',cursive;font-weight:700;color:var(--primary);font-size:.95rem;white-space:nowrap;}
+.deux-col{display:flex;gap:18px;width:100%;max-width:580px;justify-content:center;align-items:flex-start;}
+.col-fig{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;}
+.col-label{font-family:'Baloo 2',cursive;font-weight:800;font-size:1.05rem;text-align:center;}
+.reponse-line{font-size:.95rem;font-weight:600;color:var(--texte);text-align:center;}
+.reponse-gris{color:#cbd5e1;font-weight:700;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">GM1</div>
+    <div class="tache-label">Différencier le périmètre et l'aire</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+// ── Polygone commun (pentagone maison) ──
+// Points : (0,70)(80,70)(80,20)(40,0)(0,20) → base 80, hauteur 70
+// Périmètre : 80 + 50 + ~44.7 + ~44.7 + 50 ≈ 269
+const POLY_PTS = [[0,70],[80,70],[80,20],[40,0],[0,20]];
+const POLY_PERIM = 269;
+
+function polyPath(ox, oy){
+  return POLY_PTS.map(([x,y],i)=>(i===0?'M':'L')+(x+ox)+','+(y+oy)).join(' ')+' Z';
+}
+
+function polyPointsStr(ox, oy){
+  return POLY_PTS.map(([x,y])=>(x+ox)+','+(y+oy)).join(' ');
+}
+
+// ── SVG du polygone pour la page 1 (deux colonnes) ──
+// col = couleur du contour animé ; fill = couleur de remplissage animé
+function svgPoly1(uid, contourCol, fillCol){
+  const W=120, H=100, ox=20, oy=15;
+  const pts = polyPointsStr(ox, oy);
+  const path = polyPath(ox, oy);
+  const perim = POLY_PERIM;
+  let s = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  // fond blanc + bordure très légère
+  s += `<polygon points="${pts}" fill="#f8faff" stroke="#e2e8f0" stroke-width="1.5"/>`;
+  // remplissage animé
+  if(fillCol){
+    s += `<polygon id="fill-${uid}" points="${pts}" fill="${fillCol}" opacity="0" style="clip-path:polygon(0% 100%,100% 100%,100% 100%,0% 100%)"/>`;
+  }
+  // contour animé
+  s += `<path id="perim-${uid}" d="${path}" fill="none" stroke="${contourCol}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" style="stroke-dasharray:${perim};stroke-dashoffset:${perim}"/>`;
+  s += `</svg>`;
+  return `<div style="display:flex;justify-content:center;width:100%">${s}</div>`;
+}
+
+// ── Boucle infinie périmètre : dessine → pause 2s → repart ──
+function loopPerim(uid, perim, col){
+  const el = document.getElementById('perim-'+uid);
+  if(!el || el._loopActive) return;
+  el._loopActive = true;
+  el.setAttribute('stroke', col);
+
+  function cycle(){
+    const e = document.getElementById('perim-'+uid);
+    if(!e || !e._loopActive) return;
+    // reset
+    e.style.transition = 'none';
+    e.style.strokeDashoffset = perim;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      const e2 = document.getElementById('perim-'+uid);
+      if(!e2 || !e2._loopActive) return;
+      // pause 2s avant départ
+      setTimeout(()=>{
+        const e3 = document.getElementById('perim-'+uid);
+        if(!e3 || !e3._loopActive) return;
+        e3.style.transition = 'stroke-dashoffset 2s ease-in-out';
+        e3.style.strokeDashoffset = 0;
+        // pause 2s après fin → repart
+        setTimeout(()=>cycle(), 2000 + 2000);
+      }, 2000);
+    }));
+  }
+  cycle();
+}
+
+function stopLoop(uid){
+  const el = document.getElementById('perim-'+uid);
+  if(el) el._loopActive = false;
+  const fl = document.getElementById('fill-'+uid);
+  if(fl) fl._loopActive = false;
+}
+
+// ── Boucle infinie aire : monte → pause 2s → reset → pause 2s → repart ──
+function loopAire(uid, fillCol){
+  const el = document.getElementById('fill-'+uid);
+  if(!el || el._loopActive) return;
+  el._loopActive = true;
+  el.setAttribute('fill', fillCol);
+
+  function animFill(e, onDone){
+    e.style.opacity = '0.38';
+    const start = performance.now();
+    const dur = 2000;
+    function step(now){
+      const f = document.getElementById('fill-'+uid);
+      if(!f || !f._loopActive) return;
+      const t = Math.min((now-start)/dur, 1);
+      const ease = t<0.5 ? 2*t*t : (4-2*t)*t-1;
+      // clip-path : monte de bas en haut
+      const pct = (1-ease)*100;
+      f.style.clipPath = `polygon(0% ${pct}%,100% ${pct}%,100% 100%,0% 100%)`;
+      if(t<1) requestAnimationFrame(step);
+      else onDone && onDone();
+    }
+    requestAnimationFrame(step);
+  }
+
+  function cycle(){
+    const e = document.getElementById('fill-'+uid);
+    if(!e || !e._loopActive) return;
+    // pause 2s avant départ
+    setTimeout(()=>{
+      const e2 = document.getElementById('fill-'+uid);
+      if(!e2 || !e2._loopActive) return;
+      animFill(e2, ()=>{
+        // pause 2s après fin
+        setTimeout(()=>{
+          const e3 = document.getElementById('fill-'+uid);
+          if(!e3 || !e3._loopActive) return;
+          e3.style.clipPath = 'polygon(0% 100%,100% 100%,100% 100%,0% 100%)';
+          cycle();
+        }, 2000);
+      });
+    }, 2000);
+  }
+  cycle();
+}
+
+// ── SVG double (page 3 et 4) : carré de départ + forme transformée côte à côte ──
+// Page 3 : carré → carré avec triangle creusé dans un côté (périmètre augmente, aire diminue)
+// Page 4 : carré → carré avec coin coupé (périmètre diminue, aire diminue)
+
+// Dimensions du carré de base : 80×80
+const SQ = 80;
+
+// Page 3 : creuser un triangle dans le côté droit
+// Triangle creusé : depuis (80,20) vers (100,40) vers (80,60) — dépasse vers l'intérieur
+// Forme résultante : (0,0)(80,0)(80,20)(60,40)(80,60)(80,80)(0,80)
+// périmètre carré = 320 ; périmètre creusé ≈ 320 - 40 + 2*sqrt(20²+20²) ≈ 320-40+56.6 ≈ 336
+// aire carré = 6400 ; aire creusée = 6400 - (0.5*40*20) = 6400-400=6000
+
+const PTS_SQUARE = [[0,0],[80,0],[80,80],[0,80]];
+// 4 triangles creusés vers l'intérieur, un par côté
+const PTS_CREUSE = [
+  [0,0],[20,0],[40,18],[60,0],[80,0],
+  [80,20],[62,40],[80,60],[80,80],
+  [60,80],[40,62],[20,80],[0,80],
+  [0,60],[18,40],[0,20]
+];
+// 4 coins coupés (chanfrein 20px)
+const PTS_COUPE = [[20,0],[60,0],[80,20],[80,60],[60,80],[20,80],[0,60],[0,20]];
+
+function ptsStr(pts, ox, oy){
+  return pts.map(([x,y])=>(x+ox)+','+(y+oy)).join(' ');
+}
+function ptsPath(pts, ox, oy){
+  return pts.map(([x,y],i)=>(i===0?'M':'L')+(x+ox)+','+(y+oy)).join(' ')+' Z';
+}
+function polyPerim(pts){
+  let p=0;
+  for(let i=0;i<pts.length;i++){
+    const a=pts[i], b=pts[(i+1)%pts.length];
+    p+=Math.sqrt((b[0]-a[0])**2+(b[1]-a[1])**2);
+  }
+  return p;
+}
+const PERIM_SQUARE = polyPerim(PTS_SQUARE); // 320
+const PERIM_CREUSE = polyPerim(PTS_CREUSE); // ~336
+const PERIM_COUPE  = polyPerim(PTS_COUPE);  // ~300
+
+// SVG de la page de transformation
+// uid: identifiant unique de page ; mode: 'creuse' ou 'coupe'
+function svgTransform(uid, mode){
+  const pts2 = mode==='creuse' ? PTS_CREUSE : PTS_COUPE;
+  const perim2 = mode==='creuse' ? PERIM_CREUSE : PERIM_COUPE;
+  const W=340, H=130;
+  const oxA=20, oyA=25;  // carré gauche
+  const oxB=200, oyB=25; // forme droite
+
+  let s = `<svg id="svg-tr-${uid}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+
+  // ── Carré gauche ──
+  s += `<polygon points="${ptsStr(PTS_SQUARE,oxA,oyA)}" fill="#f8faff" stroke="#94a3b8" stroke-width="2"/>`;
+  // contour périmètre carré (caché par défaut)
+  s += `<path id="pc-sq-${uid}" d="${ptsPath(PTS_SQUARE,oxA,oyA)}" fill="none" stroke="var(--primary)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" style="stroke-dasharray:${PERIM_SQUARE};stroke-dashoffset:${PERIM_SQUARE};opacity:0"/>`;
+  // remplissage aire carré (caché par défaut)
+  s += `<polygon id="fa-sq-${uid}" points="${ptsStr(PTS_SQUARE,oxA,oyA)}" fill="var(--bleu)" opacity="0"/>`;
+
+  // ── Flèche entre les deux ──
+  s += `<defs><marker id="arr-${uid}" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#94a3b8"/></marker></defs>`;
+  s += `<line id="fleche-${uid}" x1="${oxA+88}" y1="${oyA+40}" x2="${oxB-8}" y2="${oyB+40}" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" marker-end="url(#arr-${uid})" opacity="0"/>`;
+
+  // ── Forme transformée droite ──
+  s += `<polygon id="form2-${uid}" points="${ptsStr(pts2,oxB,oyB)}" fill="#f8faff" stroke="#94a3b8" stroke-width="2" opacity="0"/>`;
+  // contour périmètre forme2 (caché par défaut)
+  s += `<path id="pc-tr-${uid}" d="${ptsPath(pts2,oxB,oyB)}" fill="none" stroke="var(--primary)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" style="stroke-dasharray:${Math.ceil(perim2)};stroke-dashoffset:${Math.ceil(perim2)};opacity:0"/>`;
+  // remplissage aire forme2 (caché par défaut)
+  s += `<polygon id="fa-tr-${uid}" points="${ptsStr(pts2,oxB,oyB)}" fill="var(--bleu)" opacity="0"/>`;
+
+  s += `</svg>`;
+  return `<div style="display:flex;justify-content:center;width:100%">${s}</div>`;
+}
+
+// État de transformation par page
+const trState = {}; // uid -> 'init' | 'transformed' | 'completed'
+
+function transformer(uid){
+  const state = trState[uid] || 'init';
+  if(state === 'init'){
+    // Afficher la forme transformée + flèche
+    ['fleche-'+uid, 'form2-'+uid].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el){ el.style.transition='opacity 0.5s'; el.style.opacity='1'; }
+    });
+    trState[uid]='transformed';
+    // Transformer le bouton en "Compléter"
+    const btn=document.getElementById('btn-tr-'+uid);
+    if(btn){ btn.className='btn-complete'; btn.textContent='✏️ Compléter'; btn.setAttribute('onclick','completerTr("'+uid+'")'); }
+    // Faire apparaître les phrases et les boutons viz
+    ['phrases-'+uid,'viz-'+uid].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el){ el.style.transition='opacity 0.4s'; el.style.opacity='1'; el.style.pointerEvents='auto'; }
+    });
+    resetViz(uid);
+  }
+}
+
+function completerTr(uid){
+  revealed=true;
+  // Masquer le bouton compléter
+  const btn=document.getElementById('btn-tr-'+uid);
+  if(btn){ btn.style.transition='opacity 0.3s'; btn.style.opacity='0'; btn.style.pointerEvents='none'; }
+  // Révéler les réponses
+  const isP3 = uid==='p3';
+  const ra=document.getElementById('rep-aire-'+uid);
+  const rp=document.getElementById('rep-perim-'+uid);
+  if(ra){ ra.textContent='diminué'; ra.style.color='var(--bleu)'; }
+  if(rp){ rp.textContent= isP3 ? 'augmenté' : 'diminué'; rp.style.color='var(--primary)'; }
+  // Afficher l'explication
+  const expl=document.getElementById('expl-'+uid);
+  if(expl){ expl.style.transition='opacity 0.4s'; expl.style.opacity='1'; }
+}
+
+function resetViz(uid){
+  ['pc-sq-','pc-tr-','fa-sq-','fa-tr-'].forEach(pref=>{
+    const el=document.getElementById(pref+uid);
+    if(!el) return;
+    el.style.transition='none';
+    el.style.opacity='0';
+    if(el.tagName==='path'){
+      const da=el.style.strokeDasharray||el.getAttribute('stroke-dasharray')||'320';
+      el.style.strokeDashoffset=da;
+    }
+  });
+}
+
+// Vitesse de base : 160 px/s. Le plus grand périmètre reçoit un malus ×1.45 pour accentuer visuellement.
+const SPEED_BASE = 160;
+
+function showPerim(uid){
+  const mode = trState[uid];
+  // Identifier lequel des deux a le plus grand périmètre
+  const perimTr = uid==='p3' ? PERIM_CREUSE : PERIM_COUPE;
+  // p3: creuse > square → ralentir creuse ; p4: square > coupe → ralentir square
+  const squareLarger = (uid==='p4'); // p4: carré a plus grand périmètre que forme coupée
+
+  function animPath(elId, da, isLarger){
+    const el = document.getElementById(elId);
+    if(!el) return;
+    const speed = isLarger ? SPEED_BASE / 1.45 : SPEED_BASE;
+    const dur = (da / speed * 1000).toFixed(0)+'ms';
+    el.style.transition='none'; el.style.opacity='1'; el.style.strokeDashoffset=da;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      el.style.transition=`stroke-dashoffset ${dur} linear`; el.style.strokeDashoffset=0;
+    }));
+  }
+
+  animPath('pc-sq-'+uid, PERIM_SQUARE, squareLarger);
+  if(mode==='transformed' || mode==='completed'){
+    const pcTr = document.getElementById('pc-tr-'+uid);
+    if(pcTr){
+      const da = parseFloat(pcTr.style.strokeDasharray||pcTr.getAttribute('stroke-dasharray')||320);
+      animPath('pc-tr-'+uid, da, !squareLarger);
+    }
+  }
+}
+
+function showAire(uid){
+  const mode = trState[uid];
+  function animPolyFill(id, h){
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.style.opacity='0.38';
+    el.style.clipPath='polygon(0% 100%,100% 100%,100% 100%,0% 100%)';
+    const start=performance.now();
+    const dur=1800;
+    requestAnimationFrame(function step(now){
+      const t=Math.min((now-start)/dur,1);
+      const ease=t<0.5?2*t*t:(4-2*t)*t-1;
+      const pct=(1-ease)*100;
+      el.style.clipPath=`polygon(0% ${pct}%,100% ${pct}%,100% 100%,0% 100%)`;
+      if(t<1) requestAnimationFrame(step);
+    });
+  }
+  animPolyFill('fa-sq-'+uid);
+  if(mode) animPolyFill('fa-tr-'+uid);
+}
+
+// ── Triangles pour la page 5 (recap) ──
+// Triangle rectangle : base 80, hauteur 50 (large, peu haut)
+const TRI_PTS = [[0,50],[80,50],[80,0]];
+const TRI_PERIM = 80 + 50 + Math.sqrt(80*80+50*50); // ≈ 224
+
+function triPath(ox, oy){
+  return TRI_PTS.map(([x,y],i)=>(i===0?'M':'L')+(x+ox)+','+(y+oy)).join(' ')+' Z';
+}
+function triPointsStr(ox, oy){
+  return TRI_PTS.map(([x,y])=>(x+ox)+','+(y+oy)).join(' ');
+}
+
+function svgTriRecap(uid, mode){
+  const W=240, H=68, ox=80, oy=9;
+  const pts = triPointsStr(ox,oy);
+  const path = triPath(ox,oy);
+  let s = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;margin-top:6px;overflow:visible">`;
+  s += `<polygon points="${pts}" fill="#f8faff" stroke="#e2e8f0" stroke-width="1.5"/>`;
+  if(mode==='aire'){
+    s += `<polygon id="fill-${uid}" points="${pts}" fill="var(--bleu)" opacity="0" style="clip-path:polygon(0% 100%,100% 100%,100% 100%,0% 100%)"/>`;
+    // contour gris fixe (toujours visible)
+    s += `<polygon points="${pts}" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>`;
+  }
+  if(mode==='perim'){
+    s += `<path id="perim-${uid}" d="${path}" fill="none" stroke="var(--primary)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" style="stroke-dasharray:${Math.ceil(TRI_PERIM)};stroke-dashoffset:${Math.ceil(TRI_PERIM)}"/>`;
+  }
+  s += `</svg>`;
+  return `<div style="display:flex;justify-content:flex-start;width:100%">${s}</div>`;
+}
+
+const STEPS=[
+
+// PAGE 1 — Introduction avec animations en boucle
+()=>{
+  // Lancer les boucles après rendu
+  setTimeout(()=>{
+    loopPerim('p1c', POLY_PERIM, 'var(--primary)');
+    loopAire('p1a', 'var(--bleu)');
+  }, 50);
+  return `
+<div class="step-title pop">💡 Deux façons de mesurer une figure</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> Quand on mesure une forme géométrique, on peut parler de deux choses différentes : de son contour ou de sa surface. Il est important de ne pas confondre les deux !</div>
+<div class="deux-col fade-in" style="margin-top:4px;align-items:flex-start">
+  <div class="col-fig">
+    <div class="col-label" style="color:var(--primary)">Le périmètre</div>
+    <div style="font-size:.86rem;color:#64748b;text-align:center;margin-bottom:4px">C'est la mesure du <strong>contour</strong>.</div>
+    ${svgPoly1('p1c','var(--primary)',null)}
+  </div>
+  <div class="col-fig">
+    <div class="col-label" style="color:var(--bleu)">L'aire</div>
+    <div style="font-size:.86rem;color:#64748b;text-align:center;margin-bottom:4px">C'est la mesure de la <strong>surface</strong>.</div>
+    ${svgPoly1('p1a',null,'var(--bleu)')}
+  </div>
+</div>`;
+},
+
+// PAGE 2 — Les deux notions côte à côte (ancienne page 4 = contour + remplissage simultanés, sans Compléter)
+()=>`
+<div class="step-title pop">✏️ Sur la même figure : périmètre et aire</div>
+<p class="step-text fade-in" style="color:#475569">On peut utiliser les deux mesures sur la même figure : l'<strong>aire</strong> et le <strong>périmètre</strong> sont deux mesures bien différentes.</p>
+${svgTransformBasic('p2')}
+<div class="fade-in" style="display:flex;gap:10px;margin-top:4px;max-width:320px;width:100%;justify-content:center">
+  <button class="btn-viz perim" onclick="showPerimBasic('p2')">🔴 Périmètre</button>
+  <button class="btn-viz aire" onclick="showAireBasic('p2')">🔵 Aire</button>
+</div>
+`,
+
+// PAGE 3 — Transformer : 4 triangles creusés (périmètre augmente, aire diminue)
+()=>{
+  trState['p3']='init';
+  return `
+<div class="step-title pop">✏️ Que se passe-t-il si on transforme la figure ?</div>
+<p class="step-text fade-in" style="color:#475569">On <strong>transforme un carré</strong>, on étudie l'évolution de l'aire et du périmètre.</p>
+${svgTransform('p3','creuse')}
+<div class="fade-in" style="display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;max-width:400px">
+  <button id="btn-tr-p3" class="btn-transformer" onclick="transformer('p3')">✨ Transformer</button>
+  <div id="viz-p3" style="display:flex;gap:10px;opacity:0;pointer-events:none;transition:opacity 0.4s">
+    <button class="btn-viz perim" onclick="showPerim('p3')">🔴 Périmètre</button>
+    <button class="btn-viz aire" onclick="showAire('p3')">🔵 Aire</button>
+  </div>
+</div>
+<div id="phrases-p3" style="opacity:0;pointer-events:none;transition:opacity 0.4s;display:flex;flex-direction:column;gap:6px;max-width:380px;text-align:center;width:100%">
+  <div class="reponse-line">L'aire du dessin a… <span id="rep-aire-p3" class="reponse-gris">augmenté / diminué</span></div>
+  <div class="reponse-line">Le périmètre du dessin a… <span id="rep-perim-p3" class="reponse-gris">augmenté / diminué</span></div>
+</div>
+<div id="expl-p3" class="info vert fade-in" style="opacity:0;transition:opacity 0.4s"><span style="color:var(--bleu)">En creusant 4 triangles, on <strong>enlève de la surface</strong> → l'aire <strong>diminue</strong>.</span><br><span style="color:var(--primary)">Mais un détour apparaît à chaque creux → le périmètre <strong>augmente</strong> !</span></div>
+`;},
+
+// PAGE 4 — Transformer : 4 coins coupés (périmètre diminue, aire diminue)
+()=>{
+  trState['p4']='init';
+  return `
+<div class="step-title pop">✏️ Un autre type de transformation</div>
+<p class="step-text fade-in" style="color:#475569">On <strong>transforme un carré</strong>, on étudie l'évolution de l'aire et du périmètre.</p>
+${svgTransform('p4','coupe')}
+<div class="fade-in" style="display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;max-width:400px">
+  <button id="btn-tr-p4" class="btn-transformer" onclick="transformer('p4')">✨ Transformer</button>
+  <div id="viz-p4" style="display:flex;gap:10px;opacity:0;pointer-events:none;transition:opacity 0.4s">
+    <button class="btn-viz perim" onclick="showPerim('p4')">🔴 Périmètre</button>
+    <button class="btn-viz aire" onclick="showAire('p4')">🔵 Aire</button>
+  </div>
+</div>
+<div id="phrases-p4" style="opacity:0;pointer-events:none;transition:opacity 0.4s;display:flex;flex-direction:column;gap:6px;max-width:380px;text-align:center;width:100%">
+  <div class="reponse-line">L'aire du dessin a… <span id="rep-aire-p4" class="reponse-gris">augmenté / diminué</span></div>
+  <div class="reponse-line">Le périmètre du dessin a… <span id="rep-perim-p4" class="reponse-gris">augmenté / diminué</span></div>
+</div>
+<div id="expl-p4" class="info vert fade-in" style="opacity:0;transition:opacity 0.4s"><span style="color:var(--bleu)">En coupant les 4 coins, on <strong>enlève de la surface</strong> → l'aire <strong>diminue</strong>.</span><br><span style="color:var(--primary)">Chaque coin coupé raccourcit le contour → le périmètre <strong>diminue</strong> aussi !</span></div>
+`;},
+
+// PAGE 5 — Ce qu'il faut retenir
+()=>{
+  setTimeout(()=>{
+    loopPerim('r1', TRI_PERIM, 'var(--primary)');
+    loopAire('r2', 'var(--bleu)');
+  }, 80);
+  return `
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  <div class="recap-item fade-in" style="border-left-color:var(--primary);align-items:center">
+    <div class="recap-num" style="background:var(--primary)">1</div>
+    <div style="flex:1">
+      <span>Le <strong>périmètre</strong>, c'est la mesure du contour.</span>
+      ${svgTriRecap('r1','perim')}
+    </div>
+  </div>
+  <div class="recap-item fade-in" style="animation-delay:.08s;border-left-color:var(--bleu);align-items:center">
+    <div class="recap-num" style="background:var(--bleu)">2</div>
+    <div style="flex:1">
+      <span>L'<strong>aire</strong>, c'est la mesure de la surface.</span>
+      ${svgTriRecap('r2','aire')}
+    </div>
+  </div>
+  <div class="recap-item fade-in" style="animation-delay:.16s;border-left-color:var(--violet)">
+    <div class="recap-num" style="background:var(--violet)">3</div>
+    <div>Notre cerveau les mélange souvent :<br>
+    <span style="color:var(--primary);font-weight:700">• quand on parle du périmètre</span>, il faut se dire : <em>« c'est le périmètre, ce n'est pas l'aire »</em>.<br>
+    <span style="color:var(--bleu);font-weight:700">• quand on parle de l'aire</span>, il faut se dire : <em>« c'est l'aire, ce n'est pas le périmètre »</em>.</div>
+  </div>
+</div>
+`;},
+
+];
+
+// ── SVG pour page 2 : polygone commun avec boutons perim/aire ──
+function svgTransformBasic(uid){
+  const W=160, H=110, ox=40, oy=15;
+  const pts = polyPointsStr(ox, oy);
+  const path = polyPath(ox, oy);
+  let s = `<svg id="svg-basic-${uid}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  s += `<polygon points="${pts}" fill="#f8faff" stroke="#e2e8f0" stroke-width="1.5"/>`;
+  s += `<polygon id="fa-basic-${uid}" points="${pts}" fill="var(--bleu)" opacity="0"/>`;
+  s += `<path id="pc-basic-${uid}" d="${path}" fill="none" stroke="var(--primary)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" style="stroke-dasharray:${POLY_PERIM};stroke-dashoffset:${POLY_PERIM}"/>`;
+  s += `</svg>`;
+  return `<div style="display:flex;justify-content:center;width:100%">${s}</div>`;
+}
+
+function showPerimBasic(uid){
+  const el = document.getElementById('pc-basic-'+uid);
+  if(!el) return;
+  el.style.transition='none'; el.style.strokeDashoffset=POLY_PERIM;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    el.style.transition='stroke-dashoffset 1.8s ease-in-out'; el.style.strokeDashoffset=0;
+  }));
+}
+function showAireBasic(uid){
+  const el = document.getElementById('fa-basic-'+uid);
+  if(!el) return;
+  el.style.opacity = '0.38';
+  el.style.clipPath = 'polygon(0% 100%,100% 100%,100% 100%,0% 100%)';
+  const start = performance.now();
+  const dur = 1800;
+  requestAnimationFrame(function step(now){
+    const t = Math.min((now-start)/dur, 1);
+    const ease = t<0.5 ? 2*t*t : (4-2*t)*t-1;
+    const pct = (1-ease)*100;
+    el.style.clipPath = `polygon(0% ${pct}%,100% ${pct}%,100% 100%,0% 100%)`;
+    if(t<1) requestAnimationFrame(step);
+  });
+}
+
+let cur=0, revealed=false; const N=STEPS.length;
+function render(){
+  stopLoop('p1c'); stopLoop('p1a');
+  stopLoop('r1'); stopLoop('r2');
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur](); card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(N-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator'); ind.innerHTML='';
+  for(let i=0;i<N;i++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(i===cur?' active':i<cur?' done':'');
+    d.textContent=i<cur?'✓':i+1; ind.appendChild(d);
+  }
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${N}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===N-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===N-1?0:cur+1;revealed=false;render();}
+function prev(){if(cur>0){cur--;revealed=false;render();}}
+function completer(){revealed=true;render();}
+render();
+</script>
+</body>
+</html>

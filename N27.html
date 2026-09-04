@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>N27 — Placer un nombre décimal sur la ligne numérique</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{color-scheme:light;--bleu:#1a73e8;--bleu-clair:#e8f0fe;--violet:#7c3aed;--violet-clair:#f5f3ff;--vert:#16a34a;--vert-clair:#dcfce7;--orange:#ea580c;--orange-clair:#ffedd5;--gris:#94a3b8;--bg:#f0f4ff;--card:#fff;--texte:#1e293b;--border:#e2e8f0;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+  header{display:flex;justify-content:center;margin-bottom:22px;}
+  .header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+  .badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--bleu);background:var(--bleu-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--bleu);flex-shrink:0;}
+  .tache-label{font-family:'Baloo 2',cursive;font-size:1.02rem;font-weight:800;color:var(--bleu);line-height:1.3;}
+  .progress-bar-wrap{width:100%;max-width:680px;background:#dbeafe;border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+  .progress-bar{height:100%;background:linear-gradient(90deg,var(--bleu),var(--violet));border-radius:99px;transition:width .5s ease;}
+  .steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+  .step-dot{width:32px;height:32px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:#93c5fd;transition:all .4s;border:2px solid transparent;}
+  .step-dot.active{background:var(--bleu);color:#fff;border-color:var(--bleu);transform:scale(1.15);box-shadow:0 0 0 4px #bfdbfe;}
+  .step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+  .card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:340px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(26,115,232,.10);position:relative;overflow-x:auto;}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--bleu),var(--violet));border-radius:20px 20px 0 0;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .fade-in{animation:fadeIn .4s ease both;}
+  @keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+  .pop{animation:pop .45s ease both;}
+  .step-title{font-family:'Baloo 2',cursive;font-size:1.12rem;font-weight:800;color:var(--bleu);text-align:center;line-height:1.3;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;}
+  .info{border-radius:12px;padding:12px 16px;font-weight:600;max-width:580px;width:100%;line-height:1.7;font-size:.9rem;}
+  .info.bleu{background:var(--bleu-clair);color:var(--bleu);border-left:4px solid var(--bleu);}
+  .info.violet{background:var(--violet-clair);color:var(--violet);border-left:4px solid var(--violet);}
+  .btn-complete{font-family:'Baloo 2',cursive;font-weight:700;font-size:.95rem;border:2px solid var(--vert);cursor:pointer;border-radius:10px;padding:10px 22px;background:var(--vert-clair);color:var(--vert);transition:all .2s;}
+  .btn-complete:hover{background:var(--vert);color:#fff;}
+  .recap-list{display:flex;flex-direction:column;gap:9px;max-width:580px;width:100%;}
+  .recap-item{display:flex;align-items:flex-start;gap:12px;background:#f8faff;border-radius:12px;padding:11px 16px;font-size:.92rem;font-weight:600;color:var(--texte);animation:fadeIn .4s ease both;border-left:4px solid transparent;line-height:1.5;}
+  .recap-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:700;flex-shrink:0;color:#fff;margin-top:1px;}
+  .calc-box{background:#f1f5f9;border:2px solid #cbd5e1;border-radius:14px;padding:13px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;font-family:'Baloo 2',cursive;font-size:1.1rem;font-weight:800;width:100%;max-width:540px;transition:background .3s,border-color .3s;}
+  .calc-box.bleu{background:var(--bleu-clair);border-color:var(--bleu);}
+  .calc-box.violet{background:var(--violet-clair);border-color:var(--violet);}
+  .nav{display:flex;gap:14px;margin-top:10px;align-items:center;}
+  button.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;cursor:pointer;border-radius:12px;padding:12px 28px;transition:all .2s;}
+  .btn-next{background:linear-gradient(135deg,var(--bleu),var(--violet));color:#fff;box-shadow:0 4px 14px rgba(26,115,232,.3);}
+  .btn-next:hover{transform:translateY(-2px);}
+  .btn-prev{background:#e0e7ff;color:var(--bleu);}
+  .btn-prev:hover{background:#c7d2fe;}
+  .step-counter{font-size:.85rem;color:var(--gris);font-weight:700;}
+  .pourquoi { position:relative; background:#f0fdfa; border-left:4px solid #0d9488; border-radius:10px; padding:12px 15px; font-size:0.92rem; font-weight:600; color:#134e4a; line-height:1.6; max-width:580px; width:100%; }
+  .pq-lead { font-family:'Baloo 2',cursive; font-weight:800; color:#0d9488; }
+</style>
+</head>
+<body>
+<header><div class="header-row">
+  <div class="badge-code">N27</div>
+  <div class="tache-label">Placer un nombre décimal sur la ligne numérique</div>
+</div></header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+const EXOS={};
+
+// ── Nombre décimal coloré ─────────────────────────────────────────────────────
+function decNum(intStr, dec){
+  const typeCol={d:'var(--bleu)',c:'var(--violet)',m:'var(--vert)'};
+  const fs=`font-family:'Baloo 2',cursive;font-size:1.5rem;font-weight:800;line-height:1`;
+  const intCol=intStr==='0'?'var(--gris)':'var(--orange)';
+  let s=`<span style="display:inline-flex;align-items:center;gap:0">`;
+  for(const c of intStr) s+=`<span style="${fs};color:${intCol}">${c}</span>`;
+  s+=`<span style="${fs};color:var(--texte)">,</span>`;
+  for(const {d,t} of dec){
+    const col=d==='0'?'var(--gris)':typeCol[t];
+    s+=`<span style="${fs};color:${col}">${d}</span>`;
+  }
+  return s+`</span>`;
+}
+
+// ── Double flèche ─────────────────────────────────────────────────────────────
+function dblArrow(x1,x2,y,col,label,lY){
+  const ah=x2-x1>12?4:2, mid=(x1+x2)/2;
+  let s='';
+  if(x2-x1>ah*3) s+=`<line x1="${x1+ah*1.5}" y1="${y}" x2="${x2-ah*1.5}" y2="${y}" stroke="${col}" stroke-width="1.5"/>`;
+  s+=`<polygon points="${x1},${y} ${x1+ah*1.5},${y-ah} ${x1+ah*1.5},${y+ah}" fill="${col}"/>`;
+  s+=`<polygon points="${x2},${y} ${x2-ah*1.5},${y-ah} ${x2-ah*1.5},${y+ah}" fill="${col}"/>`;
+  if(label) s+=`<text x="${mid}" y="${lY}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="10" font-weight="700" fill="${col}">${label}</text>`;
+  return s;
+}
+
+// ── Ligne numérique + barre pour le placement ─────────────────────────────────
+// arrowCfg (optionnel) : {x1, x2, label, col} — double flèche après clic
+function drawPlace(valNum, valStr, den, barUnit, maxUnit, completed, arrowCfg, mark2){
+  const PADL=24,PADR=20,avail=360,UW=avail/maxUnit;
+  const labH=36,barH=18,barY=labH,barBot=barY+barH;   // 36,54
+  const lineY=barBot+5;                                  // 59
+  const lineEnd=PADL+avail+UW*0.06;
+  const unitNumY=lineY+15;                               // 74
+  const H=unitNumY+16+(arrowCfg?28:0);                  // 90 ou 118
+  const W=lineEnd+PADR;
+
+  const barX=PADL+barUnit*UW;
+  const segW=UW/den;
+  const filledN=Math.round((valNum-barUnit)*den);
+  const isDix=den<=10;
+  const stroke=isDix?'#1a73e8':'#7c3aed';
+
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+
+  // Barre (seulement après clic, dans la zone barUnit)
+  if(completed){
+    if(isDix){
+      for(let p=0;p<den;p++){
+        const x=barX+p*segW, dark=p%2===1;
+        const fill=p<filledN?(dark?'#6a9ee8':'#a0c4f0'):(dark?'#d8e8f8':'#e8f2fc');
+        s+=`<rect x="${x}" y="${barY}" width="${segW}" height="${barH}" fill="${fill}"/>`;
+      }
+    } else {
+      // Centièmes : blocs de 10 alternent foncé/clair (g=true/false)
+      // Dans chaque bloc : odd plus foncé qu'even
+      // Rempli (p<filledN) : version foncée du bloc ; vide : version claire
+      for(let p=0;p<den;p++){
+        const x=barX+p*segW, g=Math.floor(p/10)%2===1, odd=p%2===1;
+        let fill;
+        if(p<filledN)
+          fill=g?(odd?'#5a44b8':'#7c64d8'):(odd?'#9575e0':'#b0a0e8');
+        else
+          fill=g?(odd?'#c4b8e8':'#d4c8f4'):(odd?'#e8e2f8':'#f4f0ff');
+        s+=`<rect x="${x}" y="${barY}" width="${segW}" height="${barH}" fill="${fill}"/>`;
+      }
+    }
+    s+=`<rect x="${barX}" y="${barY}" width="${UW}" height="${barH}" fill="none" stroke="${stroke}" stroke-width="1.5" rx="1"/>`;
+  }
+
+  // Ligne numérique
+  s+=`<line x1="${PADL}" y1="${lineY}" x2="${lineEnd}" y2="${lineY}" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>`;
+
+  // Graduations — avant clic : 0 et 1 seulement ; après : toutes
+  const uMax=completed?maxUnit:1;
+  for(let u=0;u<=uMax;u++){
+    const x=PADL+u*UW;
+    const haut=completed?(barY-2):(lineY-6);
+    s+=`<line x1="${x}" y1="${haut}" x2="${x}" y2="${lineY+5}" stroke="#1e293b" stroke-width="2"/>`;
+    s+=`<text x="${x}" y="${unitNumY}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="#1e293b" stroke="white" stroke-width="3" paint-order="stroke">${u}</text>`;
+  }
+
+  // Placement après clic
+  if(completed){
+    const markX=PADL+valNum*UW;
+    // Graduation discrète optionnelle (ex : 1,3 sur page 3)
+    if(mark2){
+      const mx=PADL+mark2.x*UW;
+      s+=`<line x1="${mx}" y1="${barY}" x2="${mx}" y2="${lineY+4}" stroke="${mark2.col||'#1a73e8'}" stroke-width="1.2" opacity="0.65"/>`;
+    }
+    // Graduation principale — monte jusqu'à l'étiquette (y=20)
+    s+=`<line x1="${markX}" y1="20" x2="${markX}" y2="${lineY+5}" stroke="${stroke}" stroke-width="2.5"/>`;
+    const fs=11, fw=valStr.length*fs*0.58+6;
+    const bg=isDix?'#dbeafe':'#ede9fe';
+    s+=`<rect x="${markX-fw/2-4}" y="2" width="${fw+8}" height="${fs+6}" rx="5" fill="${bg}" stroke="${stroke}" stroke-width="1.8"/>`;
+    s+=`<text x="${markX}" y="${fs+2}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${stroke}">${valStr}</text>`;
+
+    // Double flèche optionnelle
+    if(arrowCfg){
+      const ax1=PADL+arrowCfg.x1*UW, ax2=PADL+arrowCfg.x2*UW;
+      const arrowY=unitNumY+8, arrowLabY=arrowY+12;
+      s+=dblArrow(ax1,ax2,arrowY,arrowCfg.col,arrowCfg.label,arrowLabY);
+    }
+  }
+
+  s+=`</svg>`;
+  return s;
+}
+
+// ── exoBlock / completer ──────────────────────────────────────────────────────
+function exoBlock(uid,cfg){
+  EXOS[uid]=cfg;
+  const visHtml=cfg.vis?cfg.vis(false):'';
+  return `
+<div id="wrap-${uid}" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:12px">
+  ${visHtml?`<div id="vis-${uid}" class="fade-in" style="width:100%">${visHtml}</div>`:''}
+  <div id="calc-${uid}" class="calc-box fade-in">${cfg.calcBefore}</div>
+  <button class="btn-complete" onclick="completer('${uid}')">✏️ Compléter</button>
+  <div id="res-${uid}" style="display:none;flex-direction:column;align-items:center;gap:10px;width:100%" class="fade-in">
+    ${cfg.resText?`<div style="font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:600;color:var(--gris);text-align:center">${cfg.resText}</div>`:''}
+    ${cfg.explication?`<div class="info ${cfg.infoCol||'bleu'}" style="font-size:.88rem">${cfg.explication}</div>`:''}
+  </div>
+</div>`;
+}
+
+function completer(uid){
+  const c=EXOS[uid];
+  if(c.vis) document.getElementById('vis-'+uid).innerHTML=c.vis(true);
+  const calcEl=document.getElementById('calc-'+uid);
+  calcEl.innerHTML=c.calcAfter;
+  calcEl.className='calc-box '+(c.infoCol||'bleu')+' fade-in';
+  document.getElementById('wrap-'+uid).querySelector('.btn-complete').style.display='none';
+  document.getElementById('res-'+uid).style.display='flex';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+const STEPS=[
+
+// 0 — Règle
+()=>`
+<div class="step-title pop">💡 Placer un nombre décimal</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> Pour mieux comprendre les nombres décimaux et la façon dont ils s'organisent avec les autres nombres, il est utile de savoir les placer sur la ligne numérique.</div>
+<div class="recap-list">
+  <div class="recap-item fade-in" style="animation-delay:0s;border-left-color:var(--bleu)">
+    <div class="recap-num" style="background:var(--bleu)">1</div>
+    <span>On cherche d'abord combien il y a d'<strong>unités</strong> → c'est le nombre écrit <strong>avant la virgule</strong>.</span>
+  </div>
+  <div class="recap-item fade-in" style="animation-delay:.12s;border-left-color:var(--violet)">
+    <div class="recap-num" style="background:var(--violet)">2</div>
+    <span>On ajoute ensuite les <strong>dixièmes</strong>, puis les <strong>centièmes</strong>...</span>
+  </div>
+</div>
+`,
+
+// 1 — Placer 2,5
+()=>`
+<div class="step-title pop">✏️ Placer ${decNum("2",[{d:'5',t:'d'}])}</div>
+${exoBlock('ex1',{
+  vis:c=>drawPlace(2.5,"2,5",10,2,3,c,{x1:2,x2:2.5,label:"5 dixièmes",col:'#1a73e8'}),
+  infoCol:'bleu',
+  calcBefore:`Placer ${decNum("2",[{d:'5',t:'d'}])} sur la droite`,
+  calcAfter:`Placer ${decNum("2",[{d:'5',t:'d'}])} sur la droite`,
+  resText:`2,5 c'est <span style="color:var(--orange);font-weight:700">2 unités</span> et <span style="color:var(--bleu);font-weight:700">5 dixièmes</span>`,
+  explication:`La <strong>partie entière</strong> est <strong>2</strong> (le chiffre avant la virgule).<br>On ajoute ensuite <strong>5 dixièmes</strong>.`,
+})}`,
+
+// 2 — Placer 1,35
+()=>`
+<div class="step-title pop">✏️ Placer ${decNum("1",[{d:'3',t:'d'},{d:'5',t:'c'}])}</div>
+${exoBlock('ex2',{
+  vis:c=>drawPlace(1.35,"1,35",100,1,2,c,{x1:1,x2:1.3,label:"3 dixièmes",col:'#1a73e8'},{x:1.3,col:'#1a73e8'}),
+  infoCol:'bleu',
+  calcBefore:`Placer ${decNum("1",[{d:'3',t:'d'},{d:'5',t:'c'}])} sur la droite`,
+  calcAfter:`Placer ${decNum("1",[{d:'3',t:'d'},{d:'5',t:'c'}])} sur la droite`,
+  resText:`1,35 c'est <span style="color:var(--orange);font-weight:700">1 unité</span>, <span style="color:var(--bleu);font-weight:700">3 dixièmes</span> et <span style="color:var(--violet);font-weight:700">5 centièmes</span>`,
+  explication:`On repère d'abord la <strong>partie entière</strong> (le chiffre avant la virgule) : <strong>1</strong>.<br>On ajoute ensuite <strong>3 dixièmes</strong> et <strong>5 centièmes</strong>.`,
+})}`,
+
+// 3 — Placer 3,09
+()=>`
+<div class="step-title pop">✏️ Placer ${decNum("3",[{d:'0',t:'d'},{d:'9',t:'c'}])}</div>
+${exoBlock('ex3',{
+  vis:c=>drawPlace(3.09,"3,09",100,3,4,c,{x1:3,x2:3.09,label:"9 centièmes",col:'#7c3aed'}),
+  infoCol:'bleu',
+  calcBefore:`Placer ${decNum("3",[{d:'0',t:'d'},{d:'9',t:'c'}])} sur la droite`,
+  calcAfter:`Placer ${decNum("3",[{d:'0',t:'d'},{d:'9',t:'c'}])} sur la droite`,
+  resText:`3,09 c'est <span style="color:var(--orange);font-weight:700">3 unités</span>, <span style="color:var(--gris);font-weight:700">0 dixième</span> et <span style="color:var(--violet);font-weight:700">9 centièmes</span>`,
+  explication:`Partie entière : <strong>3</strong>. Il n'y a <strong>pas de dixième</strong> et il y a <strong>9 centièmes</strong>.<br>3,09 est donc très proche de 3, mais légèrement à droite.`,
+})}`,
+
+// 4 — Placer 0,909
+()=>`
+<div class="step-title pop">✏️ Placer ${decNum("0",[{d:'9',t:'d'},{d:'0',t:'c'},{d:'9',t:'m'}])}</div>
+${exoBlock('ex4',{
+  vis:c=>drawPlace(0.909,"0,909",10,0,1,c,{x1:0,x2:0.9,label:"9 dixièmes",col:'#1a73e8'}),
+  infoCol:'bleu',
+  calcBefore:`Placer ${decNum("0",[{d:'9',t:'d'},{d:'0',t:'c'},{d:'9',t:'m'}])} sur la droite`,
+  calcAfter:`Placer ${decNum("0",[{d:'9',t:'d'},{d:'0',t:'c'},{d:'9',t:'m'}])} sur la droite`,
+  explication:`0,909 est très proche de <strong>9 dixièmes</strong> car les 9 millièmes sont très petits par rapport à 1 dixième.`,
+})}`,
+
+// 5 — Bilan
+()=>`
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  <div class="recap-item fade-in" style="animation-delay:0s;border-left-color:var(--bleu)">
+    <div class="recap-num" style="background:var(--bleu)">1</div>
+    <span>On cherche d'abord combien il y a d'unités → on appelle ça la <strong>partie entière</strong>, le nombre écrit <strong>avant la virgule</strong>.</span>
+  </div>
+  <div class="recap-item fade-in" style="animation-delay:.09s;border-left-color:var(--violet)">
+    <div class="recap-num" style="background:var(--violet)">2</div>
+    <span>On ajoute ensuite les <strong>dixièmes</strong>, puis les <strong>centièmes</strong>, puis les millièmes…</span>
+  </div>
+</div>
+`,
+];
+
+let cur=0;const N=STEPS.length;
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur]();card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(N-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator');ind.innerHTML='';
+  for(let i=0;i<N;i++){const d=document.createElement('div');d.className='step-dot'+(i===cur?' active':i<cur?' done':'');d.textContent=i<cur?'✓':i+1;ind.appendChild(d);}
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${N}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===N-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===N-1?0:cur+1;render();}
+function prev(){if(cur>0){cur--;render();}}
+render();
+</script>
+</body>
+</html>

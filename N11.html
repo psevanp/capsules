@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>N11 Lire une fraction</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme:light;
+    --bleu:#1a73e8; --bleu-clair:#e8f0fe;
+    --vert:#16a34a; --vert-clair:#dcfce7;
+    --rouge:#dc2626; --rouge-clair:#fee2e2;
+    --violet:#7c3aed; --violet-clair:#f5f3ff;
+    --orange:#ea580c; --orange-clair:#ffedd5;
+    --gris:#94a3b8; --bg:#f0f4ff;
+    --card:#ffffff; --texte:#1e293b; --border:#e2e8f0;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Nunito',sans-serif; background:var(--bg); min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:20px 16px 40px; color:var(--texte); }
+  header { display:flex; justify-content:center; margin-bottom:22px; }
+  .header-row { display:flex; align-items:center; gap:14px; max-width:680px; width:100%; }
+  .badge-code { display:inline-flex; align-items:center; justify-content:center; min-width:48px; height:48px; border-radius:12px; border:2.5px solid var(--bleu); background:var(--bleu-clair); font-family:'Baloo 2',cursive; font-size:1.3rem; font-weight:800; color:var(--bleu); flex-shrink:0; }
+  .tache-label { font-family:'Baloo 2',cursive; font-size:1.1rem; font-weight:800; color:var(--bleu); line-height:1.3; }
+  .progress-bar-wrap { width:100%; max-width:680px; background:#dbeafe; border-radius:99px; height:10px; margin-bottom:18px; overflow:hidden; }
+  .progress-bar { height:100%; background:linear-gradient(90deg,var(--bleu),var(--violet)); border-radius:99px; transition:width 0.5s ease; }
+  .steps-indicator { display:flex; gap:10px; margin-bottom:20px; }
+  .step-dot { width:34px; height:34px; border-radius:50%; background:#dbeafe; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:#93c5fd; transition:all 0.4s; border:2px solid transparent; }
+  .step-dot.active { background:var(--bleu); color:white; border-color:var(--bleu); transform:scale(1.15); box-shadow:0 0 0 4px #bfdbfe; }
+  .step-dot.done   { background:var(--vert); color:white; border-color:var(--vert); }
+  .card { background:var(--card); border-radius:20px; padding:26px 24px; max-width:680px; width:100%; min-height:360px; display:flex; flex-direction:column; align-items:center; gap:16px; box-shadow:0 4px 24px rgba(26,115,232,0.10); position:relative; overflow-x:auto; }
+  .card::before { content:''; position:absolute; top:0; left:0; right:0; height:5px; background:linear-gradient(90deg,var(--bleu),var(--violet)); border-radius:20px 20px 0 0; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation:fadeIn 0.4s ease both; }
+  @keyframes pop { 0%{transform:scale(0.8);opacity:0} 70%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
+  .pop { animation:pop 0.45s ease both; }
+  .step-title { font-family:'Baloo 2',cursive; font-size:1.2rem; font-weight:800; color:var(--bleu); text-align:center; line-height:1.3; }
+  .info { border-radius:12px; padding:12px 18px; font-weight:600; max-width:580px; width:100%; line-height:1.6; font-size:0.93rem; }
+  .info.bleu   { background:var(--bleu-clair);   color:var(--bleu);   border-left:4px solid var(--bleu); }
+  .info.orange { background:var(--orange-clair); color:var(--orange); border-left:4px solid var(--orange); }
+  .result-box { font-family:'Baloo 2',cursive; font-size:1.3rem; font-weight:800; text-align:center; background:var(--vert-clair); border-radius:14px; padding:14px 24px; color:var(--vert); border:2px solid var(--vert); max-width:400px; width:100%; }
+  .recap-list { display:flex; flex-direction:column; gap:9px; max-width:580px; width:100%; }
+  .recap-item { display:flex; align-items:flex-start; gap:12px; background:#f8faff; border-radius:12px; padding:11px 16px; font-size:0.93rem; font-weight:600; color:var(--texte); animation:fadeIn 0.4s ease both; border-left:4px solid transparent; line-height:1.5; }
+  .recap-num { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.82rem; font-weight:700; flex-shrink:0; color:white; margin-top:1px; }
+  .nav { display:flex; gap:14px; margin-top:10px; align-items:center; }
+  button.btn-nav { font-family:'Baloo 2',cursive; font-weight:700; font-size:1rem; border:none; cursor:pointer; border-radius:12px; padding:12px 28px; transition:all 0.2s; }
+  .btn-next { background:linear-gradient(135deg,var(--bleu),var(--violet)); color:white; box-shadow:0 4px 14px rgba(26,115,232,0.3); }
+  .btn-next:hover { transform:translateY(-2px); }
+  .btn-next:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+  .btn-prev { background:#e0e7ff; color:var(--bleu); }
+  .btn-prev:hover { background:#c7d2fe; }
+  .step-counter { font-size:0.85rem; color:var(--gris); font-weight:700; }
+  .pourquoi { position:relative; background:#f0fdfa; border-left:4px solid #0d9488; border-radius:10px; padding:12px 15px; font-size:0.92rem; font-weight:600; color:#134e4a; line-height:1.6; max-width:580px; width:100%; }
+  .pq-lead { font-family:'Baloo 2',cursive; font-weight:800; color:#0d9488; }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">N11</div>
+    <div class="tache-label">Lire une fraction</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+// ── Dessiner une fraction avec trait horizontal ────────────────────────────
+// Retourne un élément SVG inline (petit) centré
+// num, den : chaînes, col : couleur
+function fracSVG(num, den, col, fsNum, fsDen){
+  col = col||'var(--texte)';
+  fsNum = fsNum||28; fsDen = fsDen||28;
+  const W = Math.max(fsNum,fsDen)*1.4 + 8;
+  // y du numérateur = sa taille (baseline)
+  const yNum = fsNum;
+  const yTrait = yNum + Math.round(fsNum * 0.28);
+  const yDen = yTrait + 3 + Math.round(fsDen * 0.93);
+  const H = yDen + 4;
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:inline-block;vertical-align:middle;overflow:visible">
+    <text x="${W/2}" y="${yNum}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fsNum}" font-weight="800" fill="${col}">${num}</text>
+    <rect x="0" y="${yTrait}" width="${W}" height="3" rx="1" fill="${col}"/>
+    <text x="${W/2}" y="${yDen}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fsDen}" font-weight="800" fill="${col}">${den}</text>
+  </svg>`;
+}
+
+// ── Représentation rectangulaire avec fraction dans chaque part ──────────────
+// num    : numérateur (parts colorées)
+// den    : dénominateur (total de parts dans 1 unité)
+// unites : nb de rectangles unité à afficher
+// col    : couleur des parts
+function drawRepr(num, den, unites, col, bgcol, strokecol){
+  col      = col      || '#dc2626';
+  bgcol    = bgcol    || '#fee2e2';
+  strokecol= strokecol|| '#dc2626';
+  const UW=480, UH=52, GAP=6, PAD=10;
+  const W = UW*unites + PAD*2;
+  const H = PAD + UH + GAP + UH + PAD;
+  const pw = UW/den;
+  // taille de la fraction dans chaque part
+  const fsF = pw>110?13:pw>80?11:pw>55?10:pw>40?9:8;
+  const trF = Math.max(1, fsF*0.12);
+
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+
+  // unités
+  for(let u=0;u<unites;u++)
+    s+=`<rect x="${PAD+u*UW}" y="${PAD}" width="${UW}" height="${UH}" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+        <text x="${PAD+u*UW+UW/2}" y="${PAD+UH/2+6}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="14" font-weight="800" fill="#14532d">1 unité</text>`;
+
+  // parts
+  const lineY = PAD+UH+GAP;
+  const totalParts = num;
+  for(let p=0;p<totalParts;p++){
+    const x=PAD+p*pw;
+    s+=`<rect x="${x}" y="${lineY}" width="${pw-2}" height="${UH}" rx="5" fill="${bgcol}" stroke="${strokecol}" stroke-width="1.5"/>`;
+    // fraction 1/den dans chaque part
+    if(fsF>=8){
+      const cx=x+(pw-2)/2, htN=fsF+2, traitH=trF+1, g2=4;
+      const cy=lineY+UH/2 - (htN+g2+traitH+g2+fsF)/2;
+      s+=`<text x="${cx}" y="${cy+htN}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fsF}" font-weight="800" fill="${col}">1</text>`;
+      s+=`<rect x="${cx-fsF*0.7}" y="${cy+htN+g2}" width="${fsF*1.4}" height="${traitH}" rx="0" fill="${col}"/>`;
+      s+=`<text x="${cx}" y="${cy+htN+g2+traitH+g2+fsF}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fsF}" font-weight="800" fill="${col}">${den}</text>`;
+    }
+  }
+  s+=`</svg>`;
+  return `<div class="fade-in" style="display:flex;justify-content:center;width:100%">${s}</div>`;
+}
+
+// ── Page d'exemple ────────────────────────────────────────────────────────────
+function exPage(num, den, unites, lecture, col, bgcol, strokecol, annonceNum, annonceDen){
+  const fr = fracSVG(num, den, strokecol||'#dc2626', 42, 42);
+  return `
+<div class="step-title pop">✏️ Lire la fraction : ${fr}</div>
+<div class="fade-in" style="width:100%">${drawRepr(num, den, unites, col, bgcol, strokecol)}</div>
+<div class="info bleu fade-in">
+  <strong>Dénominateur = ${den}</strong> → ${annonceDen}<br>
+  <strong>Numérateur = ${num}</strong> → ${annonceNum}
+</div>
+<div class="result-box fade-in">On lit : <strong>${lecture}</strong></div>`;
+}
+
+// ── Page 1 : schéma annoté + représentation ───────────────────────────────────
+function page1(){
+  const fsG=48, W=500, fracX=100, textX=220;
+  const htN=fsG, tr=4, g=14;
+  const topAnn=16, H=topAnn+htN+g+tr+g+fsG+20;
+
+  let schema=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+
+  // étiquette numérateur
+  schema+=`<text x="${fracX}" y="${topAnn}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--orange)">numérateur</text>`;
+  // chiffre 3
+  const y3 = topAnn+htN;
+  schema+=`<text x="${fracX}" y="${y3}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fsG}" font-weight="800" fill="var(--orange)">3</text>`;
+  // trait (bien en dessous du 3)
+  const yTr = y3+g;
+  schema+=`<rect x="${fracX-40}" y="${yTr}" width="80" height="${tr}" rx="2" fill="var(--texte)"/>`;
+  // chiffre 4
+  const y4 = yTr+tr+g+fsG;
+  schema+=`<text x="${fracX}" y="${y4}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fsG}" font-weight="800" fill="var(--violet)">4</text>`;
+  // étiquette dénominateur
+  schema+=`<text x="${fracX}" y="${y4+16}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--violet)">dénominateur</text>`;
+
+  // "se lit 3 quarts" à droite, centré verticalement
+  const midY = topAnn + (H-topAnn)/2;
+  schema+=`<text x="${textX}" y="${midY-2}" text-anchor="start" font-family="Baloo 2,cursive" font-size="16" font-weight="800" fill="var(--texte)">se lit </text>`;
+  schema+=`<text x="${textX+52}" y="${midY-2}" text-anchor="start" font-family="Baloo 2,cursive" font-size="16" font-weight="800" fill="var(--vert)">3 quarts</text>`;
+
+  schema+=`</svg>`;
+
+  return `
+<div class="step-title pop">💡 Comment lire une fraction</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> L'écriture mathématique d'une fraction est pratique mais son utilisation est risquée : oublier ce que signifie cette fraction. Savoir les lire aide à mieux comprendre quelle est la fraction quand elle est en écriture mathématique.</div>
+<div class="fade-in" style="display:flex;justify-content:center;width:100%">${schema}</div>
+<div class="info bleu fade-in">
+  Le <strong style="color:var(--orange)">numérateur</strong> indique le <strong>nombre de parts</strong>.<br>
+  Le <strong style="color:var(--violet)">dénominateur</strong> indique le <strong>nom de la part</strong>.
+</div>
+${drawRepr(3,4,1,'#dc2626','#fee2e2','#dc2626')}`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+const STEPS = [
+  ()=> page1(),
+
+  // Ex 1 — 2/3
+  ()=> exPage(2, 3, 1, '2 tiers',
+    '#7c3aed','#ede9fe','#7c3aed',
+    'on a 2 parts',
+    'la part s\'appelle tiers (3 parts forment une unité)'),
+
+  // Ex 2 — 5/4
+  ()=> exPage(5, 4, 2, '5 quarts',
+    '#dc2626','#fee2e2','#dc2626',
+    'on a 5 parts',
+    'la part s\'appelle quart (4 parts forment une unité)'),
+
+  // Ex 3 — 3/5
+  ()=> exPage(3, 5, 1, '3 cinquièmes',
+    '#0f766e','#ccfbf1','#0f766e',
+    'on a 3 parts',
+    'la part s\'appelle cinquième (5 parts forment une unité)'),
+
+  // Bilan
+  ()=>`
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  ${[
+    ['var(--rouge)', 'Le <strong>dénominateur</strong> (nombre sous le trait) indique le nom de la part et combien de parts forment une unité.'],
+    ['var(--bleu)',  'Le <strong>numérateur</strong> (nombre au-dessus du trait) indique le nombre de parts.'],
+    ['var(--vert)',  'On lit d\'abord le numérateur, puis le nom de la part donné par le dénominateur.'],
+  ].map(([c,t],i)=>`
+    <div class="recap-item" style="animation-delay:${i*0.09}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${i+1}</div>
+      <span>${t}</span>
+    </div>`).join('')}
+</div>`,
+];
+
+let cur=0; const N=STEPS.length;
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur](); card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(N-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator'); ind.innerHTML='';
+  for(let i=0;i<N;i++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(i===cur?' active':i<cur?' done':'');
+    d.textContent=i<cur?'✓':i+1; ind.appendChild(d);
+  }
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${N}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===N-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===N-1?0:cur+1;render();}
+function prev(){if(cur>0){cur--;render();}}
+render();
+</script>
+</body>
+</html>

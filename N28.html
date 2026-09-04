@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>N28 — Comparer, encadrer, intercaler des nombres décimaux</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{color-scheme:light;--bleu:#1a73e8;--bleu-clair:#e8f0fe;--violet:#7c3aed;--violet-clair:#f5f3ff;--vert:#16a34a;--vert-clair:#dcfce7;--orange:#ea580c;--orange-clair:#ffedd5;--gris:#94a3b8;--bg:#f0f4ff;--card:#fff;--texte:#1e293b;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+  header{display:flex;justify-content:center;margin-bottom:22px;}
+  .header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+  .badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--bleu);background:var(--bleu-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--bleu);flex-shrink:0;}
+  .tache-label{font-family:'Baloo 2',cursive;font-size:1.02rem;font-weight:800;color:var(--bleu);line-height:1.3;}
+  .progress-bar-wrap{width:100%;max-width:680px;background:#dbeafe;border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+  .progress-bar{height:100%;background:linear-gradient(90deg,var(--bleu),var(--violet));border-radius:99px;transition:width .5s ease;}
+  .steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+  .step-dot{width:32px;height:32px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:#93c5fd;transition:all .4s;border:2px solid transparent;}
+  .step-dot.active{background:var(--bleu);color:#fff;border-color:var(--bleu);transform:scale(1.15);box-shadow:0 0 0 4px #bfdbfe;}
+  .step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+  .card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:340px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(26,115,232,.10);position:relative;overflow-x:auto;}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--bleu),var(--violet));border-radius:20px 20px 0 0;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .fade-in{animation:fadeIn .4s ease both;}
+  @keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+  .pop{animation:pop .45s ease both;}
+  .step-title{font-family:'Baloo 2',cursive;font-size:1.12rem;font-weight:800;color:var(--bleu);text-align:center;line-height:1.3;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;}
+  .info{border-radius:12px;padding:12px 16px;font-weight:600;max-width:580px;width:100%;line-height:1.7;font-size:.9rem;}
+  .info.bleu{background:var(--bleu-clair);color:var(--bleu);border-left:4px solid var(--bleu);}
+  .info.violet{background:var(--violet-clair);color:var(--violet);border-left:4px solid var(--violet);}
+  .info.vert{background:var(--vert-clair);color:var(--vert);border-left:4px solid var(--vert);}
+  .btn-complete{font-family:'Baloo 2',cursive;font-weight:700;font-size:.95rem;border:2px solid var(--vert);cursor:pointer;border-radius:10px;padding:10px 22px;background:var(--vert-clair);color:var(--vert);transition:all .2s;}
+  .btn-complete:hover{background:var(--vert);color:#fff;}
+  .recap-list{display:flex;flex-direction:column;gap:9px;max-width:580px;width:100%;}
+  .recap-item{display:flex;align-items:flex-start;gap:12px;background:#f8faff;border-radius:12px;padding:11px 16px;font-size:.92rem;font-weight:600;color:var(--texte);animation:fadeIn .4s ease both;border-left:4px solid transparent;line-height:1.5;}
+  .recap-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:700;flex-shrink:0;color:#fff;margin-top:1px;}
+  .calc-box{background:#f1f5f9;border:2px solid #cbd5e1;border-radius:14px;padding:13px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;font-family:'Baloo 2',cursive;font-size:1.1rem;font-weight:800;width:100%;max-width:540px;transition:background .3s,border-color .3s;}
+  .calc-box .op{color:var(--texte);}
+  .calc-box.bleu{background:var(--bleu-clair);border-color:var(--bleu);}
+  .calc-box.violet{background:var(--violet-clair);border-color:var(--violet);}
+  .nav{display:flex;gap:14px;margin-top:10px;align-items:center;}
+  button.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;cursor:pointer;border-radius:12px;padding:12px 28px;transition:all .2s;}
+  .btn-next{background:linear-gradient(135deg,var(--bleu),var(--violet));color:#fff;box-shadow:0 4px 14px rgba(26,115,232,.3);}
+  .btn-next:hover{transform:translateY(-2px);}
+  .btn-prev{background:#e0e7ff;color:var(--bleu);}
+  .btn-prev:hover{background:#c7d2fe;}
+  .step-counter{font-size:.85rem;color:var(--gris);font-weight:700;}
+  .btn-zoom{font-family:'Baloo 2',cursive;font-weight:700;font-size:.9rem;border:2px solid var(--violet);cursor:pointer;border-radius:10px;padding:8px 18px;background:var(--violet-clair);color:var(--violet);transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+  .btn-zoom:hover{background:var(--violet);color:#fff;}
+  .pourquoi { position:relative; background:#f0fdfa; border-left:4px solid #0d9488; border-radius:10px; padding:12px 15px; font-size:0.92rem; font-weight:600; color:#134e4a; line-height:1.6; max-width:580px; width:100%; }
+  .pq-lead { font-family:'Baloo 2',cursive; font-weight:800; color:#0d9488; }
+</style>
+</head>
+<body>
+<header><div class="header-row">
+  <div class="badge-code">N28</div>
+  <div class="tache-label">Comparer, encadrer et intercaler des nombres décimaux</div>
+</div></header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+<script>
+const EXOS={};
+
+function decNum(intStr,dec,forceOrange){
+  const tc={d:'var(--bleu)',c:'var(--violet)',m:'var(--vert)'};
+  const fs=`font-family:'Baloo 2',cursive;font-size:1.5rem;font-weight:800;line-height:1`;
+  const ic=(intStr==='0'&&!forceOrange)?'var(--gris)':'var(--orange)';
+  let s=`<span style="display:inline-flex;align-items:center;gap:0">`;
+  for(const c of intStr) s+=`<span style="${fs};color:${ic}">${c}</span>`;
+  s+=`<span style="${fs};color:var(--texte)">,</span>`;
+  for(const{d,t}of dec){const col=d==='0'?'var(--gris)':tc[t];s+=`<span style="${fs};color:${col}">${d}</span>`;}
+  return s+`</span>`;
+}
+
+function decLab(cx,y,text,col,hl){
+  const fs=11,fw=text.length*fs*.62+6,bg=col==='#1a73e8'?'#dbeafe':'#ede9fe';
+  let r=hl?`<rect x="${cx-fw/2-4}" y="${y-1}" width="${fw+8}" height="${fs+8}" rx="5" fill="${bg}" stroke="${col}" stroke-width="1.8"/>`:'' ;
+  r+=`<text x="${cx}" y="${y+fs+1}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${col}">${text}</text>`;
+  return r;
+}
+
+// ── Page 2 : barre dixièmes seulement ────────────────────────────────────────
+function drawDecCompareDix(a,aStr,b,bStr,maxUnit,previewUnit,completed){
+  const PADL=24,PADR=20,avail=360,UW=avail/maxUnit;
+  const barH=18,labH=24,barY=labH,barBot=barY+barH;
+  const lineY=barBot+5,lineEnd=PADL+avail+UW*0.12,W=lineEnd+PADR;
+  const unitNumY=lineY+15,H=unitNumY+24;
+  const segW=UW/10,aF=Math.round(a*10),bF=Math.round(b*10),prvU=completed?maxUnit:previewUnit;
+
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  for(let p=0;p<prvU*10;p++){
+    const x=PADL+p*segW,dark=p%2===1;
+    let fill;
+    if(!completed)    fill=dark?'#a8c8f0':'#c0d8f6';
+    else if(p<bF)     fill=dark?'#5a8fd0':'#7aaae0'; // zone commune (plus petit)
+    else if(p<aF)     fill=dark?'#a0c8f4':'#c0dcf8'; // zone extra (seulement a)
+    else              fill=dark?'#d8e8f8':'#e8f2fc';
+    s+=`<rect x="${x}" y="${barY}" width="${segW}" height="${barH}" fill="${fill}"/>`;
+  }
+  s+=`<rect x="${PADL}" y="${barY}" width="${prvU*UW}" height="${barH}" fill="none" stroke="#1a73e8" stroke-width="1.5" rx="1"/>`;
+  s+=`<line x1="${PADL}" y1="${lineY}" x2="${lineEnd}" y2="${lineY}" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>`;
+  for(let u=0;u<=prvU;u++){
+    const x=PADL+u*UW;
+    s+=`<line x1="${x}" y1="${barY-2}" x2="${x}" y2="${lineY+5}" stroke="#1e293b" stroke-width="2"/>`;
+    s+=`<text x="${x}" y="${unitNumY}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="#1e293b" stroke="white" stroke-width="3" paint-order="stroke">${u}</text>`;
+  }
+  if(completed){
+    const xB=PADL+b*UW,xA=PADL+a*UW;
+    s+=`<line x1="${xB}" y1="${barY-2}" x2="${xB}" y2="${lineY+4}" stroke="#1a73e8" stroke-width="2"/>`;
+    s+=`<line x1="${xA}" y1="${barY-2}" x2="${xA}" y2="${lineY+4}" stroke="#1a73e8" stroke-width="2.5"/>`;
+    s+=decLab(xB,2,bStr,'#1a73e8',true);
+    s+=decLab(xA,2,aStr,'#1a73e8',true);
+  }
+  return s+`</svg>`;
+}
+
+// ── Pages 3 : dixièmes dessus + centièmes dessous ────────────────────────────
+function drawDecCompare(a,aStr,b,bStr,maxUnit,previewUnit,completed){
+  const PADL=24,PADR=20,avail=360,UW=avail/maxUnit;
+  const barH=18,labH=24,topBarY=labH,topBarBot=topBarY+barH;
+  const lineY=topBarBot+5,botBarY=lineY+5,botBarBot=botBarY+barH;
+  const unitNumY=botBarBot+15,botLabY=botBarBot+22,H=botLabY+30;
+  const lineEnd=PADL+avail+UW*0.12,W=lineEnd+PADR;
+  const prvU=completed?maxUnit:previewUnit;
+  const topSegW=UW/10,botSegW=UW/100,topF=Math.round(a*10),botF=Math.round(b*100);
+  const CF=['#e0d8ff','#cec2fa','#a898e8','#7c64d8'];
+  const CE=['#f0ecfc','#e8e2f8','#d8d0f0','#c8bce8'];
+  const CP=['#e8e2f8','#dcd4f2','#c0b0ea','#a898e0'];
+
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  for(let p=0;p<prvU*10;p++){
+    const x=PADL+p*topSegW,dark=p%2===1;
+    let fill=!completed?(dark?'#a8c8f0':'#c0d8f6'):p<topF?(dark?'#6a9ee8':'#a0c4f0'):(dark?'#d8e8f8':'#e8f2fc');
+    s+=`<rect x="${x}" y="${topBarY}" width="${topSegW}" height="${barH}" fill="${fill}"/>`;
+  }
+  s+=`<rect x="${PADL}" y="${topBarY}" width="${prvU*UW}" height="${barH}" fill="none" stroke="#1a73e8" stroke-width="1.5" rx="1"/>`;
+  for(let p=0;p<prvU*100;p++){
+    const x=PADL+p*botSegW,g=Math.floor(p/10)%2===1,odd=p%2===1;
+    let fill;
+    if(!completed)      fill=g?(odd?CP[3]:CP[2]):(odd?CP[1]:CP[0]);
+    else if(p<botF)     fill=g?(odd?CF[3]:CF[2]):(odd?CF[1]:CF[0]);
+    else                fill=g?(odd?CE[3]:CE[2]):(odd?CE[1]:CE[0]);
+    s+=`<rect x="${x}" y="${botBarY}" width="${botSegW}" height="${barH}" fill="${fill}"/>`;
+  }
+  s+=`<rect x="${PADL}" y="${botBarY}" width="${prvU*UW}" height="${barH}" fill="none" stroke="#7c3aed" stroke-width="1.5" rx="1"/>`;
+  s+=`<line x1="${PADL}" y1="${lineY}" x2="${lineEnd}" y2="${lineY}" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>`;
+  for(let u=0;u<=prvU;u++){
+    const x=PADL+u*UW;
+    s+=`<line x1="${x}" y1="${topBarY-2}" x2="${x}" y2="${botBarBot+2}" stroke="#1e293b" stroke-width="2"/>`;
+    s+=`<text x="${x}" y="${unitNumY}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="#1e293b" stroke="white" stroke-width="3" paint-order="stroke">${u}</text>`;
+  }
+  if(completed){
+    const xA=PADL+a*UW,xB=PADL+b*UW;
+    s+=`<line x1="${xA}" y1="${topBarY-2}" x2="${xA}" y2="${lineY+4}" stroke="#1a73e8" stroke-width="2.5"/>`;
+    s+=`<line x1="${xB}" y1="${lineY+1}" x2="${xB}" y2="${botBarBot+2}" stroke="#7c3aed" stroke-width="2.5"/>`;
+    s+=decLab(xA,2,aStr,'#1a73e8',true);
+    s+=decLab(xB,botLabY,bStr,'#7c3aed',true);
+  }
+  return s+`</svg>`;
+}
+
+// ── Page 4 : zoom centièmes (lo/hi cachés avant clic) ────────────────────────
+function drawDecZoom(val,valStr,lo,loStr,hi,hiStr,completed,fullLo,fullHi,showDixScale){
+  const fLo=fullLo!==undefined?fullLo:lo, fHi=fullHi!==undefined?fullHi:hi;
+  const PADL=24,PADR=20,avail=360,UW=avail/(fHi-fLo);
+  const labH=24,barH=18,barY=labH,barBot=barY+barH;
+  const lineY=barBot+5,lineEnd=PADL+avail+UW*0.06;
+  const unitNumY=lineY+15,H=unitNumY+28,W=lineEnd+PADR;
+  const barX=PADL+(lo-fLo)*UW, hiX=PADL+(hi-fLo)*UW;
+  const nCent=Math.round((hi-lo)*100), segW=(hiX-barX)/nCent;
+  const filledN=Math.round((val-lo)*100);
+  const fullLineMode=fullLo!==undefined;
+
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  if(completed){
+    // Barre remplie
+    for(let p=0;p<nCent;p++){
+      const x=barX+p*segW,odd=p%2===1;
+      s+=`<rect x="${x}" y="${barY}" width="${segW}" height="${barH}" fill="${p<filledN?(odd?'#7c64d8':'#a898e8'):(odd?'#d8d0f0':'#e8e2f8')}"/>`;
+    }
+    s+=`<rect x="${barX}" y="${barY}" width="${hiX-barX}" height="${barH}" fill="none" stroke="#7c3aed" stroke-width="1.5" rx="1"/>`;
+    // Ticks et labels lo/hi
+    s+=`<line x1="${barX}" y1="${barY-2}" x2="${barX}" y2="${lineY+5}" stroke="#64748b" stroke-width="1.5"/>`;
+    s+=`<line x1="${hiX}" y1="${barY-2}" x2="${hiX}" y2="${lineY+5}" stroke="#64748b" stroke-width="1.5"/>`;
+    s+=`<text x="${barX}" y="${unitNumY}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="#7c3aed" stroke="white" stroke-width="3" paint-order="stroke">${loStr}</text>`;
+    s+=`<text x="${hiX}" y="${unitNumY}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="#7c3aed" stroke="white" stroke-width="3" paint-order="stroke">${hiStr}</text>`;
+  } else if(!fullLineMode){
+    // Mode zoom pur : pointillés + ticks discrets
+    s+=`<rect x="${barX}" y="${barY}" width="${hiX-barX}" height="${barH}" fill="none" stroke="#7c3aed" stroke-width="1.5" rx="1" stroke-dasharray="4,3" opacity="0.5"/>`;
+    s+=`<line x1="${barX}" y1="${barY-2}" x2="${barX}" y2="${lineY+5}" stroke="#64748b" stroke-width="1.5"/>`;
+    s+=`<line x1="${hiX}" y1="${barY-2}" x2="${hiX}" y2="${lineY+5}" stroke="#64748b" stroke-width="1.5"/>`;
+  }
+  // Ligne numérique
+  s+=`<line x1="${PADL}" y1="${lineY}" x2="${lineEnd}" y2="${lineY}" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>`;
+  // Graduations entières
+  for(let u=Math.ceil(fLo);u<=Math.floor(fHi);u++){
+    const x=PADL+(u-fLo)*UW;
+    s+=`<line x1="${x}" y1="${barY-2}" x2="${x}" y2="${lineY+5}" stroke="#1e293b" stroke-width="2"/>`;
+    s+=`<text x="${x}" y="${unitNumY}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="#1e293b" stroke="white" stroke-width="3" paint-order="stroke">${u}</text>`;
+  }
+  if(completed){
+    // Petites graduations dixièmes en gris (sauf lo et hi déjà en violet)
+    if(showDixScale){
+      for(let d=1;d<=9;d++){
+        const dv=d/10, skip=Math.abs(dv-lo)<0.001||Math.abs(dv-hi)<0.001;
+        if(!skip){
+          const x=PADL+(dv-fLo)*UW;
+          s+=`<line x1="${x}" y1="${lineY-3}" x2="${x}" y2="${lineY+3}" stroke="#94a3b8" stroke-width="1"/>`;
+          s+=`<text x="${x}" y="${unitNumY}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="10" font-weight="700" fill="#94a3b8">0,${d}</text>`;
+        }
+      }
+    }
+    // Marqueur + étiquette de la valeur placée
+    const markX=PADL+(val-fLo)*UW;
+    s+=`<line x1="${markX}" y1="${barY-2}" x2="${markX}" y2="${lineY+5}" stroke="#7c3aed" stroke-width="2.5"/>`;
+    s+=decLab(markX,2,valStr,'#7c3aed',true);
+  }
+  return s+`</svg>`;
+}
+
+// ── Page 5 : intercalation avec animation zoom [1;1,5] ──────────────────────
+function drawDecIntercal(values,lo,hi,maxUnit,completed,uid){
+  const PADL=24,PADR=20,avail=360,UW=avail/maxUnit;
+  const labH=52,barH=18,barY=labH,barBot=barY+barH;
+  const lineY=barBot+5,lineEnd=PADL+avail+UW*0.06;
+  const unitNumY=lineY+15,H=unitNumY+52,W=Math.round(lineEnd+PADR);
+  const cW=UW/100,nCentBar=Math.round(hi*100);
+  const zX1=PADL+0.98*UW, zX2=PADL+1.52*UW, zW=zX2-zX1;
+  const anim=!!(completed&&uid);
+  const ve=anim?' vector-effect="non-scaling-stroke"':'';
+  const rowY=[4,24,4,24]; // 2 hauteurs alternées
+  const topPct=(unitNumY/H*100).toFixed(2);       // y% pour "1" (entier)
+  const refTopPct=((lineY+6)/H*100).toFixed(2);   // y% proche ligne pour 1,1 / 1,2 / 1,5
+
+  let s;
+  if(anim){
+    s=`<div style="overflow:hidden;width:100%;max-width:${W}px;position:relative;aspect-ratio:${W}/${H}">`;
+    s+=`<svg id="zsvg-${uid}" data-fullw="${W}" data-h="${H}" data-zx1="${zX1.toFixed(1)}" data-zw="${zW.toFixed(1)}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%">`;
+  } else {
+    s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  }
+
+  if(completed){
+    const CP=['#e8e2f8','#dcd4f2','#c0b0ea','#a898e0'];
+    for(let p=0;p<nCentBar;p++){
+      const x=PADL+p*cW,g=Math.floor(p/10)%2===1,odd=p%2===1;
+      s+=`<rect x="${x}" y="${barY}" width="${cW}" height="${barH}" fill="${g?(odd?CP[3]:CP[2]):(odd?CP[1]:CP[0])}"/>`;
+    }
+    s+=`<rect x="${PADL}" y="${barY}" width="${nCentBar*cW}" height="${barH}" fill="none" stroke="#7c3aed" stroke-width="1.2" rx="1"${ve}/>`;
+    // Ticks des 4 valeurs
+    for(let i=0;i<values.length;i++){
+      const{val,str,col}=values[i],mx=PADL+val*UW;
+      s+=`<line x1="${mx}" y1="${rowY[i]+12}" x2="${mx}" y2="${lineY+5}" stroke="${col}" stroke-width="1.6"${ve}/>`;
+      if(!anim) s+=decLab(mx,rowY[i],str,col,true);
+    }
+    // Ticks des bornes
+    const xLo=PADL+lo*UW,xHi=PADL+hi*UW;
+    s+=`<line x1="${xLo}" y1="${barY-2}" x2="${xLo}" y2="${lineY+22}" stroke="#1e293b" stroke-width="2"${ve}/>`;
+    s+=`<line x1="${xHi}" y1="${barY-2}" x2="${xHi}" y2="${lineY+22}" stroke="#1e293b" stroke-width="2"${ve}/>`;
+    if(!anim){
+      s+=`<text x="${xLo}" y="${lineY+20}" text-anchor="end" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="#1e293b" stroke="white" stroke-width="3" paint-order="stroke">${lo.toString().replace('.',',')}</text>`;
+      s+=`<text x="${xHi}" y="${lineY+20}" text-anchor="start" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="#1e293b" stroke="white" stroke-width="3" paint-order="stroke">${hi.toString().replace('.',',')}</text>`;
+    }
+    // En mode anim : ticks gris pour 1,1 et 1,2 + tick pour 1,5
+    if(anim){
+      for(const mv of [1.1,1.2]){
+        const xm=PADL+mv*UW;
+        s+=`<line x1="${xm}" y1="${lineY-3}" x2="${xm}" y2="${lineY+3}" stroke="#94a3b8" stroke-width="1"${ve}/>`;
+      }
+      s+=`<line x1="${zX2}" y1="${lineY-4}" x2="${zX2}" y2="${lineY+4}" stroke="#94a3b8" stroke-width="1.5"${ve}/>`;
+    }
+  }
+
+  // Ligne + graduations entières (en mode anim : "1" est HTML overlay pour ne pas s'étirer)
+  s+=`<line x1="${PADL}" y1="${lineY}" x2="${lineEnd}" y2="${lineY}" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"${ve}/>`;
+  for(let u=0;u<=maxUnit;u++){
+    const x=PADL+u*UW;
+    s+=`<line x1="${x}" y1="${barY-2}" x2="${x}" y2="${lineY+5}" stroke="#1e293b" stroke-width="2"${ve}/>`;
+    if(!anim||u!==1) s+=`<text x="${x}" y="${unitNumY}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="#1e293b" stroke="white" stroke-width="3" paint-order="stroke">${u}</text>`;
+  }
+  s+=`</svg>`;
+
+  if(anim){
+    const bgs=['#dbeafe','#dcfce7','#ffedd5','#ede9fe'];
+    // 4 étiquettes valeurs
+    for(let i=0;i<values.length;i++){
+      const{val,str,col}=values[i],mx=PADL+val*UW;
+      const ls=(mx/W*100).toFixed(2),le=((mx-zX1)/zW*100).toFixed(2);
+      s+=`<div id="vl${i}-${uid}" data-ls="${ls}" data-le="${le}" style="position:absolute;left:${ls}%;top:${(rowY[i]/H*100).toFixed(2)}%;transform:translateX(-50%);background:${bgs[i]};border:1.5px solid ${col};border-radius:5px;padding:1px 5px;font-family:'Baloo 2',cursive;font-weight:800;font-size:11px;color:${col};white-space:nowrap;z-index:2">${str}</div>`;
+    }
+    // Bornes 1,27 et 1,4 en NOIR — juste sous l'extrémité des ticks allongés
+    const xLo=PADL+lo*UW,xHi=PADL+hi*UW;
+    const tb=((lineY+24)/H*100).toFixed(2);
+    const ls_lo=(xLo/W*100).toFixed(2),le_lo=((xLo-zX1)/zW*100).toFixed(2);
+    const ls_hi=(xHi/W*100).toFixed(2),le_hi=((xHi-zX1)/zW*100).toFixed(2);
+    s+=`<div id="blo-${uid}" data-ls="${ls_lo}" data-le="${le_lo}" style="position:absolute;left:${ls_lo}%;top:${tb}%;transform:translateX(-75%);background:rgba(255,255,255,.9);border-radius:3px;padding:0 3px;font-family:'Baloo 2',cursive;font-weight:800;font-size:14px;color:#1e293b;white-space:nowrap">${lo.toString().replace('.',',')}</div>`;
+    s+=`<div id="bhi-${uid}" data-ls="${ls_hi}" data-le="${le_hi}" style="position:absolute;left:${ls_hi}%;top:${tb}%;transform:translateX(-25%);background:rgba(255,255,255,.9);border-radius:3px;padding:0 3px;font-family:'Baloo 2',cursive;font-weight:800;font-size:14px;color:#1e293b;white-space:nowrap">${hi.toString().replace('.',',')}</div>`;
+    // "1" en HTML (non étiré) : même hauteur que les labels entiers SVG
+    const x1svg=PADL+1*UW,ls1=(x1svg/W*100).toFixed(2),le1=((x1svg-zX1)/zW*100).toFixed(2);
+    s+=`<div id="int1-${uid}" data-ls="${ls1}" data-le="${le1}" style="position:absolute;left:${ls1}%;top:${topPct}%;transform:translateX(-50%);font-family:'Baloo 2',cursive;font-weight:800;font-size:13px;color:#1e293b;white-space:nowrap;background:rgba(255,255,255,.85);padding:0 2px;border-radius:2px">1</div>`;
+    // "1,5" en HTML, proche de la ligne, invisible → apparaît en fin d'animation
+    const ls15=(zX2/W*100).toFixed(2),le15=((zX2-zX1)/zW*100).toFixed(2);
+    s+=`<div id="dec15-${uid}" data-ls="${ls15}" data-le="${le15}" style="position:absolute;left:${ls15}%;top:${refTopPct}%;transform:translateX(-100%);font-family:'Baloo 2',cursive;font-weight:700;font-size:11px;color:#94a3b8;white-space:nowrap;background:rgba(255,255,255,.85);padding:0 2px;border-radius:2px">1,5</div>`;
+    // "1,1" et "1,2" gris — proches de leur graduation
+    for(const [mv,str] of [[1.1,'1,1'],[1.2,'1,2']]){
+      const xm=PADL+mv*UW,lsm=(xm/W*100).toFixed(2),lem=((xm-zX1)/zW*100).toFixed(2);
+      s+=`<div id="ref${str.replace(',','')}-${uid}" data-ls="${lsm}" data-le="${lem}" style="position:absolute;left:${lsm}%;top:${refTopPct}%;transform:translateX(-50%);font-family:'Baloo 2',cursive;font-weight:700;font-size:10px;color:#94a3b8;white-space:nowrap;background:rgba(255,255,255,.7);padding:0 2px;border-radius:2px">${str}</div>`;
+    }
+    s+=`</div>`;
+  }
+  return s;
+}
+
+// ── Animation zoom [1;1,5] pour page 5 ───────────────────────────────────────
+function animateZoomIntercal(uid){
+  const svg=document.getElementById('zsvg-'+uid);
+  const btn=document.getElementById('zbtn-'+uid);
+  if(btn) btn.style.display='none';
+  const W=+svg.dataset.fullw,H=+svg.dataset.h;
+  const zX1=+svg.dataset.zx1,zW=+svg.dataset.zw;
+  const labIds=['vl0','vl1','vl2','vl3','blo','bhi','int1','ref11','ref12','dec15'].map(id=>id+'-'+uid);
+  const dur=3000,t0=performance.now();
+  function ease(t){return t<0.5?2*t*t:-1+(4-2*t)*t;}
+  function step(now){
+    const raw=Math.min(1,(now-t0)/dur),p=ease(raw);
+    svg.setAttribute('viewBox',`${zX1*p} 0 ${W+(zW-W)*p} ${H}`);
+    for(const id of labIds){
+      const el=document.getElementById(id);
+      if(!el) continue;
+      el.style.left=(+el.dataset.ls+(+el.dataset.le - +el.dataset.ls)*p)+'%';
+    }
+    if(raw<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// ── exoBlock / completer ──────────────────────────────────────────────────────
+function exoBlock(uid,cfg){
+  EXOS[uid]=cfg;
+  const vis=cfg.vis?cfg.vis(false):'';
+  return `<div id="wrap-${uid}" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:12px">
+  ${vis?`<div id="vis-${uid}" class="fade-in" style="width:100%">${vis}</div>`:''}
+  ${cfg.zoom?`<button id="zbtn-${uid}" class="btn-zoom" style="display:none" onclick="animateZoomIntercal('${uid}')">🔍 Zoom</button>`:''}
+  <div id="calc-${uid}" class="calc-box fade-in">${cfg.calcBefore}</div>
+  <button class="btn-complete" onclick="completer('${uid}')">✏️ Compléter</button>
+  <div id="res-${uid}" style="display:none;flex-direction:column;align-items:center;gap:10px;width:100%" class="fade-in">
+    ${cfg.resText?`<div style="font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:600;color:var(--gris);text-align:center">${cfg.resText}</div>`:''}
+    ${cfg.expl?`<div class="info ${cfg.col||'bleu'}" style="font-size:.88rem">${cfg.expl}</div>`:''}
+  </div>
+</div>`;
+}
+function completer(uid){
+  const c=EXOS[uid];
+  if(c.vis) document.getElementById('vis-'+uid).innerHTML=c.vis(true);
+  if(c.zoom){const zb=document.getElementById('zbtn-'+uid);if(zb)zb.style.display='inline-flex';}
+  const el=document.getElementById('calc-'+uid);
+  el.innerHTML=c.calcAfter; el.className='calc-box '+(c.col||'bleu')+' fade-in';
+  document.getElementById('wrap-'+uid).querySelector('.btn-complete').style.display='none';
+  document.getElementById('res-'+uid).style.display='flex';
+}
+
+const QM=`<span style="background:#e2e8f0;border-radius:6px;padding:1px 10px;color:#94a3b8">?</span>`;
+const BLK=`<span style="color:var(--gris);font-size:1.25em">…</span>`;
+
+const STEPS=[
+// 0 — Règle
+()=>`
+<div class="step-title pop">💡 Comparer des nombres décimaux</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> Les nombres décimaux représentent des quantités : il est important de pouvoir les comparer, les encadrer et en intercaler.</div>
+<div class="recap-list">
+  <div class="recap-item fade-in" style="animation-delay:0s;border-left-color:var(--orange)">
+    <div class="recap-num" style="background:var(--orange)">1</div>
+    <span>On compare d'abord les <strong>parties entières</strong> (le nombre avant la virgule). La plus grande partie entière donne le plus grand nombre.</span>
+  </div>
+  <div class="recap-item fade-in" style="animation-delay:.12s;border-left-color:var(--bleu)">
+    <div class="recap-num" style="background:var(--bleu)">2</div>
+    <span>Si les parties entières sont <strong>égales</strong>, on compare les <strong>dixièmes</strong>, puis les <strong>centièmes</strong>...</span>
+  </div>
+</div>
+`,
+// 1 — Comparer 1,6 et 1,60
+()=>`
+<div class="step-title pop">✏️ Comparer ${decNum("1",[{d:'6',t:'d'}])} et ${decNum("1",[{d:'6',t:'d'},{d:'0',t:'c'}])}</div>
+${exoBlock('ex0',{
+  vis:c=>drawDecCompare(1.6,"1,6",1.60,"1,60",2,1,c),
+  col:'bleu',
+  calcBefore:`${decNum("1",[{d:'6',t:'d'}])} <span class="op">${QM}</span> ${decNum("1",[{d:'6',t:'d'},{d:'0',t:'c'}])}`,
+  calcAfter:`${decNum("1",[{d:'6',t:'d'}])} <span class="op" style="font-size:1.4em">=</span> ${decNum("1",[{d:'6',t:'d'},{d:'0',t:'c'}])}`,
+  resText:`Les deux nombres ont 1 unité et 6 dixièmes.`,
+  expl:`Le 0 de 1,60 indique qu'il y a 0 centièmes en plus.<br>Il ne donne aucune information supplémentaire.<br>Les deux nombres sont donc égaux.`,
+})}`,
+// 2 — Comparer 1,3 et 0,9
+()=>`
+<div class="step-title pop">✏️ Comparer ${decNum("1",[{d:'3',t:'d'}])} et ${decNum("0",[{d:'9',t:'d'}],true)}</div>
+${exoBlock('ex1',{
+  vis:c=>drawDecCompareDix(1.3,"1,3",0.9,"0,9",2,1,c),
+  col:'bleu',
+  calcBefore:`${decNum("1",[{d:'3',t:'d'}])} <span class="op">${QM}</span> ${decNum("0",[{d:'9',t:'d'}],true)}`,
+  calcAfter:`${decNum("1",[{d:'3',t:'d'}])} <span class="op" style="font-size:1.4em">&gt;</span> ${decNum("0",[{d:'9',t:'d'}],true)}`,
+  expl:`Il y a <strong>1 unité</strong> dans 1,3 alors qu'il n'y en a pas dans 0,9.<br>Donc <strong>1,3 est plus grand que 0,9</strong>.`,
+})}`,
+// 3 — Comparer 0,58 et 0,7
+()=>`
+<div class="step-title pop">✏️ Comparer ${decNum("0",[{d:'5',t:'d'},{d:'8',t:'c'}])} et ${decNum("0",[{d:'7',t:'d'}])}</div>
+${exoBlock('ex2',{
+  vis:c=>drawDecCompare(0.7,"0,7",0.58,"0,58",1,1,c),
+  col:'violet',
+  calcBefore:`${decNum("0",[{d:'5',t:'d'},{d:'8',t:'c'}])} <span class="op">${QM}</span> ${decNum("0",[{d:'7',t:'d'}])}`,
+  calcAfter:`${decNum("0",[{d:'5',t:'d'},{d:'8',t:'c'}])} <span class="op" style="font-size:1.4em">&lt;</span> ${decNum("0",[{d:'7',t:'d'}])}`,
+  resText:`<span style="color:var(--bleu);font-weight:700">5 dixièmes</span> et <span style="color:var(--violet);font-weight:700">8 centièmes</span> est plus petit que <span style="color:var(--bleu);font-weight:700">7 dixièmes</span>.`,
+  expl:`Les parties entières sont identiques (0 = 0).<br>Les chiffres des dixièmes (<strong>5</strong> et <strong>7</strong>) sont différents et nous permettent de conclure : <strong>0,58 &lt; 0,7</strong>.`,
+})}`,
+// 3 — Encadrer 0,47
+()=>`
+<div class="step-title pop">✏️ Encadrer ${decNum("0",[{d:'4',t:'d'},{d:'7',t:'c'}])} au dixième près</div>
+${exoBlock('ex3',{
+  vis:c=>drawDecZoom(0.47,"0,47",0.4,"0,4",0.5,"0,5",c,0,1,true),
+  col:'violet',
+  calcBefore:`${BLK} <span class="op">&lt;</span> ${decNum("0",[{d:'4',t:'d'},{d:'7',t:'c'}])} <span class="op">&lt;</span> ${BLK}`,
+  calcAfter:`${decNum("0",[{d:'4',t:'d'}])} <span class="op">&lt;</span> ${decNum("0",[{d:'4',t:'d'},{d:'7',t:'c'}])} <span class="op">&lt;</span> ${decNum("0",[{d:'5',t:'d'}])}`,
+  resText:`0,47 est entre <span style="color:var(--bleu);font-weight:700">4 dixièmes</span> et <span style="color:var(--violet);font-weight:700">5 dixièmes</span>.`,
+  expl:`Car 0,47 c'est <strong style="color:var(--bleu)">4 dixièmes</strong> + 7 centièmes.`,
+})}`,
+// 4 — Intercaler entre 1,27 et 1,4
+()=>`
+<div class="step-title pop">✏️ Intercaler entre ${decNum("1",[{d:'2',t:'d'},{d:'7',t:'c'}])} et ${decNum("1",[{d:'4',t:'d'}])}</div>
+${exoBlock('ex4',{
+  vis:c=>drawDecIntercal(
+    [{val:1.28,str:"1,28",col:'#1a73e8'},{val:1.3,str:"1,3",col:'#16a34a'},{val:1.347,str:"1,347",col:'#ea580c'},{val:1.38,str:"1,38",col:'#7c3aed'}],
+    1.27,1.4,2,c,c?'ex4':null),
+  zoom:true,
+  col:'violet',
+  calcBefore:`${decNum("1",[{d:'2',t:'d'},{d:'7',t:'c'}])} <span class="op">&lt;</span> ${BLK} <span class="op">&lt;</span> ${decNum("1",[{d:'4',t:'d'}])}`,
+  calcAfter:`1,27 <span class="op">&lt;</span> <span style="color:#1a73e8">1,28</span> <span class="op">&lt;</span> <span style="color:#16a34a">1,3</span> <span class="op">&lt;</span> <span style="color:#ea580c">1,347</span> <span class="op">&lt;</span> <span style="color:#7c3aed">1,38</span> <span class="op">&lt;</span> 1,4`,
+  expl:`On peut intercaler de nombreux nombres entre 1,27 et 1,4.`,
+})}`,
+// 5 — Bilan
+()=>`
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  <div class="recap-item fade-in" style="animation-delay:0s;border-left-color:var(--bleu)">
+    <div class="recap-num" style="background:var(--bleu)">1</div>
+    <span>Pour <strong>comparer</strong> : partie entière, puis dixièmes, puis centièmes… Le premier chiffre différent décide.</span>
+  </div>
+  <div class="recap-item fade-in" style="animation-delay:.09s;border-left-color:var(--violet)">
+    <div class="recap-num" style="background:var(--violet)">2</div>
+    <span>0,40 c'est <strong>4 dixièmes</strong> (et 0 centième), on peut l'écrire <strong>0,4</strong>.</span>
+  </div>
+  <div class="recap-item fade-in" style="animation-delay:.18s;border-left-color:var(--vert)">
+    <div class="recap-num" style="background:var(--vert)">3</div>
+    <span><strong>Encadrer</strong> c'est trouver un nombre <strong>plus petit</strong> et un nombre <strong>plus grand</strong>.</span>
+  </div>
+  <div class="recap-item fade-in" style="animation-delay:.27s;border-left-color:var(--orange)">
+    <div class="recap-num" style="background:var(--orange)">4</div>
+    <span><strong>Intercaler</strong> c'est placer un nombre <strong>entre deux autres nombres</strong> qui sont donnés.</span>
+  </div>
+</div>
+`,
+];
+
+let cur=0;const N=STEPS.length;
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur]();card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(N-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator');ind.innerHTML='';
+  for(let i=0;i<N;i++){const d=document.createElement('div');d.className='step-dot'+(i===cur?' active':i<cur?' done':'');d.textContent=i<cur?'✓':i+1;ind.appendChild(d);}
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${N}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===N-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===N-1?0:cur+1;render();}
+function prev(){if(cur>0){cur--;render();}}
+render();
+</script>
+</body>
+</html>

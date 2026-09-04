@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>N29 Additionner ou soustraire des nombres décimaux</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{color-scheme:light;--bleu:#1a73e8;--bleu-clair:#e8f0fe;--vert:#16a34a;--vert-clair:#dcfce7;--orange:#ea580c;--orange-clair:#ffedd5;--violet:#7c3aed;--violet-clair:#f5f3ff;--gris:#94a3b8;--bg:#f0f4ff;--card:#fff;--texte:#1e293b;--border:#e2e8f0;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+  header{display:flex;justify-content:center;margin-bottom:22px;}
+  .header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+  .badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--bleu);background:var(--bleu-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--bleu);flex-shrink:0;}
+  .tache-label{font-family:'Baloo 2',cursive;font-size:1.02rem;font-weight:800;color:var(--bleu);line-height:1.3;}
+  .progress-bar-wrap{width:100%;max-width:680px;background:#dbeafe;border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+  .progress-bar{height:100%;background:linear-gradient(90deg,var(--bleu),var(--violet));border-radius:99px;transition:width .5s ease;}
+  .steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+  .step-dot{width:32px;height:32px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:#93c5fd;transition:all .4s;border:2px solid transparent;}
+  .step-dot.active{background:var(--bleu);color:#fff;border-color:var(--bleu);transform:scale(1.15);box-shadow:0 0 0 4px #bfdbfe;}
+  .step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+  .card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:340px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(26,115,232,.10);position:relative;overflow-x:auto;}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--bleu),var(--violet));border-radius:20px 20px 0 0;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .fade-in{animation:fadeIn .4s ease both;}
+  @keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+  .pop{animation:pop .45s ease both;}
+  .step-title{font-family:'Baloo 2',cursive;font-size:1.12rem;font-weight:800;color:var(--bleu);text-align:center;line-height:1.3;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;}
+  .info{border-radius:12px;padding:12px 16px;font-weight:600;max-width:580px;width:100%;line-height:1.7;font-size:.9rem;}
+  .info.bleu{background:var(--bleu-clair);color:var(--bleu);border-left:4px solid var(--bleu);}
+  .info.gris{background:#f1f5f9;color:#475569;border-left:4px solid var(--gris);}
+  .btn-complete{font-family:'Baloo 2',cursive;font-weight:700;font-size:.95rem;border:2px solid var(--vert);cursor:pointer;border-radius:10px;padding:10px 22px;background:var(--vert-clair);color:var(--vert);transition:all .2s;}
+  .btn-complete:hover{background:var(--vert);color:#fff;}
+  .btn-transform{font-family:'Baloo 2',cursive;font-weight:700;font-size:.95rem;border:2px solid var(--orange);cursor:pointer;border-radius:10px;padding:10px 22px;background:var(--orange-clair);color:var(--orange);transition:all .2s;}
+  .btn-transform:hover{background:var(--orange);color:#fff;}
+  .recap-list{display:flex;flex-direction:column;gap:9px;max-width:580px;width:100%;}
+  .recap-item{display:flex;align-items:flex-start;gap:12px;background:#f8faff;border-radius:12px;padding:11px 16px;font-size:.92rem;font-weight:600;color:var(--texte);animation:fadeIn .4s ease both;border-left:4px solid transparent;line-height:1.5;}
+  .recap-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:700;flex-shrink:0;color:#fff;margin-top:1px;}
+  .nav{display:flex;gap:14px;margin-top:10px;align-items:center;}
+  button.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;cursor:pointer;border-radius:12px;padding:12px 28px;transition:all .2s;}
+  .btn-next{background:linear-gradient(135deg,var(--bleu),var(--violet));color:#fff;box-shadow:0 4px 14px rgba(26,115,232,.3);}
+  .btn-next:hover{transform:translateY(-2px);}
+  .btn-prev{background:#e0e7ff;color:var(--bleu);}
+  .btn-prev:hover{background:#c7d2fe;}
+  .btn-reset{font-family:'Baloo 2',cursive;font-weight:600;font-size:.8rem;border:1.5px solid #cbd5e1;cursor:pointer;border-radius:8px;padding:5px 14px;background:#f8fafc;color:#94a3b8;transition:all .2s;}
+  .btn-reset:hover{background:#e2e8f0;color:#64748b;}
+  .step-counter{font-size:.85rem;color:var(--gris);font-weight:700;}
+  .exo-wrap{width:100%;display:flex;flex-direction:column;align-items:center;gap:12px;}
+  .calc-box{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;font-family:'Baloo 2',cursive;font-size:2rem;font-weight:800;width:100%;max-width:540px;}
+  .calc-box .op{color:var(--texte);}
+  @keyframes revealResult{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+  .result-reveal{animation:revealResult .45s cubic-bezier(.34,1.56,.64,1) both;}
+  .pourquoi { position:relative; background:#f0fdfa; border-left:4px solid #0d9488; border-radius:10px; padding:12px 15px; font-size:0.92rem; font-weight:600; color:#134e4a; line-height:1.6; max-width:580px; width:100%; }
+  .pq-lead { font-family:'Baloo 2',cursive; font-weight:800; color:#0d9488; }
+</style>
+</head>
+<body>
+<header><div class="header-row">
+  <div class="badge-code">N29</div>
+  <div class="tache-label">Additionner ou soustraire des nombres décimaux</div>
+</div></header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+const COL_U='var(--orange)';
+const COL_D='var(--bleu)';
+const COL_C='var(--violet)';
+const COL_M='var(--vert)';
+
+// ── Petite flèche SVG (marker réutilisable) ───────────────────────────────────
+// Renvoie un id unique et insère le marker dans s
+function mkArrow(s, col, id){
+  // Petite pointe fine : markerWidth=5, path triangulaire étroit
+  s.push(`<defs><marker id="${id}" markerWidth="5" markerHeight="5" refX="4.5" refY="2" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,4 L5,2 z" fill="${col}"/></marker></defs>`);
+}
+
+// ── Tableau de position ────────────────────────────────────────────────────────
+// entCols : ['DIZAINES','UNITÉS'] etc.
+// decCols : ['DIXIÈMES','CENTIÈMES'] etc.
+// rows    : [{cells:[{val,col,bg},...], sep:bool, noComma:bool}]
+//   - sep:true → tiret pointillé AVANT cette ligne
+//   - La 3e ligne (index 2 si sep) n'est visible que si showResult=true
+// showResult : boolean — contrôle la visibilité de la ligne résultat (sep)
+// downArrows : [{fromRow,toRow,colIdx,arrowCol}]
+function tableauAdd(entCols, decCols, rows, showResult, downArrows){
+  const nEnt=entCols.length, nDec=decCols.length, N=nEnt+nDec;
+  const CW=66, HDR=38, ROW=46, HDR1=18, HDR2=HDR-HDR1;
+
+  // Compter TOUTES les lignes pour la hauteur (y compris résultat masqué) → pas de saut de layout
+  let rowDefs=[], sepRows=[], allRows=[];
+  rows.forEach(r=>{
+    allRows.push(r);
+    if(r.sep){
+      if(showResult){ sepRows.push(rowDefs.length); rowDefs.push(r); }
+      // sinon : on ne dessine pas la ligne mais on réserve la hauteur
+    } else {
+      rowDefs.push(r);
+    }
+  });
+  const nRows=rowDefs.length;
+  const nAllRows=allRows.length; // hauteur basée sur toutes les lignes (y compris fantômes)
+  const TH=HDR+ROW*nAllRows;
+  const W=N*CW;
+  const xV=nEnt*CW; // x de la virgule
+
+  const buf=[];
+  buf.push(`<svg width="${W}" height="${TH}" viewBox="0 0 ${W} ${TH}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`);
+  buf.push(`<rect x="0" y="0" width="${W}" height="${TH}" rx="10" fill="white" stroke="var(--border)" stroke-width="2"/>`);
+
+  // En-têtes groupe
+  buf.push(`<rect x="0" y="0" width="${nEnt*CW}" height="${HDR1}" fill="#fff7ed"/>`);
+  buf.push(`<text x="${nEnt*CW/2}" y="${HDR1-5}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="7.5" font-weight="800" fill="${COL_U}" letter-spacing="0.4">PARTIE ENTIÈRE</text>`);
+  buf.push(`<rect x="${nEnt*CW}" y="0" width="${nDec*CW}" height="${HDR1}" fill="#eff6ff"/>`);
+  buf.push(`<text x="${nEnt*CW+nDec*CW/2}" y="${HDR1-5}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="7.5" font-weight="800" fill="${COL_D}" letter-spacing="0.4">PARTIE DÉCIMALE</text>`);
+  buf.push(`<line x1="0" y1="${HDR1}" x2="${W}" y2="${HDR1}" stroke="var(--border)" stroke-width="1"/>`);
+
+  // En-têtes colonnes
+  const colColors={'DIZAINES':'#64748b','UNITÉS':COL_U,'DIXIÈMES':COL_D,'CENTIÈMES':COL_C,'MILLIÈMES':COL_M};
+  [...entCols,...decCols].forEach((c,i)=>{
+    buf.push(`<rect x="${i*CW}" y="${HDR1}" width="${CW}" height="${HDR2}" fill="#f8faff"/>`);
+    buf.push(`<text x="${i*CW+CW/2}" y="${HDR-5}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="7.5" font-weight="700" fill="${colColors[c]||'var(--gris)'}" letter-spacing="0.2">${c}</text>`);
+  });
+
+  // Séparations verticales — TOUTES fines, pas de trait épais entier/décimal
+  for(let i=1;i<N;i++){
+    buf.push(`<line x1="${i*CW}" y1="${HDR1}" x2="${i*CW}" y2="${TH}" stroke="var(--border)" stroke-width="1"/>`);
+  }
+
+  // Lignes horizontales — on saute le trait entre les addends (après la 1ère ligne de données)
+  for(let i=0;i<nRows;i++){
+    if(i===0) continue; // pas de séparation entre 1er et 2e addend
+    buf.push(`<line x1="0" y1="${HDR+ROW*(i+1)}" x2="${W}" y2="${HDR+ROW*(i+1)}" stroke="var(--border)" stroke-width="1.2"/>`);
+  }
+
+  // Séparateurs pointillés
+  sepRows.forEach(ri=>{
+    const y=HDR+ROW*ri;
+    buf.push(`<line x1="6" y1="${y}" x2="${W-6}" y2="${y}" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="5,3"/>`);
+  });
+
+  // Virgules (grosse, noire, centrée sur la frontière entier/décimal)
+  rowDefs.forEach((row,ri)=>{
+    if(row.noComma) return;
+    const cy=HDR+ri*ROW+ROW/2+9;
+    buf.push(`<text x="${xV}" y="${cy}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="28" font-weight="800" fill="#1e293b">,</text>`);
+  });
+
+  // Cellules + zéros gris pour cases vides suivies d'un chiffre
+  rowDefs.forEach((row,ri)=>{
+    const y0=HDR+ri*ROW;
+    const cells=row.cells||[];
+    // Pré-calculer l'index du dernier chiffre non-vide
+    let lastFilled=-1;
+    cells.forEach((d,ci)=>{ if(d&&d.val!==undefined&&d.val!=='') lastFilled=ci; });
+    cells.forEach((d,ci)=>{
+      const isEmpty=!d||d.val===undefined||d.val==='';
+      const cx=ci*CW+CW/2, cy=y0+ROW/2+8;
+      if(isEmpty){
+        // Zéro gris si une cellule non-vide suit à droite
+        if(ci<lastFilled){
+          buf.push(`<text x="${cx}" y="${cy}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="20" font-weight="800" fill="#94a3b8">0</text>`);
+        }
+        return;
+      }
+      const col=d.col||'var(--texte)';
+      const fs=String(d.val).length>2?15:20;
+      if(d.bg) buf.push(`<rect x="${ci*CW+CW/2-19}" y="${y0+ROW/2-15}" width="38" height="30" rx="7" fill="${d.bg}" stroke="${col}" stroke-width="1.8"/>`);
+      buf.push(`<text x="${cx}" y="${cy}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${col}">${d.val}</text>`);
+    });
+  });
+
+  // Flèches descendantes (retenue)
+  if(downArrows && showResult){
+    downArrows.forEach(a=>{
+      const cx=a.colIdx*CW+CW/2;
+      const y1=HDR+a.fromRow*ROW+ROW*0.82;
+      const y2=HDR+a.toRow*ROW+ROW*0.18;
+      const aCol=a.arrowCol||COL_U;
+      const mid=`mk${Math.random().toString(36).slice(2,7)}`;
+      buf.push(`<defs><marker id="${mid}" markerWidth="5" markerHeight="5" refX="4.5" refY="2" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,4 L5,2 z" fill="${aCol}"/></marker></defs>`);
+      buf.push(`<line x1="${cx-12}" y1="${y1}" x2="${cx-12}" y2="${y2}" stroke="${aCol}" stroke-width="2" marker-end="url(#${mid})" stroke-dasharray="3,2"/>`);
+    });
+  }
+
+  buf.push(`<rect x="0" y="0" width="${W}" height="${TH}" rx="10" fill="none" stroke="var(--border)" stroke-width="2"/></svg>`);
+  return `<div style="display:flex;justify-content:center;width:100%">${buf.join('')}</div>`;
+}
+
+// ── Tableau animable (pour l'animation de transformation) ─────────────────────
+function tableauAnim(entCols, decCols, rows, animRowIdxs, uid){
+  const nEnt=entCols.length, nDec=decCols.length, N=nEnt+nDec;
+  const CW=66, HDR=38, ROW=46, HDR1=18, HDR2=HDR-HDR1;
+  // Ici toutes les lignes sont visibles (on est en phase anim, résultat déjà montré)
+  let rowDefs=[], sepRows=[];
+  rows.forEach(r=>{ if(r.sep) sepRows.push(rowDefs.length); rowDefs.push(r); });
+  const nRows=rowDefs.length;
+  const TH=HDR+ROW*nRows;
+  const W=N*CW;
+  const xV=nEnt*CW;
+  const colColors={'DIZAINES':'#64748b','UNITÉS':COL_U,'DIXIÈMES':COL_D,'CENTIÈMES':COL_C,'MILLIÈMES':COL_M};
+
+  // Grille SVG en arrière-plan
+  const g=[];
+  g.push(`<svg width="${W}" height="${TH}" viewBox="0 0 ${W} ${TH}" style="position:absolute;top:0;left:0;width:100%;height:100%">`);
+  g.push(`<rect x="0" y="0" width="${W}" height="${TH}" rx="10" fill="white" stroke="var(--border)" stroke-width="2"/>`);
+  g.push(`<rect x="0" y="0" width="${nEnt*CW}" height="${HDR1}" fill="#fff7ed"/>`);
+  g.push(`<text x="${nEnt*CW/2}" y="${HDR1-5}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="7.5" font-weight="800" fill="${COL_U}" letter-spacing="0.4">PARTIE ENTIÈRE</text>`);
+  g.push(`<rect x="${nEnt*CW}" y="0" width="${nDec*CW}" height="${HDR1}" fill="#eff6ff"/>`);
+  g.push(`<text x="${nEnt*CW+nDec*CW/2}" y="${HDR1-5}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="7.5" font-weight="800" fill="${COL_D}" letter-spacing="0.4">PARTIE DÉCIMALE</text>`);
+  g.push(`<line x1="0" y1="${HDR1}" x2="${W}" y2="${HDR1}" stroke="var(--border)" stroke-width="1"/>`);
+  [...entCols,...decCols].forEach((c,i)=>{
+    g.push(`<rect x="${i*CW}" y="${HDR1}" width="${CW}" height="${HDR2}" fill="#f8faff"/>`);
+    g.push(`<text x="${i*CW+CW/2}" y="${HDR-5}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="7.5" font-weight="700" fill="${colColors[c]||'var(--gris)'}" letter-spacing="0.2">${c}</text>`);
+  });
+  for(let i=1;i<N;i++) g.push(`<line x1="${i*CW}" y1="${HDR1}" x2="${i*CW}" y2="${TH}" stroke="var(--border)" stroke-width="1"/>`);
+  for(let i=0;i<nRows;i++){
+    if(i===0) continue;
+    g.push(`<line x1="0" y1="${HDR+ROW*(i+1)}" x2="${W}" y2="${HDR+ROW*(i+1)}" stroke="var(--border)" stroke-width="1.2"/>`);
+  }
+  sepRows.forEach(ri=>{ const y=HDR+ROW*ri; g.push(`<line x1="6" y1="${y}" x2="${W-6}" y2="${y}" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="5,3"/>`); });
+  rowDefs.forEach((row,ri)=>{
+    if(row.noComma) return;
+    g.push(`<text x="${xV}" y="${HDR+ri*ROW+ROW/2+9}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="28" font-weight="800" fill="#1e293b">,</text>`);
+  });
+  g.push(`<rect x="0" y="0" width="${W}" height="${TH}" rx="10" fill="none" stroke="var(--border)" stroke-width="2"/></svg>`);
+
+  let out=`<div style="display:flex;justify-content:center;width:100%"><div style="position:relative;width:${W}px;height:${TH}px;max-width:100%">${g.join('')}`;
+
+  // Textes animables en divs absolus + zéros gris
+  rowDefs.forEach((row,ri)=>{
+    const isAnimRow=animRowIdxs&&animRowIdxs.includes(ri);
+    const y0=HDR+ri*ROW;
+    const cells=row.cells||[];
+    // Dernier chiffre non-vide sur la ligne
+    let lastFilled=-1;
+    cells.forEach((d,ci)=>{ if(d&&d.val!==undefined&&d.val!=='') lastFilled=ci; });
+    cells.forEach((d,ci)=>{
+      const isEmpty=!d||d.val===undefined||d.val==='';
+      const leftPct=(ci*CW+CW/2)/W*100;
+      const topPx=y0+ROW/2;  // centrage vertical exact (transform translate -50% gère l'offset)
+      if(isEmpty){
+        if(ci<lastFilled){
+          out+=`<div style="position:absolute;left:${leftPct}%;top:${topPx}px;transform:translate(-50%,-50%);font-family:'Baloo 2',cursive;font-size:20px;font-weight:800;color:#94a3b8;line-height:1;pointer-events:none">0</div>`;
+        }
+        return;
+      }
+      const col=d.col||'var(--texte)';
+      const fs=String(d.val).length>2?15:20;
+      if(d.bg){
+        const bgl=(ci*CW+CW/2-19)/W*100;
+        const bgt=y0+ROW/2-15;
+        out+=`<div id="abg-${uid}-${ri}-${ci}" style="position:absolute;left:${bgl}%;top:${bgt}px;width:38px;height:30px;background:${d.bg};border:1.8px solid ${col};border-radius:7px;pointer-events:none"></div>`;
+      }
+      const aid=isAnimRow?`id="acell-${uid}-${ri}-${ci}"`:'';
+      out+=`<div ${aid} style="position:absolute;left:${leftPct}%;top:${topPx}px;transform:translate(-50%,-50%);font-family:'Baloo 2',cursive;font-size:${fs}px;font-weight:800;color:${col};line-height:1;pointer-events:none;transition:opacity 0.7s">${d.val}</div>`;
+    });
+  });
+
+  out+=`</div></div>`;
+  return out;
+}
+
+// ── Animation de transformation ───────────────────────────────────────────────
+// animSteps: [{rowIdx, colIdx, to, col, delay}]
+// delay en secondes. dur fixe = 700ms
+function animateTransform(uid){
+  const s=STATES[uid];
+  if(s.animating) return;
+  s.animating=true;
+  const steps=s.cfg.animSteps;
+  if(!steps){s.phase=2;s.animating=false;renderExo(uid);return;}
+
+  s.phase='anim';
+  renderExo(uid);
+
+  const DUR=700; // ms par transition
+  let maxEnd=0;
+  steps.forEach(st=>{
+    const t=(st.delay||0)*1000;
+    if(t+DUR>maxEnd) maxEnd=t+DUR;
+    setTimeout(()=>{
+      const el=document.getElementById(`acell-${uid}-${st.rowIdx}-${st.colIdx}`);
+      if(!el) return;
+      el.style.transition=`opacity ${DUR}ms`;
+      el.style.opacity='0';
+      setTimeout(()=>{
+        el.textContent=st.to;
+        if(st.col) el.style.color=st.col;
+        el.style.opacity='0';
+        setTimeout(()=>{ el.style.opacity='1'; }, 40);
+        const bg=document.getElementById(`abg-${uid}-${st.rowIdx}-${st.colIdx}`);
+        if(bg&&st.newBg){ bg.style.background=st.newBg; bg.style.borderColor=st.col||''; }
+      }, DUR);
+    }, t);
+  });
+
+  setTimeout(()=>{ s.phase=2; s.animating=false; renderExo(uid); }, maxEnd+300);
+}
+
+// ── Ligne numérique ────────────────────────────────────────────────────────────
+// start     : début de la ligne (peut dépasser légèrement avant intFrom)
+// end       : fin visible
+// from      : valeur de départ de la flèche
+// delta     : valeur ajoutée (positif = addition)
+// completed : true après clic Compléter
+// label     : texte sur la flèche (ex "+0,2")
+//
+// Comportement avant completed :
+//   - Ligne et graduation de Math.floor(from) seulement (+ dépassement gauche)
+//   - Flèche en bleu clair pointillé, pointe fine
+//   - Pas de barre de dixièmes
+//
+// Comportement après completed :
+//   - Toutes les graduations entières en gris discret (#94a3b8)
+//   - Barre de dixièmes colorée
+//   - Flèche pleine colorée, pointe fine
+//   - Label résultat en couleur, label from en gris
+function drawDecimalLine(start, end, from, delta, completed, label){
+  const PADL=32, PADR=24, avail=348;
+  const scale=avail/(end-start);
+  const barH=18, barY=54, barBot=barY+barH;
+  const lineY=barBot+5;
+  const H=lineY+36;
+  const W=avail+PADL+PADR;
+  const result=from+delta;
+
+  function vx(v){ return PADL+(v-start)*scale; }
+
+  // Ligne : dépasse légèrement avant start et après end
+  const xLineStart=vx(start)-8;
+  const xLineEnd=vx(end)+8;
+
+  // Entiers visibles dans la plage [start, end]
+  const intFirst=Math.ceil(start);
+  const intLast=Math.floor(end);
+
+  const buf=[];
+  buf.push(`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`);
+
+  // ── Barre dixièmes (seulement si completed) — couvre floor(from) à ceil(result) ──
+  if(completed){
+    const barStart=Math.floor(from);
+    const barEnd=Math.ceil(result);
+    const dixW=scale/10;
+    const startDix=Math.round(barStart*10);
+    const nDix=Math.round((barEnd-barStart)*10);
+    for(let i=0;i<nDix;i++){
+      const v=(startDix+i)/10;
+      const x=vx(v), odd=i%2===1;
+      let fill;
+      fill=(v>=from&&v<result-0.0001)?(odd?'#6a9ee8':'#a0c4f0'):(odd?'#d8e8f8':'#e8f2fc');
+      buf.push(`<rect x="${x}" y="${barY}" width="${dixW}" height="${barH}" fill="${fill}"/>`);
+    }
+  }
+
+  // ── Ligne numérique ───────────────────────────────────────────────────────
+  buf.push(`<line x1="${xLineStart}" y1="${lineY}" x2="${xLineEnd}" y2="${lineY}" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>`);
+
+  // ── Graduations ───────────────────────────────────────────────────────────
+  if(!completed){
+    // Avant compléter : seulement la graduation de Math.floor(from)
+    const v=Math.floor(from);
+    const x=vx(v);
+    buf.push(`<line x1="${x}" y1="${barY-2}" x2="${x}" y2="${lineY+6}" stroke="#1e293b" stroke-width="2"/>`);
+    buf.push(`<text x="${x}" y="${lineY+22}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="#1e293b" stroke="white" stroke-width="3" paint-order="stroke">${v}</text>`);
+  } else {
+    // Après compléter : toutes les graduations entières dans la plage visible
+    for(let v=intFirst;v<=intLast;v++){
+      const x=vx(v);
+      buf.push(`<line x1="${x}" y1="${barY-2}" x2="${x}" y2="${lineY+6}" stroke="#94a3b8" stroke-width="1.5"/>`);
+      buf.push(`<text x="${x}" y="${lineY+22}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="#94a3b8" stroke="white" stroke-width="3" paint-order="stroke">${v}</text>`);
+    }
+  }
+
+  // ── Flèche ────────────────────────────────────────────────────────────────
+  const xF=vx(from), xR=vx(result);
+  const mid=(xF+xR)/2;
+
+  // ── Flèche — identique avant et après compléter ───────────────────────────
+  const arrowCol='#0d9488';  // bleu-vert (teal) — distinct des couleurs de rang
+  const arrowBg='#f0fdfa';   // fond teal très clair
+  const mkId='arr'+Math.random().toString(36).slice(2,6);
+  buf.push(`<defs><marker id="${mkId}" markerWidth="5" markerHeight="5" refX="4.5" refY="2" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,4 L5,2 z" fill="${arrowCol}"/></marker></defs>`);
+  const arcBase=barY-5;
+  const arcH=Math.min(16, Math.abs(xR-xF)*0.22);
+  buf.push(`<path d="M ${xF} ${arcBase} Q ${mid} ${arcBase-arcH*2} ${xR} ${arcBase}" stroke="${arrowCol}" stroke-width="2.5" fill="none" marker-end="url(#${mkId})"/>`);
+
+  // Label : sous le sommet de l'arc
+  const arcTopY=arcBase-arcH*2;
+  const lbl=label||(delta>=0?'+':'')+formatDec(delta);
+  const lblW=lbl.length*8+14;
+  const lblH=19;
+  const lblY=arcTopY+14;
+  buf.push(`<rect x="${mid-lblW/2}" y="${lblY-lblH+5}" width="${lblW}" height="${lblH}" rx="5" fill="${arrowBg}" stroke="${arrowCol}" stroke-width="1.2"/>`);
+  buf.push(`<text x="${mid}" y="${lblY}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="${arrowCol}">${lbl}</text>`);
+
+  // Nombre de départ — tick + encadré
+  const fromStr=formatDec(from);
+  const fW=fromStr.length*8+14;
+  const numY=lineY+22;
+  buf.push(`<line x1="${xF}" y1="${barY-2}" x2="${xF}" y2="${lineY+6}" stroke="${arrowCol}" stroke-width="2"/>`);
+  buf.push(`<rect x="${xF-fW/2}" y="${numY-15}" width="${fW}" height="19" rx="5" fill="${arrowBg}" stroke="${arrowCol}" stroke-width="1.2"/>`);
+  buf.push(`<text x="${xF}" y="${numY}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="${arrowCol}" stroke="white" stroke-width="2" paint-order="stroke">${fromStr}</text>`);
+
+  // Nombre d'arrivée — tick + encadré, seulement après compléter
+  if(completed){
+    const resStr=formatDec(result);
+    const rW=resStr.length*8+14;
+    buf.push(`<line x1="${xR}" y1="${barY-2}" x2="${xR}" y2="${lineY+6}" stroke="${arrowCol}" stroke-width="2"/>`);
+    buf.push(`<rect x="${xR-rW/2}" y="${numY-15}" width="${rW}" height="19" rx="5" fill="${arrowBg}" stroke="${arrowCol}" stroke-width="1.2"/>`);
+    buf.push(`<text x="${xR}" y="${numY}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="${arrowCol}" stroke="white" stroke-width="2" paint-order="stroke">${resStr}</text>`);
+  }
+
+  buf.push(`</svg>`);
+  return `<div style="width:100%;overflow-x:auto">${buf.join('')}</div>`;
+}
+
+function formatDec(v){
+  return parseFloat(v.toFixed(6)).toString().replace('.',',');
+}
+
+// Colorie un nombre décimal chiffre par chiffre selon le rang
+// ex: coloredDec('1,6') → '1' orange ',' noir '6' bleu
+// ex: coloredDec('3,54') → '3' orange ',' '5' bleu '4' violet
+// ex: coloredDec('17,2') → '17' orange ',' '2' bleu
+function coloredDec(str){
+  const RANK_COLS=['var(--orange)','var(--bleu)','var(--violet)','var(--vert)'];
+  const parts=str.split(',');
+  const entPart=parts[0], decPart=parts[1]||'';
+  let inner=`<span style="color:var(--orange)">${entPart}</span>`;
+  if(decPart){
+    inner+=`<span style="color:#1e293b">,</span>`;
+    [...decPart].forEach((ch,i)=>{
+      inner+=`<span style="color:${RANK_COLS[i+1]||'var(--gris)'}">${ch}</span>`;
+    });
+  }
+  return `<span style="white-space:nowrap;letter-spacing:0">${inner}</span>`;
+}
+
+// ── État global ───────────────────────────────────────────────────────────────
+const STATES={};
+
+function renderExo(uid){
+  const s=STATES[uid];
+  const c=s.cfg;
+  const el=document.getElementById('exo-'+uid);
+  if(!el) return;
+  const phase=s.phase;
+
+  let h='';
+  const isCompleted = phase!==0;
+
+  // Ligne numérique
+  if(c.lineHtml) h+=`<div style="width:100%">${c.lineHtml(isCompleted)}</div>`;
+
+  // Tableau
+  h+=`<div>${c.tableHtml(phase,uid)}</div>`;
+
+  // Zone boutons sous tableau — hauteur fixe (36px) pour éviter tout décalage
+  // Phase 0 : bouton Compléter
+  // Phase 1/anim : bouton Transformer + bouton Recommencer discret
+  // Phase 2 : bouton Recommencer discret seul
+  h+=`<div style="height:36px;display:flex;align-items:center;justify-content:center;gap:10px">`;
+  if(phase===0){
+    h+=`<button class="btn-complete" onclick="advanceExo('${uid}',1)">✏️ Compléter</button>`;
+  } else if((phase===1||phase==='anim')&&c.hasTransform&&!STATES[uid].animating){
+    h+=`<button class="btn-transform" onclick="animateTransform('${uid}')">🔄 Transformer</button>`;
+    h+=`<button class="btn-reset" onclick="advanceExo('${uid}',0)">↺ Recommencer</button>`;
+  } else if(phase===2&&c.hasTransform){
+    h+=`<button class="btn-reset" onclick="advanceExo('${uid}',0)">↺ Recommencer</button>`;
+  } else if(!c.hasTransform&&isCompleted){
+    h+=`<button class="btn-reset" onclick="advanceExo('${uid}',0)">↺ Recommencer</button>`;
+  }
+  h+=`</div>`;
+
+  // Note grise — hauteur fixe (1 ligne), vide si pas encore complété
+  const noteText = isCompleted&&c.noteHtml ? c.noteHtml(phase) : '';
+  h+=`<p style="font-size:.8rem;color:#94a3b8;font-style:italic;text-align:center;margin:0;min-height:1.2em">${noteText}</p>`;
+
+  // Calcul — toujours présent
+  if(c.calcBefore){
+    const showResult = c.hasTransform ? phase===2 : isCompleted;
+    const afterStr = typeof c.calcAfter==='function' ? c.calcAfter(phase) : c.calcAfter;
+    if(showResult){
+      h+=`<div class="calc-box">${c.calcBefore} <span class="op">=</span> <span class="result-reveal">${afterStr}</span></div>`;
+    } else {
+      h+=`<div class="calc-box">${c.calcBefore} <span class="op">=</span> <span style="color:var(--gris)">…</span></div>`;
+    }
+  }
+
+  // Explication bleue
+  if(isCompleted&&c.expHtml) h+=`<div class="info bleu fade-in" style="font-size:.88rem">${c.expHtml(phase)}</div>`;
+
+  el.innerHTML=h;
+}
+
+function advanceExo(uid,phase){ STATES[uid].phase=phase; STATES[uid].animating=false; renderExo(uid); }
+
+function exoBlock(uid,cfg){
+  STATES[uid]={cfg,phase:0};
+  return `<div id="exo-${uid}" class="exo-wrap fade-in"></div>`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+const STEPS=[
+
+// 0 — Règle générale
+()=>`
+<div class="step-title pop">💡 Comment additionner des nombres décimaux ?</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> Les nombres décimaux sont des nombres : comme avec les entiers, on peut avoir besoin dans certaines situations de les additionner ou de les soustraire pour calculer.</div>
+<div class="recap-list">
+  <div class="recap-item fade-in" style="animation-delay:0s;border-left-color:var(--bleu)">
+    <div class="recap-num" style="background:var(--bleu)">1</div>
+    <span>On additionne les <strong style="color:var(--orange)">unités</strong> ensemble, les <strong style="color:var(--bleu)">dixièmes</strong> ensemble, les <strong style="color:var(--violet)">centièmes</strong> ensemble…</span>
+  </div>
+  <div class="recap-item fade-in" style="animation-delay:.10s;border-left-color:var(--orange)">
+    <div class="recap-num" style="background:var(--orange)">2</div>
+    <span>Si on obtient trop de <strong style="color:var(--bleu)">dixièmes</strong>, on peut en transformer 10 en 1 unité supplémentaire.</span>
+  </div>
+  <div class="recap-item fade-in" style="animation-delay:.20s;border-left-color:var(--violet)">
+    <div class="recap-num" style="background:var(--violet)">3</div>
+    <span>Si on obtient trop de <strong style="color:var(--violet)">centièmes</strong>, on peut en transformer 10 en 1 dixième supplémentaire.</span>
+  </div>
+</div>
+`,
+
+// 1 — 1,4 + 0,2
+()=>{
+  const uid='p2';
+  const ENT=['UNITÉS'], DEC=['DIXIÈMES'];
+  // Tableau : showResult=false en phase 0, true en phase 1
+  const tab=(phase)=>tableauAdd(ENT,DEC,[
+    {cells:[{val:'1',col:COL_U},{val:'4',col:COL_D}]},
+    {cells:[{val:'0',col:COL_U},{val:'2',col:COL_D}]},
+    {sep:true, cells:[
+      {val:'1',col:COL_U,bg:'var(--orange-clair)'},
+      {val:'6',col:COL_D,bg:'var(--bleu-clair)'}
+    ]},
+  ], phase>=1);
+  // Ligne zoomée sur la zone 1–2 (avec petits dépassements)
+  const line=(phase)=>drawDecimalLine(0.85,2.15,1.4,0.2,phase>=1,'+0,2');
+  const exp=()=>`Il n'y a que <strong style="color:var(--orange)">1 unité</strong>.<br>On ajoute les dixièmes : 4 + 2 = <strong style="color:var(--bleu)">6 dixièmes</strong>.`;
+  const note=()=>`4 dixièmes + 2 dixièmes = 6 dixièmes`;
+  const calcBefore=`${coloredDec('1,4')} <span class="op">+</span> ${coloredDec('0,2')}`;
+  const calcAfter=coloredDec('1,6');
+  if(!STATES[uid]) STATES[uid]={cfg:{tableHtml:tab,lineHtml:line,noteHtml:note,expHtml:exp,calcBefore,calcAfter,hasTransform:false},phase:0};
+  return `<div class="step-title pop">✏️ 1,4 + 0,2</div>
+<div id="exo-${uid}" class="exo-wrap fade-in"></div>`;
+},
+
+// 2 — 2,5 + 1,04
+()=>{
+  const uid='p3';
+  const ENT=['UNITÉS'], DEC=['DIXIÈMES','CENTIÈMES'];
+  const tab=(phase)=>tableauAdd(ENT,DEC,[
+    {cells:[{val:'2',col:COL_U},{val:'5',col:COL_D},{}]},
+    {cells:[{val:'1',col:COL_U},{},{val:'4',col:COL_C}]},
+    {sep:true, cells:[
+      {val:'3',col:COL_U,bg:'var(--orange-clair)'},
+      {val:'5',col:COL_D,bg:'var(--bleu-clair)'},
+      {val:'4',col:COL_C,bg:'var(--violet-clair)'}
+    ]},
+  ], phase>=1);
+  // Ligne démarre un peu avant 2
+  const line=(phase)=>drawDecimalLine(1.85,4.15,2.5,1.04,phase>=1,'+1,04');
+  const exp=()=>`On additionne les unités : 2 + 1 = <strong style="color:var(--orange)">3 unités</strong>.<br>Il n'y a que <strong style="color:var(--bleu)">5 dixièmes</strong>.<br>Il n'y a que <strong style="color:var(--violet)">4 centièmes</strong>.`;
+  const note=()=>`3 unités, 5 dixièmes et 4 centièmes`;
+  const calcBefore=`${coloredDec('2,5')} <span class="op">+</span> ${coloredDec('1,04')}`;
+  const calcAfter=coloredDec('3,54');
+  if(!STATES[uid]) STATES[uid]={cfg:{tableHtml:tab,lineHtml:line,noteHtml:note,expHtml:exp,calcBefore,calcAfter,hasTransform:false},phase:0};
+  return `<div class="step-title pop">✏️ 2,5 + 1,04</div>
+<div id="exo-${uid}" class="exo-wrap fade-in"></div>`;
+},
+
+// 3 — 15,4 + 1,8 (retenue)
+()=>{
+  const uid='p4';
+  const ENT=['DIZAINES','UNITÉS'], DEC=['DIXIÈMES'];
+  // colIdx: 0=DIZAINES, 1=UNITÉS, 2=DIXIÈMES
+  const animSteps=[
+    // Étape 1 (0s) : 12 dixièmes → 2 dixièmes
+    {rowIdx:2, colIdx:2, to:'2', col:COL_D, newBg:'var(--bleu-clair)',   delay:0.0},
+    // Étape 2 (1.4s) : 6 unités → 7 unités (la dizaine reste à 1)
+    {rowIdx:2, colIdx:1, to:'7', col:COL_U, newBg:'var(--orange-clair)', delay:1.4},
+  ];
+  const tab=(phase,u)=>{
+    if(phase===0) return tableauAdd(ENT,DEC,[
+      {cells:[{val:'1',col:'#64748b'},{val:'5',col:COL_U},{val:'4',col:COL_D}]},
+      {cells:[{},{val:'1',col:COL_U},{val:'8',col:COL_D}]},
+      {sep:true,cells:[{val:'1',col:'#64748b'},{val:'6',col:COL_U},{val:'12',col:COL_D}]},
+    ], false);
+    if(phase===1) return tableauAdd(ENT,DEC,[
+      {cells:[{val:'1',col:'#64748b'},{val:'5',col:COL_U},{val:'4',col:COL_D}]},
+      {cells:[{},{val:'1',col:COL_U},{val:'8',col:COL_D}]},
+      {sep:true,cells:[{val:'1',col:'#64748b'},{val:'6',col:COL_U},{val:'12',col:COL_D,bg:'var(--orange-clair)'}]},
+    ], true);
+    if(phase==='anim') return tableauAnim(ENT,DEC,[
+      {cells:[{val:'1',col:'#64748b'},{val:'5',col:COL_U},{val:'4',col:COL_D}]},
+      {cells:[{},{val:'1',col:COL_U},{val:'8',col:COL_D}]},
+      {sep:true,cells:[{val:'1',col:'#64748b'},{val:'6',col:COL_U},{val:'12',col:COL_D,bg:'var(--orange-clair)'}]},
+    ],[2],u);
+    // phase 2
+    return tableauAdd(ENT,DEC,[
+      {cells:[{val:'1',col:'#64748b'},{val:'5',col:COL_U},{val:'4',col:COL_D}]},
+      {cells:[{},{val:'1',col:COL_U},{val:'8',col:COL_D}]},
+      {sep:true,cells:[{val:'1',col:'#64748b'},{val:'7',col:COL_U,bg:'var(--orange-clair)'},{val:'2',col:COL_D,bg:'var(--bleu-clair)'}]},
+    ], true);
+  };
+  const line=(phase)=>drawDecimalLine(14.85,18.15,15.4,1.8,phase>=1,'+1,8');
+  const exp=(phase)=>{
+    if(phase===1||phase==='anim') return `On additionne les <strong style="color:var(--bleu)">dixièmes</strong> : 4 + 8 = <strong style="color:var(--bleu)">12 dixièmes</strong>.<br>Il faut <strong>transformer</strong> : clique sur 🔄`;
+    return `On transforme : <strong style="color:var(--bleu)">12 dixièmes</strong> = <strong style="color:var(--orange)">1 unité</strong> et <strong style="color:var(--bleu)">2 dixièmes</strong>.<br>On additionne les <strong style="color:var(--orange)">unités</strong> : 5 + 1 + 1 = <strong style="color:var(--orange)">7 unités</strong> → <strong style="color:var(--orange)">17,2</strong> au total.`;
+  };
+  const note=(phase)=>phase>=2?`car 12 dixièmes = 1 unité et 2 dixièmes`:`4 dixièmes + 8 dixièmes = 12 dixièmes`;
+  const calcBefore=`${coloredDec('15,4')} <span class="op">+</span> ${coloredDec('1,8')}`;
+  const calcAfter=coloredDec('17,2');
+  if(!STATES[uid]) STATES[uid]={cfg:{tableHtml:tab,lineHtml:line,noteHtml:note,expHtml:exp,calcBefore,calcAfter,hasTransform:true,animSteps},phase:0};
+  return `<div class="step-title pop">✏️ 15,4 + 1,8</div>
+<div id="exo-${uid}" class="exo-wrap fade-in"></div>`;
+},
+
+// 4 — 4,47 + 5,681 (double retenue)
+()=>{
+  const uid='p5';
+  const ENT=['DIZAINES','UNITÉS'], DEC=['DIXIÈMES','CENTIÈMES','MILLIÈMES'];
+  // colIdx: 0=DIZAINES, 1=UNITÉS, 2=DIXIÈMES, 3=CENTIÈMES, 4=MILLIÈMES
+  const animSteps=[
+    // Étape 1 (0s) : 15 centièmes → 5 centièmes + 10 dixièmes → 11 dixièmes
+    {rowIdx:2, colIdx:3, to:'5',  col:COL_C, newBg:'var(--violet-clair)', delay:0.0},
+    {rowIdx:2, colIdx:2, to:'11', col:COL_D, newBg:'var(--orange-clair)', delay:0.0},
+    // Étape 2 (1.5s) : 11 dixièmes → 1 dixième + 9 unités → 10 unités
+    {rowIdx:2, colIdx:2, to:'1',  col:COL_D, newBg:'var(--bleu-clair)',   delay:1.5},
+    {rowIdx:2, colIdx:1, to:'10', col:COL_U, newBg:'var(--orange-clair)', delay:1.5},
+    // Étape 3 (3.0s) : 10 unités → 0 unités + 0 dizaines → 1 dizaine
+    {rowIdx:2, colIdx:1, to:'0',  col:COL_U, newBg:'var(--orange-clair)', delay:3.0},
+    {rowIdx:2, colIdx:0, to:'1',  col:'#64748b', newBg:'var(--orange-clair)', delay:3.0},
+  ];
+  const tab=(phase,u)=>{
+    if(phase===0) return tableauAdd(ENT,DEC,[
+      {cells:[{},{val:'4',col:COL_U},{val:'4',col:COL_D},{val:'7',col:COL_C},{}]},
+      {cells:[{},{val:'5',col:COL_U},{val:'6',col:COL_D},{val:'8',col:COL_C},{val:'1',col:COL_M}]},
+      {sep:true,cells:[{},{val:'9',col:COL_U},{val:'10',col:COL_D},{val:'15',col:COL_C},{val:'1',col:COL_M}]},
+    ], false);
+    if(phase===1) return tableauAdd(ENT,DEC,[
+      {cells:[{},{val:'4',col:COL_U},{val:'4',col:COL_D},{val:'7',col:COL_C},{}]},
+      {cells:[{},{val:'5',col:COL_U},{val:'6',col:COL_D},{val:'8',col:COL_C},{val:'1',col:COL_M}]},
+      {sep:true,cells:[{},{val:'9',col:COL_U},{val:'10',col:COL_D,bg:'var(--orange-clair)'},{val:'15',col:COL_C,bg:'var(--orange-clair)'},{val:'1',col:COL_M}]},
+    ], true);
+    if(phase==='anim') return tableauAnim(ENT,DEC,[
+      {cells:[{},{val:'4',col:COL_U},{val:'4',col:COL_D},{val:'7',col:COL_C},{}]},
+      {cells:[{},{val:'5',col:COL_U},{val:'6',col:COL_D},{val:'8',col:COL_C},{val:'1',col:COL_M}]},
+      {sep:true,cells:[{val:'0',col:'#94a3b8'},{val:'9',col:COL_U},{val:'10',col:COL_D,bg:'var(--orange-clair)'},{val:'15',col:COL_C,bg:'var(--orange-clair)'},{val:'1',col:COL_M}]},
+    ],[2],u);
+    // phase 2 : 1 dizaine, 0 unités, 1 dixième, 5 centièmes, 1 millième = 10,151
+    return tableauAdd(ENT,DEC,[
+      {cells:[{},{val:'4',col:COL_U},{val:'4',col:COL_D},{val:'7',col:COL_C},{}]},
+      {cells:[{},{val:'5',col:COL_U},{val:'6',col:COL_D},{val:'8',col:COL_C},{val:'1',col:COL_M}]},
+      {sep:true,cells:[{val:'1',col:'#64748b',bg:'var(--orange-clair)'},{val:'0',col:COL_U,bg:'var(--orange-clair)'},{val:'1',col:COL_D,bg:'var(--bleu-clair)'},{val:'5',col:COL_C,bg:'var(--violet-clair)'},{val:'1',col:COL_M}]},
+    ], true);
+  };
+  const line=(phase)=>drawDecimalLine(3.85,11.15,4.47,5.681,phase>=1,'+5,681');
+  const exp=(phase)=>{
+    if(phase===1||phase==='anim') return `Il y a <strong style="color:var(--vert)">1 millième</strong>.<br>On additionne les <strong style="color:var(--violet)">centièmes</strong> : 7 + 8 = <strong style="color:var(--violet)">15 centièmes</strong>.<br>On additionne les <strong style="color:var(--bleu)">dixièmes</strong> : 4 + 6 = <strong style="color:var(--bleu)">10 dixièmes</strong>.<br>→ Clique sur 🔄 pour transformer !`;
+    return `<strong style="color:var(--violet)">15 centièmes</strong> = <strong style="color:var(--bleu)">1 dixième</strong> + <strong style="color:var(--violet)">5 centièmes</strong>.<br><strong style="color:var(--bleu)">10 + 1 dixièmes</strong> = <strong style="color:var(--bleu)">11 dixièmes</strong> = <strong style="color:var(--orange)">1 unité</strong> + <strong style="color:var(--bleu)">1 dixième</strong>.<br>4 + 5 + 1 = <strong style="color:var(--orange)">10 unités</strong> = <strong style="color:#64748b">1 dizaine</strong> et <strong style="color:var(--orange)">0 unité</strong>.`;
+  };
+  const note=(phase)=>phase>=2?`car 15/100 = 1/10 + 5/100 et 11/10 = 1 + 1/10`:`9 unités, 10 dixièmes, 15 centièmes et 1 millième`;
+  const calcBefore=`${coloredDec('4,47')} <span class="op">+</span> ${coloredDec('5,681')}`;
+  const calcAfter=coloredDec('10,151');
+  if(!STATES[uid]) STATES[uid]={cfg:{tableHtml:tab,lineHtml:line,noteHtml:note,expHtml:exp,calcBefore,calcAfter,hasTransform:true,animSteps},phase:0};
+  return `<div class="step-title pop">✏️ 4,47 + 5,681</div>
+<div id="exo-${uid}" class="exo-wrap fade-in"></div>`;
+},
+
+// 5 — Bilan
+()=>`
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  ${[
+    ['var(--bleu)','On additionne les <strong>unités</strong> ensemble, les <strong>dixièmes</strong> ensemble, les <strong>centièmes</strong> ensemble…'],
+    ['var(--orange)','Si on a <strong>10 dixièmes ou plus</strong>, on fabrique une unité supplémentaire (et on garde le reste).'],
+    ['var(--violet)','Si on a <strong>10 centièmes ou plus</strong>, on fabrique un dixième supplémentaire (et on garde le reste).'],
+    ['var(--vert)','On fait ces transformations depuis la plus petite position : d\'abord les centièmes, puis les dixièmes.'],
+  ].map(([c,t],i)=>`
+    <div class="recap-item fade-in" style="animation-delay:${i*.08}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${i+1}</div>
+      <span>${t}</span>
+    </div>`).join('')}
+</div>
+`,
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+let cur=0; const NP=STEPS.length;
+
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur]();
+  card.className='card fade-in';
+  Object.keys(STATES).forEach(uid=>{
+    const el=document.getElementById('exo-'+uid);
+    if(el) renderExo(uid);
+  });
+  document.getElementById('progressBar').style.width=(cur/(NP-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator'); ind.innerHTML='';
+  for(let i=0;i<NP;i++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(i===cur?' active':i<cur?' done':'');
+    d.textContent=i<cur?'✓':i+1;
+    ind.appendChild(d);
+  }
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${NP}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===NP-1?'🔁 Recommencer':'Suivant →';
+}
+
+function next(){
+  Object.values(STATES).forEach(s=>{ s.phase=0; s.animating=false; });
+  cur=cur===NP-1?0:cur+1; render();
+}
+function prev(){
+  if(cur>0){
+    Object.values(STATES).forEach(s=>{ s.phase=0; s.animating=false; });
+    cur--; render();
+  }
+}
+render();
+</script>
+</body>
+</html>

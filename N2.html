@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>Paquets de 10, de 100 – 6e</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme:light;
+    --bleu: #1a73e8; --bleu-clair: #e8f0fe; --bleu-fonce: #1251a3;
+    --orange: #ea580c; --orange-clair: #ffedd5;
+    --vert: #16a34a; --vert-clair: #f0fdf4;
+    --violet: #7c3aed; --violet-clair: #f5f3ff;
+    --gris: #94a3b8; --bg: #f0f4ff;
+    --card: #ffffff; --texte: #1e293b; --border: #e2e8f0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family:'Nunito',sans-serif; background:var(--bg); min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:20px 16px 40px; color:var(--texte); }
+  header { display:flex; justify-content:center; margin-bottom:22px; }
+  .header-row { display:flex; align-items:center; gap:14px; max-width:680px; width:100%; }
+  .badge-code { display:inline-flex; align-items:center; justify-content:center; min-width:48px; height:48px; border-radius:12px; border:2.5px solid var(--bleu); background:var(--bleu-clair); font-family:'Baloo 2',cursive; font-size:1.3rem; font-weight:800; color:var(--bleu); flex-shrink:0; }
+  .tache-label { font-family:'Baloo 2',cursive; font-size:1.1rem; font-weight:800; color:var(--bleu); line-height:1.3; }
+  .progress-bar-wrap { width:100%; max-width:680px; background:#dbeafe; border-radius:99px; height:10px; margin-bottom:18px; overflow:hidden; }
+  .progress-bar { height:100%; background:linear-gradient(90deg,var(--bleu),var(--violet)); border-radius:99px; transition:width 0.5s ease; }
+  .steps-indicator { display:flex; gap:10px; margin-bottom:20px; }
+  .step-dot { width:34px; height:34px; border-radius:50%; background:#dbeafe; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:#93c5fd; transition:all 0.4s ease; border:2px solid transparent; }
+  .step-dot.active { background:var(--bleu); color:white; border-color:var(--bleu); transform:scale(1.15); box-shadow:0 0 0 4px #bfdbfe; }
+  .step-dot.done   { background:var(--vert); color:white; border-color:var(--vert); }
+  .card { background:var(--card); border-radius:20px; padding:26px 28px; max-width:680px; width:100%; min-height:380px; display:flex; flex-direction:column; align-items:center; gap:16px; box-shadow:0 4px 24px rgba(26,115,232,0.10); position:relative; overflow:hidden; }
+  .card::before { content:''; position:absolute; top:0; left:0; right:0; height:5px; background:linear-gradient(90deg,var(--bleu),var(--violet)); border-radius:20px 20px 0 0; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation:fadeIn 0.4s ease both; }
+  @keyframes pop { 0%{transform:scale(0.8);opacity:0} 70%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
+  .pop { animation:pop 0.45s ease both; }
+  .step-title { font-family:'Baloo 2',cursive; font-size:1.2rem; font-weight:800; color:var(--bleu); text-align:center; }
+  .step-text  { font-size:0.97rem; color:var(--texte); text-align:center; line-height:1.75; max-width:540px; font-weight:600; }
+  .mult-trous { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center; font-family:'Baloo 2',cursive; font-size:1.7rem; font-weight:800; }
+  .mult-trous .op { color:var(--gris); }
+  .mult-trous .eq { color:var(--bleu); }
+  .trou { display:inline-flex; align-items:center; justify-content:center; min-width:60px; height:52px; padding:0 10px; border-radius:10px; border:3px dashed var(--border); color:transparent; font-size:1.7rem; font-weight:800; transition:all 0.5s ease; }
+  .trou.vide-bleu   { border:3px solid var(--bleu);   background:var(--bleu-clair); }
+  .trou.vide-orange { border:3px solid var(--orange); background:var(--orange-clair); }
+  .trou.bleu   { background:var(--bleu-clair);   border:3px solid var(--bleu);   color:var(--bleu); }
+  .trou.orange { background:var(--orange-clair); border:3px solid var(--orange); color:var(--orange); }
+  .legende { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; }
+  .legende-item { display:flex; align-items:center; gap:7px; font-size:0.85rem; font-weight:700; }
+  .grille-wrap { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; align-items:flex-start; }
+  .grille-bloc { display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .grille-label { font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--gris); }
+  .recap-list { display:flex; flex-direction:column; gap:9px; max-width:580px; width:100%; }
+  .recap-item { display:flex; align-items:flex-start; gap:12px; background:#f8faff; border-radius:12px; padding:11px 16px; font-size:0.93rem; font-weight:600; color:var(--texte); animation:fadeIn 0.4s ease both; border-left:4px solid transparent; line-height:1.5; }
+  .recap-num  { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.82rem; font-weight:700; flex-shrink:0; color:white; margin-top:1px; }
+  .nav { display:flex; gap:14px; margin-top:10px; align-items:center; }
+  button.btn-nav { font-family:'Baloo 2',cursive; font-weight:700; font-size:1rem; border:none; cursor:pointer; border-radius:12px; padding:12px 28px; transition:all 0.2s; }
+  .btn-next { background:linear-gradient(135deg,var(--bleu),var(--violet)); color:white; box-shadow:0 4px 14px rgba(26,115,232,0.3); }
+  .btn-next:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(26,115,232,0.4); }
+  .btn-next:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+  .btn-prev { background:#e0e7ff; color:var(--bleu); }
+  .btn-prev:hover { background:#c7d2fe; }
+  .btn-complete { font-family:'Baloo 2',cursive; font-weight:700; font-size:0.95rem; border:2px solid var(--vert); cursor:pointer; border-radius:10px; padding:10px 22px; background:var(--vert-clair); color:var(--vert); transition:all 0.2s; }
+  .btn-complete:hover { background:var(--vert); color:white; }
+  .pourquoi { position:relative; background:#f0fdfa; border-left:4px solid #0d9488; border-radius:10px; padding:12px 15px; font-size:0.92rem; font-weight:600; color:#134e4a; line-height:1.6; max-width:580px; width:100%; }
+  .pq-lead { font-family:'Baloo 2',cursive; font-weight:800; color:#0d9488; }
+  .step-counter { font-size:0.85rem; color:var(--gris); font-weight:700; }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">N2</div>
+    <div class="tache-label">Trouver le nombre de paquets de 10, de 100 ou de 1 000</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+// ── Couleur des cotes ────────────────────────────────────────────────────────
+const COTE_COLOR = '#1251a3'; // bleu foncé pour les flèches et labels de cotes
+
+// ── mult-trous ───────────────────────────────────────────────────────────────
+function multTrous(nombre, facteur, quotient, reste, showQ, showR, videQ, videR) {
+  const qClass = showQ ? 'trou bleu'   : videQ ? 'trou vide-bleu'   : 'trou';
+  const rClass = showR ? 'trou orange' : videR ? 'trou vide-orange' : 'trou';
+  return `<div class="mult-trous fade-in">
+    <span style="color:var(--texte)">${nombre}</span>
+    <span class="eq">=</span>
+    <span class="${qClass}">${quotient}</span>
+    <span class="op">×</span>
+    <span style="color:var(--texte)">${facteur}</span>
+    <span class="op">+</span>
+    <span class="${rClass}">${reste}</span>
+  </div>`;
+}
+
+// ── Doubles flèches cotées ───────────────────────────────────────────────────
+// Approche : on trace une ligne + deux petits segments perpendiculaires aux extrémités
+// (style "cote de dessin technique") — pas de markers SVG qui posent problème
+
+function coteLine(x1,y1,x2,y2,label,col,tickLen,labelOffX,labelOffY,anchor) {
+  // ligne principale
+  const dx = x2-x1, dy = y2-y1;
+  const len = Math.sqrt(dx*dx+dy*dy);
+  const nx = -dy/len, ny = dx/len; // normale
+  const t = tickLen||6;
+  const lx = (x1+x2)/2 + (labelOffX||0);
+  const ly = (y1+y2)/2 + (labelOffY||0);
+  const anc = anchor||'middle';
+  return `
+    <!-- ligne principale -->
+    <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"
+      stroke="${col}" stroke-width="1.8" stroke-linecap="round"/>
+    <!-- tick début -->
+    <line x1="${x1-nx*t}" y1="${y1-ny*t}" x2="${x1+nx*t}" y2="${y1+ny*t}"
+      stroke="${col}" stroke-width="1.8" stroke-linecap="round"/>
+    <!-- tick fin -->
+    <line x1="${x2-nx*t}" y1="${y2-ny*t}" x2="${x2+nx*t}" y2="${y2+ny*t}"
+      stroke="${col}" stroke-width="1.8" stroke-linecap="round"/>
+    <!-- flèche début (triangle plein pointant vers x1,y1) -->
+    <polygon points="
+      ${x1},${y1}
+      ${x1+dx/len*10+nx*4},${y1+dy/len*10+ny*4}
+      ${x1+dx/len*10-nx*4},${y1+dy/len*10-ny*4}"
+      fill="${col}"/>
+    <!-- flèche fin (triangle plein pointant vers x2,y2) -->
+    <polygon points="
+      ${x2},${y2}
+      ${x2-dx/len*10+nx*4},${y2-dy/len*10+ny*4}
+      ${x2-dx/len*10-nx*4},${y2-dy/len*10-ny*4}"
+      fill="${col}"/>
+    <!-- label -->
+    <text x="${lx}" y="${ly}"
+      text-anchor="${anc}"
+      font-family="Baloo 2,cursive" font-size="13" font-weight="800"
+      fill="${col}">${label}</text>`;
+}
+
+// ── Texte avec contour foncé (pour lisibilité sur fond coloré) ───────────────
+function textContour(x, y, label, fontSize, strokeCol, anchor) {
+  anchor = anchor||'middle';
+  return `
+    <text x="${x}" y="${y}" text-anchor="${anchor}"
+      font-family="Baloo 2,cursive" font-size="${fontSize}" font-weight="800"
+      fill="${strokeCol}" stroke="${strokeCol}" stroke-width="4" stroke-linejoin="round" paint-order="stroke">${label}</text>
+    <text x="${x}" y="${y}" text-anchor="${anchor}"
+      font-family="Baloo 2,cursive" font-size="${fontSize}" font-weight="800"
+      fill="white">${label}</text>`;
+}
+
+// ── buildGrille10 ─────────────────────────────────────────────────────────────
+const SQ_W=16, SQ_H=12, SQ_GAP=2, BAR_EXTRA=4, RESTE_GAP=8;
+const LM=38, TM=30; // left margin, top margin
+
+function buildGrille10(n, labelH, labelV, reveal) {
+  const perRow=10;
+  const lignes=Math.floor(n/perRow);
+  const reste=n%perRow;
+  const barreW=perRow*SQ_W+(perRow-1)*SQ_GAP;
+  const rowStep=SQ_H+SQ_GAP+BAR_EXTRA;
+  const bluesH=lignes*rowStep - BAR_EXTRA - SQ_GAP;
+
+  const gX=LM, gY=TM;
+  let shapes='';
+
+  // barres bleues
+  for(let r=0;r<lignes;r++){
+    const y=gY+r*rowStep;
+    shapes+=`<rect x="${gX}" y="${y}" width="${barreW}" height="${SQ_H}"
+      rx="3" fill="var(--bleu)" opacity="0.15"/>`;
+    for(let c=0;c<perRow;c++){
+      shapes+=`<rect x="${gX+c*(SQ_W+SQ_GAP)}" y="${y}"
+        width="${SQ_W}" height="${SQ_H}" rx="2" fill="var(--bleu)" opacity="0.78"/>`;
+    }
+  }
+
+  // total zone bleue (centré verticalement sur la zone bleue)
+  if(lignes>0 && reveal){
+    const totalBleu = lignes * perRow;
+    shapes += textContour(
+      gX+barreW/2, gY+bluesH/2+8,
+      String(totalBleu), '20', '#0d3d8a'
+    );
+  }
+
+  // unités restantes
+  let resteY=0;
+  if(reste>0){
+    resteY=gY+lignes*rowStep+RESTE_GAP;
+    for(let c=0;c<reste;c++){
+      shapes+=`<rect x="${gX+c*(SQ_W+SQ_GAP)}" y="${resteY}"
+        width="${SQ_W}" height="${SQ_H}" rx="2" fill="${reveal?'var(--orange)':'var(--bleu)'}"${reveal?'':' opacity="0.78"'}/>`;
+    }
+  }
+
+  const svgH=(reste>0?resteY+SQ_H:gY+bluesH)+6;
+  const svgW=gX+barreW+6;
+
+  // cote horizontale au-dessus
+  shapes += coteLine(gX, gY-14, gX+barreW, gY-14, labelH, COTE_COLOR, 5, 0, -8, 'middle');
+
+  // cote verticale à gauche
+  if(lignes>0){
+    shapes += coteLine(gX-14, gY, gX-14, gY+bluesH, reveal?labelV:'?', COTE_COLOR, 5, -18, 5, 'middle');
+  }
+
+  return `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}"
+    style="display:block;overflow:visible">${shapes}</svg>`;
+}
+
+// ── buildSchema100 ────────────────────────────────────────────────────────────
+function buildSchema100(nbBlocs, reste, labelH, labelV, reveal) {
+  const BW=130, BH=30, BGAP=5;
+  const gX=LM, gY=TM;
+  let shapes='';
+
+  for(let i=0;i<nbBlocs;i++){
+    const y=gY+i*(BH+BGAP);
+    shapes+=`<rect x="${gX}" y="${y}" width="${BW}" height="${BH}" rx="5"
+      fill="var(--bleu)" opacity="${0.62+i*0.04}"/>`;
+  }
+  const bluesH=nbBlocs*(BH+BGAP)-BGAP;
+
+  // total zone bleue
+  if(reveal) shapes += textContour(gX+BW/2, gY+bluesH/2+8, String(nbBlocs*100), '20', '#0d3d8a');
+
+  // bloc reste
+  const resteW=Math.max(30,Math.round(BW*reste/100));
+  const resteY=gY+bluesH+RESTE_GAP+4;
+  shapes+=`<rect x="${gX}" y="${resteY}" width="${resteW}" height="${BH}" rx="5"
+    fill="${reveal?'var(--orange)':'var(--bleu)'}" opacity="0.88"/>`;
+  if(reveal) shapes+=`<text x="${gX+resteW/2}" y="${resteY+BH/2+6}" text-anchor="middle"
+    font-family="Baloo 2,cursive" font-size="14" font-weight="800" fill="white">${reste}</text>`;
+
+  const svgH=resteY+BH+6;
+  const svgW=gX+BW+6;
+
+  // cote horizontale
+  shapes += coteLine(gX, gY-14, gX+BW, gY-14, labelH, COTE_COLOR, 5, 0, -8, 'middle');
+  // cote verticale
+  shapes += coteLine(gX-14, gY, gX-14, gY+bluesH, reveal?labelV:'?', COTE_COLOR, 5, -18, 5, 'middle');
+
+  return `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}"
+    style="display:block;overflow:visible">${shapes}</svg>`;
+}
+
+// ── buildSchema4572 ───────────────────────────────────────────────────────────
+// Rectangle bleu coté 100 (horizontal) × 45 (vertical) + bloc orange 72
+function buildSchema4572(reveal) {
+  const BW=150, BH=140; // rectangle principal
+  const gX=LM, gY=TM;
+  let shapes='';
+
+  // rectangle bleu principal
+  shapes+=`<rect x="${gX}" y="${gY}" width="${BW}" height="${BH}" rx="8"
+    fill="var(--bleu)" opacity="0.82"/>`;
+  // texte intérieur : "45 × 100" + "4 500" avec contour foncé (au clic seulement)
+  if(reveal){
+  shapes+=`<text x="${gX+BW/2}" y="${gY+BH/2-8}" text-anchor="middle"
+    font-family="Baloo 2,cursive" font-size="18" font-weight="800" fill="white">45 × 100</text>`;
+  shapes+=`<text x="${gX+BW/2}" y="${gY+BH/2+18}" text-anchor="middle"
+    font-family="Baloo 2,cursive" font-size="22" font-weight="800"
+    fill="#0d3d8a" stroke="#0d3d8a" stroke-width="4" stroke-linejoin="round" paint-order="stroke">4 500</text>`;
+  shapes+=`<text x="${gX+BW/2}" y="${gY+BH/2+18}" text-anchor="middle"
+    font-family="Baloo 2,cursive" font-size="22" font-weight="800" fill="white">4 500</text>`;
+  }
+
+  // bloc orange reste 72
+  const rW=Math.round(BW*72/100);
+  const rH=30;
+  const rY=gY+BH+10;
+  shapes+=`<rect x="${gX}" y="${rY}" width="${rW}" height="${rH}" rx="6"
+    fill="${reveal?'var(--orange)':'var(--bleu)'}" opacity="0.9"/>`;
+  if(reveal) shapes+=`<text x="${gX+rW/2}" y="${rY+rH/2+6}" text-anchor="middle"
+    font-family="Baloo 2,cursive" font-size="15" font-weight="800" fill="white">72</text>`;
+
+  const svgH=rY+rH+6;
+  const svgW=gX+BW+6;
+
+  // cote horizontale "100" au-dessus du rectangle bleu
+  shapes += coteLine(gX, gY-14, gX+BW, gY-14, '100', COTE_COLOR, 5, 0, -8, 'middle');
+  // cote verticale "45" à gauche du rectangle bleu
+  shapes += coteLine(gX-14, gY, gX-14, gY+BH, reveal?'45':'?', COTE_COLOR, 5, -18, 5, 'middle');
+
+  return `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}"
+    style="display:block;overflow:visible">${shapes}</svg>`;
+}
+
+// ── Droite numérique ─────────────────────────────────────────────────────────
+// n            : nombre total
+// paquets      : nb de paquets complets
+// taille       : taille d'un paquet (10 ou 100)
+// labelPaquets : texte sous la double flèche bleue (ex "4 dizaines")
+function droite(n, paquets, taille, labelPaquets, reveal) {
+  const W=520, LM=24, RM=28;
+  const lineW=W-LM-RM;
+  const lineY=44;
+  const coteY=lineY+22;  // y de la double flèche
+  const totalH=coteY+32;
+  const bleuEnd=paquets*taille;
+  function xOf(v){ return LM+Math.round(v/n*lineW); }
+
+  // Toutes les graduations : multiples de taille + n
+  const marks=[];
+  for(let i=0; i*taille<=n; i++) marks.push(i*taille);
+  if(marks[marks.length-1]!==n) marks.push(n);
+
+  let s=`<svg width="${W}" height="${totalH}" viewBox="0 0 ${W} ${totalH}"
+    style="display:block;overflow:visible;max-width:100%" xmlns="http://www.w3.org/2000/svg">`;
+
+  // segments
+  s+=`<line x1="${xOf(0)}" y1="${lineY}" x2="${xOf(bleuEnd)}" y2="${lineY}"
+    stroke="var(--bleu)" stroke-width="3.5" stroke-linecap="round"/>`;
+  if(n>bleuEnd)
+    s+=`<line x1="${xOf(bleuEnd)}" y1="${lineY}" x2="${xOf(n)}" y2="${lineY}"
+      stroke="var(--orange)" stroke-width="3.5" stroke-linecap="round"/>`;
+
+  // graduations
+  marks.forEach(v=>{
+    const x=xOf(v);
+    const isReste=(v===n && v!==bleuEnd);
+    const col=isReste?'var(--orange)':(v===bleuEnd?COTE_COLOR:'var(--bleu)');
+    // si n et le dernier multiple sont très proches, décaler le label de n vers le haut
+    const proche=(v===n && v!==bleuEnd && (xOf(n)-xOf(bleuEnd))<22);
+    const labY=proche ? lineY-28 : lineY-16;
+    s+=`<line x1="${x}" y1="${lineY-7}" x2="${x}" y2="${lineY+7}"
+      stroke="${col}" stroke-width="2" stroke-linecap="round"/>`;
+    s+=`<text x="${x}" y="${labY}" text-anchor="middle"
+      font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="${col}">${v}</text>`;
+    // petite ligne de rappel si décalé
+    if(proche)
+      s+=`<line x1="${x}" y1="${lineY-26}" x2="${x}" y2="${lineY-8}"
+        stroke="${col}" stroke-width="1" stroke-dasharray="2,2"/>`;
+  });
+
+  // double flèche bleue (0 → bleuEnd)
+  const lblP=reveal?labelPaquets:labelPaquets.replace(/^\d+/,'??');
+  s+=coteLine(xOf(0),coteY,xOf(bleuEnd),coteY,lblP,COTE_COLOR,5,0,18,'middle');
+
+  s+=`</svg>`;
+  return `<div class="fade-in" style="width:100%;max-width:520px">${s}</div>`;
+}
+
+// ── Droite numérique spéciale pour 4572 (3 graduations : 0, 4500, 4572) ──────
+function droite4572(reveal) {
+  const n=4572, bleuEnd=4500;
+  const W=520, LM=24, RM=28;
+  const lineW=W-LM-RM;
+  const lineY=44, coteY=lineY+22, totalH=coteY+32;
+  function xOf(v){ return LM+Math.round(v/n*lineW); }
+
+  let s=`<svg width="${W}" height="${totalH}" viewBox="0 0 ${W} ${totalH}"
+    style="display:block;overflow:visible;max-width:100%" xmlns="http://www.w3.org/2000/svg">`;
+
+  // segments
+  s+=`<line x1="${xOf(0)}" y1="${lineY}" x2="${xOf(bleuEnd)}" y2="${lineY}"
+    stroke="var(--bleu)" stroke-width="3.5" stroke-linecap="round"/>`;
+  s+=`<line x1="${xOf(bleuEnd)}" y1="${lineY}" x2="${xOf(n)}" y2="${lineY}"
+    stroke="var(--orange)" stroke-width="3.5" stroke-linecap="round"/>`;
+
+  // 3 graduations : 0, 4500, 4572
+  [[0,'var(--bleu)'],[bleuEnd,COTE_COLOR],[n,'var(--orange)']].forEach(([v,col])=>{
+    const x=xOf(v);
+    // 4572 et 4500 sont proches : décaler 4572 vers le haut
+    const proche=(v===n && xOf(n)-xOf(bleuEnd)<24);
+    const labY=proche?lineY-28:lineY-16;
+    s+=`<line x1="${x}" y1="${lineY-7}" x2="${x}" y2="${lineY+7}"
+      stroke="${col}" stroke-width="2" stroke-linecap="round"/>`;
+    s+=`<text x="${x}" y="${labY}" text-anchor="middle"
+      font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="${col}">${v.toLocaleString('fr-FR')}</text>`;
+    if(proche)
+      s+=`<line x1="${x}" y1="${lineY-26}" x2="${x}" y2="${lineY-8}"
+        stroke="${col}" stroke-width="1" stroke-dasharray="2,2"/>`;
+  });
+
+  // double flèche bleue
+  s+=coteLine(xOf(0),coteY,xOf(bleuEnd),coteY,reveal?'45 centaines':'?? centaines',COTE_COLOR,5,0,18,'middle');
+  s+=`</svg>`;
+  return `<div class="fade-in" style="width:100%;max-width:520px">${s}</div>`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+const STEPS = [
+
+// 0 — L'idée
+() => `
+<div class="step-title pop">💡 L'idée : compléter une multiplication</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> Pour écrire les nombres, on utilise les dizaines, les centaines, etc. Trouver le nombre de paquets de 10, de 100 ou de 1000 dans un nombre nous permet de mieux comprendre comment sont construits les nombres.</div>
+<p class="step-text fade-in">
+  Trouver le nombre de <strong style="color:var(--bleu)">paquets de 10</strong> dans 43,
+  c'est trouver le plus grand entier possible dans :
+</p>
+${multTrous(43, 10, '?', '?', false, false, true, true)}
+<div class="legende fade-in">
+  <div class="legende-item">
+    <svg width="22" height="22"><rect width="22" height="22" rx="5"
+      fill="var(--bleu-clair)" stroke="var(--bleu)" stroke-width="2.5"/></svg>
+    <span style="color:var(--bleu)">nombre de paquets</span>
+  </div>
+  <div class="legende-item">
+    <svg width="22" height="22"><rect width="22" height="22" rx="5"
+      fill="var(--orange-clair)" stroke="var(--orange)" stroke-width="2.5"/></svg>
+    <span style="color:var(--orange)">reste (ce qui ne fait pas un paquet complet)</span>
+  </div>
+</div>
+`,
+
+// 1 — 43
+() => `
+<div class="step-title pop">✏️ 43 = ___ × 10 + ___</div>
+<p class="step-text fade-in">On forme le maximum de paquets de 10.</p>
+<div class="grille-wrap fade-in">
+  <div class="grille-bloc">
+    ${buildGrille10(43,'10','4',revealed)}
+  </div>
+  ${revealed?`<div class="grille-bloc" style="gap:10px;padding-top:4px">
+    <div class="legende-item">
+      <svg width="36" height="13"><rect width="36" height="13" rx="3" fill="var(--bleu)" opacity="0.78"/></svg>
+      <span style="color:var(--bleu)">4 paquets de 10, c'est 4 dizaines</span>
+    </div>
+    <div class="legende-item">
+      <svg width="13" height="13"><rect width="13" height="13" rx="2" fill="var(--orange)"/></svg>
+      <span style="color:var(--orange)">Il reste 3 unités</span>
+    </div>
+  </div>`:''}
+</div>
+${droite(43,4,10,'4 dizaines',revealed)}
+${multTrous(43,10,4,3,revealed,revealed,!revealed,!revealed)}
+${revealed?'':'<button class="btn-complete" onclick="completer()">✏️ Compléter</button>'}
+`,
+
+// 2 — 136
+() => `
+<div class="step-title pop">✏️ 136 = ___ × 10 + ___</div>
+<p class="step-text fade-in">On forme le maximum de paquets de 10.</p>
+<div class="grille-wrap fade-in">
+  <div class="grille-bloc">
+    ${buildGrille10(136,'10','13',revealed)}
+  </div>
+  ${revealed?`<div class="grille-bloc" style="gap:10px;padding-top:12px">
+    <div class="legende-item">
+      <svg width="36" height="13"><rect width="36" height="13" rx="3" fill="var(--bleu)" opacity="0.78"/></svg>
+      <span style="color:var(--bleu)">13 paquets de 10, c'est 13 dizaines</span>
+    </div>
+    <div class="legende-item">
+      <svg width="13" height="13"><rect width="13" height="13" rx="2" fill="var(--orange)"/></svg>
+      <span style="color:var(--orange)">Il reste 6 unités</span>
+    </div>
+  </div>`:''}
+</div>
+${droite(136,13,10,'13 dizaines',revealed)}
+${multTrous(136,10,13,6,revealed,revealed,!revealed,!revealed)}
+${revealed?'':'<button class="btn-complete" onclick="completer()">✏️ Compléter</button>'}
+`,
+
+// 3 — 548 paquets de 100
+() => `
+<div class="step-title pop">✏️ 548 = ___ × 100 + ___</div>
+<p class="step-text fade-in">
+  On cherche maintenant des <strong style="color:var(--bleu)">paquets de 100</strong>.
+</p>
+<div class="grille-wrap fade-in" style="align-items:flex-start;gap:24px">
+  <div class="grille-bloc">
+    ${buildSchema100(5,48,'100','5',revealed)}
+  </div>
+  ${revealed?`<div class="grille-bloc" style="gap:12px;padding-top:16px">
+    <div class="legende-item">
+      <svg width="30" height="18"><rect width="30" height="18" rx="4" fill="var(--bleu)" opacity="0.72"/></svg>
+      <span style="color:var(--bleu)">5 paquets de 100, c'est 5 centaines</span>
+    </div>
+    <div class="legende-item">
+      <svg width="20" height="18"><rect width="20" height="18" rx="4" fill="var(--orange)" opacity="0.88"/></svg>
+      <span style="color:var(--orange)">Il reste 48 unités</span>
+    </div>
+  </div>`:''}
+</div>
+${droite(548,5,100,'5 centaines',revealed)}
+${multTrous(548,100,5,48,revealed,revealed,!revealed,!revealed)}
+${revealed?'':'<button class="btn-complete" onclick="completer()">✏️ Compléter</button>'}
+`,
+
+// 4 — 4 572 avec rectangle coté
+() => `
+<div class="step-title pop">✏️ 4 572 = ___ × 100 + ___</div>
+<p class="step-text fade-in">
+  On cherche des paquets de 100 dans 4 572.
+</p>
+<div class="grille-wrap fade-in" style="align-items:flex-start;gap:28px">
+  <div class="grille-bloc">
+    ${buildSchema4572(revealed)}
+  </div>
+  ${revealed?`<div class="grille-bloc" style="gap:12px;padding-top:40px">
+    <div class="legende-item">
+      <svg width="30" height="18"><rect width="30" height="18" rx="4" fill="var(--bleu)" opacity="0.82"/></svg>
+      <span style="color:var(--bleu)">45 paquets de 100, c'est 45 centaines</span>
+    </div>
+    <div class="legende-item">
+      <svg width="20" height="18"><rect width="20" height="18" rx="4" fill="var(--orange)" opacity="0.88"/></svg>
+      <span style="color:var(--orange)">Il reste 72 unités</span>
+    </div>
+  </div>`:''}
+</div>
+${droite4572(revealed)}
+${multTrous(4572,100,45,72,revealed,revealed,!revealed,!revealed)}
+${revealed?'':'<button class="btn-complete" onclick="completer()">✏️ Compléter</button>'}
+`,
+
+// 5 — Récap
+() => `
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  ${[
+    ['var(--bleu)',
+     'Trouver le nombre de paquets de 10 dans un nombre, c\'est compléter :<br><strong>nombre = ___ × 10 + ___</strong><br>avec le plus grand entier possible, et un reste inférieur à 10.'],
+    ['var(--violet)',
+     'Le reste est toujours <strong>inférieur à la taille du paquet</strong> : inférieur à 10 pour des paquets de 10, inférieur à 100 pour des paquets de 100.'],
+    ['var(--orange)',
+     'Pour vérifier : on calcule <strong>nombre de paquets × taille</strong> et on s\'assure qu\'on ne peut pas faire un paquet de plus.'],
+  ].map(([c,t],i)=>`
+    <div class="recap-item" style="animation-delay:${i*0.09}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${i+1}</div>
+      <span>${t}</span>
+    </div>`).join('')}
+</div>
+`,
+];
+
+let cur=0, revealed=false; const N=STEPS.length;
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur](); card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(N-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator'); ind.innerHTML='';
+  for(let i=0;i<N;i++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(i===cur?' active':i<cur?' done':'');
+    d.textContent=i<cur?'✓':i+1; ind.appendChild(d);
+  }
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${N}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===N-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===N-1?0:cur+1;revealed=false;render();}
+function prev(){if(cur>0){cur--;revealed=false;render();}}
+function completer(){revealed=true;render();}
+render();
+</script>
+</body>
+</html>

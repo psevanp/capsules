@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>N9 Fractions</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme:light;
+    --bleu:#1a73e8; --bleu-clair:#e8f0fe;
+    --vert:#16a34a; --vert-clair:#dcfce7; --vert-fonce:#14532d;
+    --rouge:#dc2626; --rouge-clair:#fee2e2; --rouge-pale:#fecaca;
+    --orange:#ea580c; --orange-clair:#ffedd5;
+    --violet:#7c3aed; --violet-clair:#f5f3ff;
+    --gris:#94a3b8; --bg:#f0f4ff;
+    --card:#ffffff; --texte:#1e293b; --border:#e2e8f0;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Nunito',sans-serif; background:var(--bg); min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:20px 16px 40px; color:var(--texte); }
+  header { display:flex; justify-content:center; margin-bottom:22px; }
+  .header-row { display:flex; align-items:center; gap:14px; max-width:680px; width:100%; }
+  .badge-code { display:inline-flex; align-items:center; justify-content:center; min-width:48px; height:48px; border-radius:12px; border:2.5px solid var(--bleu); background:var(--bleu-clair); font-family:'Baloo 2',cursive; font-size:1.3rem; font-weight:800; color:var(--bleu); flex-shrink:0; }
+  .tache-label { font-family:'Baloo 2',cursive; font-size:1.1rem; font-weight:800; color:var(--bleu); line-height:1.3; }
+  .progress-bar-wrap { width:100%; max-width:680px; background:#dbeafe; border-radius:99px; height:10px; margin-bottom:18px; overflow:hidden; }
+  .progress-bar { height:100%; background:linear-gradient(90deg,var(--bleu),var(--violet)); border-radius:99px; transition:width 0.5s ease; }
+  .steps-indicator { display:flex; gap:10px; margin-bottom:20px; }
+  .step-dot { width:34px; height:34px; border-radius:50%; background:#dbeafe; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:#93c5fd; transition:all 0.4s; border:2px solid transparent; }
+  .step-dot.active { background:var(--bleu); color:white; border-color:var(--bleu); transform:scale(1.15); box-shadow:0 0 0 4px #bfdbfe; }
+  .step-dot.done   { background:var(--vert); color:white; border-color:var(--vert); }
+  .card { background:var(--card); border-radius:20px; padding:26px 24px; max-width:680px; width:100%; min-height:360px; display:flex; flex-direction:column; align-items:center; gap:16px; box-shadow:0 4px 24px rgba(26,115,232,0.10); position:relative; overflow:hidden; }
+  .card::before { content:''; position:absolute; top:0; left:0; right:0; height:5px; background:linear-gradient(90deg,var(--bleu),var(--violet)); border-radius:20px 20px 0 0; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation:fadeIn 0.4s ease both; }
+  @keyframes pop { 0%{transform:scale(0.8);opacity:0} 70%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
+  .pop { animation:pop 0.45s ease both; }
+  .step-title { font-family:'Baloo 2',cursive; font-size:1.2rem; font-weight:800; color:var(--bleu); text-align:center; line-height:1.3; }
+  .step-text { font-size:0.97rem; color:var(--texte); text-align:center; line-height:1.75; font-weight:600; max-width:540px; }
+
+  /* Cadre info style N1-N8 */
+  .info { border-radius:12px; padding:12px 18px; font-weight:600; max-width:580px; width:100%; line-height:1.6; }
+  .info.bleu { background:var(--bleu-clair); color:var(--bleu); border-left:4px solid var(--bleu); }
+
+  /* Section fraction page 1 */
+  .frac-section { width:100%; max-width:560px; display:flex; flex-direction:column; gap:8px; }
+  .frac-phrase { font-size:0.93rem; font-weight:600; color:var(--texte); }
+
+  /* Bouton compléter */
+  .btn-complete { font-family:'Baloo 2',cursive; font-weight:700; font-size:0.95rem; border:2px solid var(--vert); cursor:pointer; border-radius:10px; padding:10px 22px; background:var(--vert-clair); color:var(--vert); transition:all 0.2s; }
+  .btn-complete:hover { background:var(--vert); color:white; }
+
+  /* Résultat */
+  .frac-result { font-family:'Baloo 2',cursive; font-size:1.2rem; font-weight:800; text-align:center; background:#f1f5f9; border-radius:14px; padding:12px 20px; color:var(--texte); border:2px solid #e2e8f0; max-width:480px; width:100%; }
+
+  .recap-list { display:flex; flex-direction:column; gap:9px; max-width:580px; width:100%; }
+  .recap-item { display:flex; align-items:flex-start; gap:12px; background:#f8faff; border-radius:12px; padding:11px 16px; font-size:0.93rem; font-weight:600; color:var(--texte); animation:fadeIn 0.4s ease both; border-left:4px solid transparent; line-height:1.5; }
+  .recap-num  { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.82rem; font-weight:700; flex-shrink:0; color:white; margin-top:1px; }
+  .nav { display:flex; gap:14px; margin-top:10px; align-items:center; }
+  button.btn-nav { font-family:'Baloo 2',cursive; font-weight:700; font-size:1rem; border:none; cursor:pointer; border-radius:12px; padding:12px 28px; transition:all 0.2s; }
+  .btn-next { background:linear-gradient(135deg,var(--bleu),var(--violet)); color:white; box-shadow:0 4px 14px rgba(26,115,232,0.3); }
+  .btn-next:hover { transform:translateY(-2px); }
+  .btn-next:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+  .btn-prev { background:#e0e7ff; color:var(--bleu); }
+  .btn-prev:hover { background:#c7d2fe; }
+  .step-counter { font-size:0.85rem; color:var(--gris); font-weight:700; }
+  .pourquoi { position:relative; background:#f0fdfa; border-left:4px solid #0d9488; border-radius:10px; padding:12px 15px; font-size:0.92rem; font-weight:600; color:#134e4a; line-height:1.6; max-width:580px; width:100%; }
+  .pq-lead { font-family:'Baloo 2',cursive; font-weight:800; color:#0d9488; }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">N9</div>
+    <div class="tache-label">Utiliser des représentations de fractions</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+// ── Constantes visuelles ─────────────────────────────────────────────────────
+const UW = 480;   // largeur de l'unité (px dans le viewBox)
+const UH = 48;    // hauteur d'un rectangle (agrandi pour la lisibilité)
+const GAP = 6;    // espace vertical entre unité et parts
+const PAD = 10;   // marge gauche/droite dans le SVG
+
+// Couleurs
+const C_UNITE  = '#16a34a';   // vert foncé
+const C_BG_U   = '#dcfce7';   // vert clair fond
+const C_PART   = '#dc2626';   // rouge vif
+const C_BG_P   = '#fee2e2';   // rouge clair fond
+const C_PALE   = '#dc2626';   // rouge pâle texte
+const C_BG_PALE= '#fecaca';   // rouge très pâle fond
+const C_TXT_U  = '#14532d';   // texte unité
+const C_TXT_P  = '#991b1b';   // texte parts
+
+// ── Texte simple ─────────────────────────────────────────────────────────────
+function ts(x,y,txt,fs,col,anchor){
+  return `<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${col}">${txt}</text>`;
+}
+
+// ── Rectangle avec texte centré ──────────────────────────────────────────────
+function rect(x,y,w,h,fill,stroke,txt,fs,tcol,rx){
+  rx=rx||6;
+  let s=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>`;
+  if(txt) s+=ts(x+w/2, y+h/2+fs*0.38, txt, fs, tcol);
+  return s;
+}
+
+// ── Dessin : unité + N parts (+ éventuellement parts pâles) ─────────────────
+// cols : {stroke, bg, pale, tcol, ptcol}
+function drawFractions(parts, total, paleParts, nomPart, showUnites, cols, showAllUnites){
+  paleParts = paleParts || 0;
+  showUnites = showUnites || 1;
+  cols = cols || {stroke:C_PART, bg:C_BG_P, pale:C_BG_PALE, tcol:C_TXT_P, ptcol:'#b91c1c'};
+  const totalParts = parts + paleParts;
+  const totalLineW = showUnites * UW;
+  const totalSlots = total * showUnites;
+  const pw = totalLineW / totalSlots;
+  const svgH = PAD + UH + GAP + UH + PAD + 4;
+  const svgW = totalLineW + PAD*2;
+
+  let s=`<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" style="display:block;width:100%;max-width:${svgW}px;height:auto;overflow:visible">`;
+
+  for(let u=0;u<showUnites;u++){
+    if(u===0 || showAllUnites){
+      s+=rect(PAD+u*UW, PAD, UW, UH, C_BG_U, C_UNITE, '1 unité', 15, C_TXT_U);
+    } else {
+      // espace réservé invisible (aucun tracé)
+    }
+  }
+
+  const lineY = PAD + UH + GAP;
+  for(let p=0;p<totalParts;p++){
+    const x = PAD + p*pw;
+    const isPale = p >= parts;
+    const fill   = isPale ? cols.pale   : cols.bg;
+    const stroke = cols.stroke;
+    const tcol   = isPale ? cols.ptcol  : cols.tcol;
+    const opacity = isPale ? ' opacity="0.35"' : '';
+    s+=`<rect x="${x}" y="${lineY}" width="${pw-2}" height="${UH}" rx="6" fill="${fill}" stroke="${stroke}" stroke-width="1.5"${opacity}/>`;
+    // police selon la largeur disponible
+    // police basée sur la largeur d'une part dans 1 unité (toujours lisible)
+    const pwSingle = UW / total;
+    const fs = pwSingle>160?16:pwSingle>110?15:pwSingle>80?14:pwSingle>55?13:11;
+    if(!isPale && nomPart) s+=ts(x+(pw-2)/2, lineY+UH/2+fs*0.38, nomPart, fs, tcol);
+  }
+
+  s+=`</svg>`;
+  return s;
+}
+
+// ── Bloc interactif (avec bouton compléter) ───────────────────────────────────
+const EXOS = {};
+
+function exoBlock(uid, parts, total, paleParts, nomPart, showUnites, phraseAvant, texteApres){
+  const cols = null; // rouge par défaut
+  EXOS[uid] = {parts, total, paleParts, nomPart, showUnites, cols, texteApres};
+  // Initial : pleine largeur (showUnites), unités supplémentaires en blanc
+  const svg0 = drawFractions(parts, total, 0, '', showUnites, cols, false);
+  return `
+<div id="wrap-${uid}" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:10px">
+  <div id="svg-${uid}" class="fade-in" style="width:100%">${svg0}</div>
+  <div class="info bleu fade-in" style="font-size:0.93rem;max-width:480px">${phraseAvant}</div>
+  <button class="btn-complete" onclick="completer('${uid}')">✏️ Compléter</button>
+  <div id="res-${uid}" style="display:none;flex-direction:column;align-items:center;gap:8px;width:100%">
+    <p style="font-size:0.9rem;color:var(--gris);font-weight:600;text-align:center;font-style:italic">${texteApres}</p>
+  </div>
+</div>`;
+}
+
+function completer(uid){
+  const e=EXOS[uid];
+  document.getElementById('svg-'+uid).innerHTML = drawFractions(e.parts, e.total, e.paleParts, e.nomPart, e.showUnites, e.cols, true);
+  document.getElementById('svg-'+uid).parentElement.querySelector('.btn-complete').style.display='none';
+  const res=document.getElementById('res-'+uid);
+  res.style.display='flex';
+}
+
+// ── Représentation statique page 1 (unité + toutes les parts colorées) ───────
+const COLS = {
+  demi:  {stroke:'#1a73e8', bg:'#dbeafe', pale:'#eff6ff', tcol:'#1e40af', ptcol:'#93c5fd'},
+  tiers: {stroke:'#7c3aed', bg:'#ede9fe', pale:'#f5f3ff', tcol:'#4c1d95', ptcol:'#c4b5fd'},
+  quart: {stroke:'#b45309', bg:'#fef3c7', pale:'#fffbeb', tcol:'#78350f', ptcol:'#fcd34d'},
+};
+function staticFrac(total, nomPart, colKey){
+  const cols = COLS[colKey] || COLS.tiers;
+  return `<div class="fade-in" style="width:100%;max-width:560px">${drawFractions(total, total, 0, nomPart, 1, cols)}</div>`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+const STEPS = [
+
+// 0 — L'idée
+() => `
+<div class="step-title pop">💡 Partager l'unité</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> Une fraction permet de faire apparaitre un partage de l'unité. Pour mieux comprendre ce qu'est une fraction, il faut savoir utiliser ses représentations.</div>
+
+<div class="frac-section fade-in">
+  <p class="frac-phrase">Quand on partage une unité en <strong style="color:var(--vert)">2 parts de même taille</strong>, on obtient un <strong style="color:#1a73e8">demi</strong>.</p>
+  ${staticFrac(2,'1 demi','demi')}
+</div>
+
+<div class="frac-section fade-in" style="animation-delay:0.1s">
+  <p class="frac-phrase">Quand on partage une unité en <strong style="color:var(--vert)">3 parts de même taille</strong>, on obtient un <strong style="color:#7c3aed">tiers</strong>.</p>
+  ${staticFrac(3,'1 tiers','tiers')}
+</div>
+
+<div class="frac-section fade-in" style="animation-delay:0.2s">
+  <p class="frac-phrase">Quand on partage une unité en <strong style="color:var(--vert)">4 parts de même taille</strong>, on obtient un <strong style="color:#b45309">quart</strong>.</p>
+  ${staticFrac(4,'1 quart','quart')}
+</div>
+`,
+
+// 1 — 2 tiers
+() => `
+<div class="step-title pop">✏️ Exemple : 2 tiers</div>
+${exoBlock('ex1', 2, 3, 1, '1 tiers', 1,
+  'Les rectangles rouges représentent <strong style="color:var(--rouge)">2 tiers</strong>.',
+  'Ce sont des tiers car il y en a 3 dans chaque unité.'
+)}
+`,
+
+// 2 — 3 demis
+() => `
+<div class="step-title pop">✏️ Exemple : 3 demis</div>
+${exoBlock('ex2', 3, 2, 1, '1 demi', 2,
+  'Les rectangles rouges représentent <strong style="color:var(--rouge)">3 demis</strong>.',
+  'Ce sont des demis car il y en a 2 dans chaque unité.'
+)}
+`,
+
+// 3 — 6 quarts
+() => `
+<div class="step-title pop">✏️ Exemple : 6 quarts</div>
+${exoBlock('ex3', 6, 4, 2, '1 quart', 2,
+  'Les rectangles rouges représentent <strong style="color:var(--rouge)">6 quarts</strong>.',
+  'Ce sont des quarts car il y en a 4 dans chaque unité.'
+)}
+`,
+
+// 4 — 7 tiers
+() => `
+<div class="step-title pop">✏️ Exemple : 7 tiers</div>
+${exoBlock('ex4', 7, 3, 2, '1 tiers', 3,
+  'Les rectangles rouges représentent <strong style="color:var(--rouge)">7 tiers</strong>.',
+  'Ce sont des tiers car il y en a 3 dans chaque unité.'
+)}
+`,
+
+// 5 — Récap
+() => `
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  ${[
+    ['var(--vert)',  '1 unité, c\'est 2 demis.<br>1 unité, c\'est 3 tiers.<br>1 unité, c\'est 4 quarts.<br>1 unité, c\'est 5 cinquièmes.<br><em style="color:var(--gris)">etc.</em>'],
+    ['var(--bleu)',  'Le nom de la fraction (demi, tiers, quart…) permet de savoir combien il y a de parts dans l\'unité.'],
+    ['var(--rouge)', 'Quand on a plus de parts que nécessaire pour une unité, on peut former <strong>plusieurs unités</strong>.'],
+  ].map(([c,t],i)=>`
+    <div class="recap-item" style="animation-delay:${i*0.09}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${i+1}</div>
+      <span>${t}</span>
+    </div>`).join('')}
+</div>
+`,
+];
+
+let cur=0; const N=STEPS.length;
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur](); card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(N-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator'); ind.innerHTML='';
+  for(let i=0;i<N;i++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(i===cur?' active':i<cur?' done':'');
+    d.textContent=i<cur?'✓':i+1; ind.appendChild(d);
+  }
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${N}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===N-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===N-1?0:cur+1;render();}
+function prev(){if(cur>0){cur--;render();}}
+render();
+</script>
+</body>
+</html>

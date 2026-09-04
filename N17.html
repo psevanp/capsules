@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>N17 Additionner ou soustraire des fractions</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme:light;
+    --bleu:#1a73e8; --bleu-clair:#e8f0fe;
+    --vert:#16a34a; --vert-clair:#dcfce7;
+    --rouge:#dc2626; --rouge-clair:#fee2e2;
+    --orange:#ea580c; --orange-clair:#ffedd5;
+    --violet:#7c3aed; --violet-clair:#f5f3ff;
+    --gris:#94a3b8; --bg:#f0f4ff;
+    --card:#ffffff; --texte:#1e293b; --border:#e2e8f0;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Nunito',sans-serif; background:var(--bg); min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:20px 16px 40px; color:var(--texte); }
+  header { display:flex; justify-content:center; margin-bottom:22px; }
+  .header-row { display:flex; align-items:center; gap:14px; max-width:680px; width:100%; }
+  .badge-code { display:inline-flex; align-items:center; justify-content:center; min-width:48px; height:48px; border-radius:12px; border:2.5px solid var(--bleu); background:var(--bleu-clair); font-family:'Baloo 2',cursive; font-size:1.3rem; font-weight:800; color:var(--bleu); flex-shrink:0; }
+  .tache-label { font-family:'Baloo 2',cursive; font-size:1.05rem; font-weight:800; color:var(--bleu); line-height:1.3; }
+  .progress-bar-wrap { width:100%; max-width:680px; background:#dbeafe; border-radius:99px; height:10px; margin-bottom:18px; overflow:hidden; }
+  .progress-bar { height:100%; background:linear-gradient(90deg,var(--bleu),var(--violet)); border-radius:99px; transition:width 0.5s ease; }
+  .steps-indicator { display:flex; gap:10px; margin-bottom:20px; }
+  .step-dot { width:34px; height:34px; border-radius:50%; background:#dbeafe; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:#93c5fd; transition:all 0.4s; border:2px solid transparent; }
+  .step-dot.active { background:var(--bleu); color:white; border-color:var(--bleu); transform:scale(1.15); box-shadow:0 0 0 4px #bfdbfe; }
+  .step-dot.done { background:var(--vert); color:white; border-color:var(--vert); }
+  .card { background:var(--card); border-radius:20px; padding:26px 24px; max-width:680px; width:100%; min-height:360px; display:flex; flex-direction:column; align-items:center; gap:16px; box-shadow:0 4px 24px rgba(26,115,232,0.10); position:relative; overflow-x:auto; }
+  .card::before { content:''; position:absolute; top:0; left:0; right:0; height:5px; background:linear-gradient(90deg,var(--bleu),var(--violet)); border-radius:20px 20px 0 0; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation:fadeIn 0.4s ease both; }
+  @keyframes pop { 0%{transform:scale(0.8);opacity:0} 70%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
+  .pop { animation:pop 0.45s ease both; }
+  .step-title { font-family:'Baloo 2',cursive; font-size:1.2rem; font-weight:800; color:var(--bleu); text-align:center; line-height:1.3; display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; }
+  .step-text { font-size:0.97rem; color:var(--texte); text-align:center; line-height:1.7; font-weight:600; max-width:540px; }
+  .info { border-radius:12px; padding:12px 16px; font-weight:600; max-width:580px; width:100%; line-height:1.55; font-size:0.9rem; }
+  .info.bleu   { background:var(--bleu-clair);   color:var(--bleu);   border-left:4px solid var(--bleu); }
+  .info.violet { background:var(--violet-clair); color:var(--violet); border-left:4px solid var(--violet); }
+  .btn-complete { font-family:'Baloo 2',cursive; font-weight:700; font-size:0.95rem; border:2px solid var(--vert); cursor:pointer; border-radius:10px; padding:10px 22px; background:var(--vert-clair); color:var(--vert); transition:all 0.2s; }
+  .btn-complete:hover { background:var(--vert); color:white; }
+  .recap-list { display:flex; flex-direction:column; gap:9px; max-width:580px; width:100%; }
+  .recap-item { display:flex; align-items:flex-start; gap:12px; background:#f8faff; border-radius:12px; padding:11px 16px; font-size:0.92rem; font-weight:600; color:var(--texte); animation:fadeIn 0.4s ease both; border-left:4px solid transparent; line-height:1.5; }
+  .recap-num { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.82rem; font-weight:700; flex-shrink:0; color:white; margin-top:1px; }
+  .nav { display:flex; gap:14px; margin-top:10px; align-items:center; }
+  button.btn-nav { font-family:'Baloo 2',cursive; font-weight:700; font-size:1rem; border:none; cursor:pointer; border-radius:12px; padding:12px 28px; transition:all 0.2s; }
+  .btn-next { background:linear-gradient(135deg,var(--bleu),var(--violet)); color:white; box-shadow:0 4px 14px rgba(26,115,232,0.3); }
+  .btn-next:hover { transform:translateY(-2px); }
+  .btn-next:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+  .btn-prev { background:#e0e7ff; color:var(--bleu); }
+  .btn-prev:hover { background:#c7d2fe; }
+  .step-counter { font-size:0.85rem; color:var(--gris); font-weight:700; }
+
+  /* Calcul à trou */
+  .calc { display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:center; font-family:'Baloo 2',cursive; font-size:1.5rem; font-weight:800; }
+  .calc .op { color:var(--gris); }
+  .trou { display:inline-flex; align-items:center; justify-content:center; min-width:54px; height:56px; border-radius:12px; border:3px dashed var(--border); color:transparent; font-weight:800; transition:all 0.5s ease; }
+  .trou.plein { border:3px solid var(--vert); background:var(--vert-clair); }
+  .lettres { font-size:0.82rem; color:var(--gris); font-weight:600; font-style:italic; }
+  .pourquoi { position:relative; background:#f0fdfa; border-left:4px solid #0d9488; border-radius:10px; padding:12px 15px; font-size:0.92rem; font-weight:600; color:#134e4a; line-height:1.6; max-width:580px; width:100%; }
+  .pq-lead { font-family:'Baloo 2',cursive; font-weight:800; color:#0d9488; }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">N17</div>
+    <div class="tache-label">Additionner ou soustraire des fractions</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+function fracSVG(num, den, col, fsNum, fsDen){
+  col = col||'var(--texte)'; fsNum=fsNum||22; fsDen=fsDen||22;
+  const W = Math.max(String(num).length,String(den).length)*fsNum*0.62 + 8;
+  const yNum = fsNum;
+  const yTrait = yNum + Math.round(fsNum*0.28);
+  const yDen = yTrait + 3 + Math.round(fsDen*0.93);
+  const H = yDen + 4;
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:inline-block;vertical-align:middle;overflow:visible">
+    <text x="${W/2}" y="${yNum}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fsNum}" font-weight="800" fill="${col}">${num}</text>
+    <rect x="0" y="${yTrait}" width="${W}" height="3" rx="1" fill="${col}"/>
+    <text x="${W/2}" y="${yDen}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fsDen}" font-weight="800" fill="${col}">${den}</text>
+  </svg>`;
+}
+
+function fracInline(num, den, col, fs){
+  fs = fs||13; col=col||'#16a34a';
+  const w = Math.max(String(num).length, String(den).length)*fs*0.65 + 4;
+  const yN=fs, yT=fs+3, yD=fs+3+3+fs;
+  return `<svg width="${w}" height="${yD+3}" viewBox="0 0 ${w} ${yD+3}" style="display:block;overflow:visible">
+    <text x="${w/2}" y="${yN}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${col}">${num}</text>
+    <rect x="1" y="${yT}" width="${w-2}" height="2" fill="${col}"/>
+    <text x="${w/2}" y="${yD}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${col}">${den}</text>
+  </svg>`;
+}
+
+function nomFrac(num, den){
+  const noms = {2:'demi',3:'tiers',4:'quart',5:'cinquième',6:'sixième',7:'septième',8:'huitième',9:'neuvième',10:'dixième'};
+  let nom = noms[den] || (den+'ème');
+  if(num>1 && den!==3) nom += 's';
+  if(den===3) nom='tiers';
+  return num+' '+nom;
+}
+
+const EXOS = {};
+
+// Représentation addition/soustraction sur ligne numérique
+// op : '+' ou '-'
+// fA, fB : {num, den}  (même den supposé pour l'affichage des parts)
+// resultNum : numérateur du résultat (sur le den commun)
+function drawOp(cfg, completed){
+  const op=cfg.op, denC=cfg.denCommun;
+  const aN=cfg.aNum, bN=cfg.bNum;          // numérateurs sur le dénominateur commun
+  const resN = op==='+' ? aN+bN : aN-bN;
+  const maxN = Math.max(aN, op==='+'?aN+bN:aN);
+  const maxVal = maxN/denC;
+  let unites = Math.ceil(maxVal);
+  let extra=0;
+  if(maxVal<1){ unites=1; extra=0.15; }
+  const UWmax=150;
+  const UW=Math.min(UWmax, 430/(unites+extra));
+  const PADL=24, PADR=20, partH=22, gap=8;
+  const lineY = 14 + partH + gap + 24 + (cfg.demiFleche?22:0);
+  const lineEnd = PADL + UW*(unites+extra);
+  const lineOver = lineEnd + (extra>0?0:UW*0.12);
+  const W = PADL + UW*(unites+extra) + PADR + (extra>0?0:UW*0.12);
+  const H = lineY + gap + partH + 56;
+  const pw = UW/denC;
+
+  function xOf(valParts){ return PADL + (valParts/denC)*UW; }
+  function tc(x,y,t,fs,col){
+    return `<text x="${x}" y="${y}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${col}" stroke="white" stroke-width="3.5" stroke-linejoin="round" paint-order="stroke">${t}</text>`;
+  }
+
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+
+  if(completed){
+    const partYtop = lineY - gap - partH;
+    const partYbot = lineY + gap;
+    if(op==='+'){
+      const total = aN+bN;
+      // emplacements pâles pour compléter la 1re unité (si total < denC)
+      const slotsClairs = Math.max(denC, total);
+      for(let p=total;p<slotsClairs;p++){
+        const x=PADL+p*pw;
+        s+=`<rect x="${x}" y="${partYtop}" width="${pw-2}" height="${partH}" rx="3" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2"/>`;
+      }
+      // A (rouge) depuis 0, puis B (violet) à la suite
+      for(let p=0;p<aN;p++){
+        const x=PADL+p*pw;
+        s+=`<rect x="${x}" y="${partYtop}" width="${pw-2}" height="${partH}" rx="3" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>`;
+      }
+      for(let p=0;p<bN;p++){
+        const x=PADL+(aN+p)*pw;
+        s+=`<rect x="${x}" y="${partYtop}" width="${pw-2}" height="${partH}" rx="3" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.2"/>`;
+      }
+    } else {
+      // soustraction
+      const slotsClairs = Math.max(denC, aN);
+      for(let p=aN;p<slotsClairs;p++){
+        const x=PADL+p*pw;
+        s+=`<rect x="${x}" y="${partYtop}" width="${pw-2}" height="${partH}" rx="3" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2"/>`;
+      }
+      for(let p=0;p<aN;p++){
+        const x=PADL+p*pw;
+        s+=`<rect x="${x}" y="${partYtop}" width="${pw-2}" height="${partH}" rx="3" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>`;
+      }
+      for(let p=0;p<bN;p++){
+        const x=PADL+(aN-bN+p)*pw;
+        s+=`<rect x="${x}" y="${partYbot}" width="${pw-2}" height="${partH}" rx="3" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.2"/>`;
+      }
+    }
+  }
+
+  // ligne (pas de flèche, dépasse un peu)
+  s+=`<line x1="${PADL}" y1="${lineY}" x2="${lineOver}" y2="${lineY}" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>`;
+
+  // point résultat (vert) après clic — graduation + étiquette
+  if(completed){
+    const px=xOf(resN);
+    const partYbot = lineY + gap + partH;
+    s+=`<line x1="${px}" y1="${lineY-11}" x2="${px}" y2="${partYbot+4}" stroke="#16a34a" stroke-width="3"/>`;
+    // étiquette résultat sous la ligne
+    const frR=fracInline(resN,denC,'#16a34a',13);
+    const frRW=Math.max(String(resN).length,String(denC).length)*13*0.65+4;
+    s+=`<g transform="translate(${px-frRW/2}, ${partYbot+6})">${frR}</g>`;
+  }
+
+  // graduations entières
+  for(let u=0;u<=unites;u++){
+    const x=PADL+u*UW;
+    s+=`<line x1="${x}" y1="${lineY-6}" x2="${x}" y2="${lineY+6}" stroke="#334155" stroke-width="2"/>`;
+    s+=tc(x, lineY+22, u, 13, '#1e293b');
+  }
+
+  // double flèche "1 demi" entre 0 et aN parts (pour ex4 transformation)
+  if(completed && cfg.demiFleche){
+    const x0=PADL, x1=xOf(aN);
+    const fy = lineY - gap - partH - 14;  // au-dessus des parts
+    s+=`<line x1="${x0+3}" y1="${fy}" x2="${x1-3}" y2="${fy}" stroke="#dc2626" stroke-width="1.8"/>`;
+    s+=`<polygon points="${x0},${fy} ${x0+6},${fy-4} ${x0+6},${fy+4}" fill="#dc2626"/>`;
+    s+=`<polygon points="${x1},${fy} ${x1-6},${fy-4} ${x1-6},${fy+4}" fill="#dc2626"/>`;
+    s+=`<text x="${(x0+x1)/2}" y="${fy-5}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="#dc2626" stroke="white" stroke-width="3" stroke-linejoin="round" paint-order="stroke">1 demi</text>`;
+  }
+
+  s+=`</svg>`;
+  return s;
+}
+
+function exoBlock(uid, cfg){
+  EXOS[uid]=cfg;
+  const op=cfg.op;
+  const resN = op==='+' ? cfg.aNum+cfg.bNum : cfg.aNum-cfg.bNum;
+  const svg0 = drawOp(cfg, false);
+  if(cfg.lettresPrincipal){
+    // calcul principal en lettres, fractions en gris dessous après clic
+    return `
+<div id="wrap-${uid}" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px">
+  <div id="svg-${uid}" class="fade-in" style="width:100%">${svg0}</div>
+  <div class="calc fade-in" style="font-size:1.15rem">
+    <span style="color:var(--rouge)">${nomFrac(cfg.aNum,cfg.denCommun)}</span>
+    <span class="op">${op}</span>
+    <span style="color:var(--violet)">${nomFrac(cfg.bNum,cfg.denCommun)}</span>
+    <span class="op">=</span>
+    <span class="trou" id="trou-${uid}" style="min-width:90px"></span>
+  </div>
+  <div id="lettres-${uid}" class="lettres" style="display:none;font-size:0.9rem">
+    <span class="calc" style="font-size:0.95rem;color:var(--gris)">
+      ${fracSVG(cfg.aDisp[0],cfg.aDisp[1],'var(--gris)',18,18)}
+      <span class="op">${op}</span>
+      ${fracSVG(cfg.bDisp[0],cfg.bDisp[1],'var(--gris)',18,18)}
+      <span class="op">=</span>
+      ${fracSVG(resN,cfg.denCommun,'var(--gris)',18,18)}
+    </span>
+  </div>
+  <button class="btn-complete" onclick="completer('${uid}')">✏️ Calculer</button>
+  <div id="res-${uid}" style="display:none;width:100%">
+    <div class="info bleu fade-in" style="font-size:0.9rem">${cfg.explication}</div>
+  </div>
+</div>`;
+  }
+  return `
+<div id="wrap-${uid}" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px">
+  <div id="svg-${uid}" class="fade-in" style="width:100%">${svg0}</div>
+  <div class="calc fade-in">
+    ${fracSVG(cfg.aDisp[0],cfg.aDisp[1],'var(--rouge)',26,26)}
+    <span class="op">${op}</span>
+    ${fracSVG(cfg.bDisp[0],cfg.bDisp[1],'var(--violet)',26,26)}
+    <span class="op">=</span>
+    <span class="trou" id="trou-${uid}"></span>
+  </div>
+  <div id="lettres-${uid}" class="lettres" style="display:none"></div>
+  <button class="btn-complete" onclick="completer('${uid}')">✏️ Calculer</button>
+  <div id="res-${uid}" style="display:none;width:100%">
+    <div class="info bleu fade-in" style="font-size:0.9rem">${cfg.explication}</div>
+  </div>
+</div>`;
+}
+
+function completer(uid){
+  const cfg=EXOS[uid];
+  const op=cfg.op;
+  const resN = op==='+' ? cfg.aNum+cfg.bNum : cfg.aNum-cfg.bNum;
+  document.getElementById('svg-'+uid).innerHTML = drawOp(cfg, true);
+  const trou=document.getElementById('trou-'+uid);
+  if(cfg.lettresPrincipal){
+    trou.innerHTML = `<span style="color:var(--vert);font-size:1.1rem">${nomFrac(resN,cfg.denCommun)}</span>`;
+  } else {
+    trou.innerHTML = fracSVG(resN, cfg.denCommun, 'var(--vert)', 24, 24);
+  }
+  trou.className='trou plein';
+  const lettresEl=document.getElementById('lettres-'+uid);
+  if(!cfg.lettresPrincipal){
+    lettresEl.textContent = `${nomFrac(cfg.aNum,cfg.denCommun)} ${op} ${nomFrac(cfg.bNum,cfg.denCommun)} = ${nomFrac(resN,cfg.denCommun)}`;
+  }
+  lettresEl.style.display='block';
+  document.getElementById('wrap-'+uid).querySelector('.btn-complete').style.display='none';
+  document.getElementById('res-'+uid).style.display='block';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+const STEPS = [
+
+// 0 — règles
+()=>`
+<div class="step-title pop">💡 Additionner ou soustraire des fractions</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> Les fractions sont des nombres : comme avec les entiers, on peut avoir besoin dans certaines situations de les additionner ou de les soustraire.</div>
+<div class="info bleu fade-in">
+  <strong>Même dénominateur :</strong><br>
+  il suffit d'ajouter ou de soustraire les numérateurs.
+</div>
+<div class="info violet fade-in">
+  <strong>Dénominateurs différents :</strong><br>
+  il faut d'abord transformer une des fractions pour qu'elles aient le même dénominateur.
+</div>
+`,
+
+// 1 — 1/4 + 1/4
+()=>`
+<div class="step-title pop">✏️ Addition : ${fracSVG(1,4,'var(--rouge)',22,22)} + ${fracSVG(1,4,'var(--violet)',22,22)}</div>
+${exoBlock('ex1', {op:'+', denCommun:4, aNum:1, bNum:1, aDisp:[1,4], bDisp:[1,4], lettresPrincipal:true,
+  explication:`Même dénominateur (4) : on ajoute les numérateurs. 1 + 1 = 2, donc le résultat est ${fracSVG(2,4,'var(--vert)',15,15)}.`})}`,
+
+// 2 — 7/3 - 2/3
+()=>`
+<div class="step-title pop">✏️ Soustraction : ${fracSVG(7,3,'var(--rouge)',22,22)} − ${fracSVG(2,3,'var(--violet)',22,22)}</div>
+${exoBlock('ex2', {op:'-', denCommun:3, aNum:7, bNum:2, aDisp:[7,3], bDisp:[2,3], lettresPrincipal:true,
+  explication:`Même dénominateur (3) : on soustrait les numérateurs. 7 − 2 = 5, donc le résultat est ${fracSVG(5,3,'var(--vert)',15,15)}.`})}`,
+
+// 3 — 3/5 + 4/5
+()=>`
+<div class="step-title pop">✏️ Addition : ${fracSVG(3,5,'var(--rouge)',22,22)} + ${fracSVG(4,5,'var(--violet)',22,22)}</div>
+${exoBlock('ex3', {op:'+', denCommun:5, aNum:3, bNum:4, aDisp:[3,5], bDisp:[4,5],
+  explication:`Même dénominateur (5) : on ajoute les numérateurs. 3 + 4 = 7, donc le résultat est ${fracSVG(7,5,'var(--vert)',15,15)}.`})}`,
+
+// 4 — 1/2 + 1/4 (dénominateurs différents)
+()=>`
+<div class="step-title pop">✏️ Addition : ${fracSVG(1,2,'var(--rouge)',22,22)} + ${fracSVG(1,4,'var(--violet)',22,22)}</div>
+${exoBlock('ex4', {op:'+', denCommun:4, aNum:2, bNum:1, aDisp:[1,2], bDisp:[1,4], demiFleche:true,
+  explication:`Les dénominateurs sont différents. On transforme ${fracSVG(1,2,'var(--rouge)',15,15)} = ${fracSVG(2,4,'var(--rouge)',15,15)}. Ensuite, même dénominateur (4) : 2 + 1 = 3, donc le résultat est ${fracSVG(3,4,'var(--vert)',15,15)}.`})}`,
+
+// 5 — Bilan
+()=>`
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  ${[
+    ['var(--bleu)',   'Même <strong>dénominateur</strong> : on ajoute (ou soustrait) seulement les <strong>numérateurs</strong>.'],
+    ['var(--violet)', 'Dénominateurs <strong>différents</strong> : on transforme d\'abord une fraction pour avoir le même dénominateur.'],
+    ['var(--vert)',   'Le <strong>dénominateur ne change pas</strong> quand on additionne ou soustrait des fractions de même dénominateur.'],
+  ].map(([c,t],i)=>`
+    <div class="recap-item" style="animation-delay:${i*0.09}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${i+1}</div>
+      <span>${t}</span>
+    </div>`).join('')}
+</div>`,
+];
+
+let cur=0; const N=STEPS.length;
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur](); card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(N-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator'); ind.innerHTML='';
+  for(let i=0;i<N;i++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(i===cur?' active':i<cur?' done':'');
+    d.textContent=i<cur?'✓':i+1; ind.appendChild(d);
+  }
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${N}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===N-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===N-1?0:cur+1;render();}
+function prev(){if(cur>0){cur--;render();}}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>N30 Reconnaître un nombre décimal</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{color-scheme:light;--bleu:#1a73e8;--bleu-clair:#e8f0fe;--vert:#16a34a;--vert-clair:#dcfce7;--orange:#ea580c;--orange-clair:#ffedd5;--violet:#7c3aed;--violet-clair:#f5f3ff;--gris:#94a3b8;--gris-clair:#f1f5f9;--bg:#f0f4ff;--card:#fff;--texte:#1e293b;--border:#e2e8f0;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+  header{display:flex;justify-content:center;margin-bottom:22px;}
+  .header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+  .badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--bleu);background:var(--bleu-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--bleu);flex-shrink:0;}
+  .tache-label{font-family:'Baloo 2',cursive;font-size:1.02rem;font-weight:800;color:var(--bleu);line-height:1.3;}
+  .progress-bar-wrap{width:100%;max-width:680px;background:#dbeafe;border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+  .progress-bar{height:100%;background:linear-gradient(90deg,var(--bleu),var(--violet));border-radius:99px;transition:width .5s ease;}
+  .steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+  .step-dot{width:32px;height:32px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:#93c5fd;transition:all .4s;border:2px solid transparent;}
+  .step-dot.active{background:var(--bleu);color:#fff;border-color:var(--bleu);transform:scale(1.15);box-shadow:0 0 0 4px #bfdbfe;}
+  .step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+  .card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:340px;display:flex;flex-direction:column;align-items:center;gap:12px;box-shadow:0 4px 24px rgba(26,115,232,.10);position:relative;}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--bleu),var(--violet));border-radius:20px 20px 0 0;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .fade-in{animation:fadeIn .4s ease both;}
+  @keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+  .pop{animation:pop .45s ease both;}
+
+  /* ── Blocs typés ── */
+  .bloc{border-radius:12px;padding:12px 16px;width:100%;max-width:580px;line-height:1.68;font-size:.92rem;font-weight:600;}
+  .bloc-header{font-family:'Baloo 2',cursive;font-size:.8rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;}
+
+  /* Définition : violet fort, mis en avant */
+  .def  {background:#ede9fe;border-left:5px solid var(--violet);color:#2e1065;font-size:.97rem;}
+  .def  .bloc-header{color:var(--violet);}
+
+  /* Propriété : bleu fort, mis en avant (même importance que def) */
+  .prop {background:var(--bleu-clair);border-left:5px solid var(--bleu);color:#1e3a5f;font-size:.97rem;}
+  .prop .bloc-header{color:var(--bleu);}
+
+  /* Exemple : discret, fond blanc cassé, bordure orange fine */
+  .ex   {background:#fafaf8;border-left:3px solid #fdba74;color:#44403c;font-size:.9rem;}
+  .ex   .bloc-header{color:var(--orange);}
+
+  /* Remarque : gris discret */
+  .rem  {background:var(--gris-clair);border-left:3px solid var(--gris);color:#475569;font-size:.88rem;}
+  .rem  .bloc-header{color:#64748b;}
+
+  /* Navigation */
+  .nav{display:flex;gap:14px;margin-top:10px;align-items:center;}
+  button.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;cursor:pointer;border-radius:12px;padding:12px 28px;transition:all .2s;}
+  .btn-next{background:linear-gradient(135deg,var(--bleu),var(--violet));color:#fff;box-shadow:0 4px 14px rgba(26,115,232,.3);}
+  .btn-next:hover{transform:translateY(-2px);}
+  .btn-prev{background:#e0e7ff;color:var(--bleu);}
+  .btn-prev:hover{background:#c7d2fe;}
+  .step-counter{font-size:.85rem;color:var(--gris);font-weight:700;}
+  .step-title{font-family:'Baloo 2',cursive;font-size:1.12rem;font-weight:800;color:var(--bleu);text-align:center;line-height:1.3;}
+  .recap-list{display:flex;flex-direction:column;gap:9px;max-width:580px;width:100%;}
+  .recap-item{display:flex;align-items:flex-start;gap:12px;background:#f8faff;border-radius:12px;padding:11px 16px;font-size:.92rem;font-weight:600;color:var(--texte);border-left:4px solid transparent;line-height:1.5;}
+  .recap-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:700;flex-shrink:0;color:#fff;margin-top:1px;}
+  .pourquoi { position:relative; background:#f0fdfa; border-left:4px solid #0d9488; border-radius:10px; padding:12px 15px; font-size:0.92rem; font-weight:600; color:#134e4a; line-height:1.6; max-width:580px; width:100%; }
+  .pq-lead { font-family:'Baloo 2',cursive; font-weight:800; color:#0d9488; }
+</style>
+</head>
+<body>
+<header><div class="header-row">
+  <div class="badge-code">N30</div>
+  <div class="tache-label">Reconnaître un nombre décimal</div>
+</div></header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+// ── Fraction SVG inline ───────────────────────────────────────────────────────
+function frac(n,d,col,fs){
+  col=col||'var(--texte)'; fs=fs||20;
+  const W=Math.max(String(n).length,String(d).length)*fs*.62+10;
+  const yN=fs, yT=yN+Math.round(fs*.28), yD=yT+3+Math.round(fs*.93), H=yD+4;
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:inline-block;vertical-align:middle;overflow:visible">
+    <text x="${W/2}" y="${yN}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${col}">${n}</text>
+    <rect x="2" y="${yT}" width="${W-4}" height="2.5" rx="1" fill="${col}"/>
+    <text x="${W/2}" y="${yD}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${col}">${d}</text>
+  </svg>`;
+}
+
+// ── Ligne numérique 0→1 ───────────────────────────────────────────────────────
+// Accepte un bgColor pour adapter la barre au fond du bloc parent
+// segs : [{from,to,light,dark}]
+// marks : [{val,n,d,col}]  — pas de .dec (on n'affiche pas la valeur décimale)
+// den : subdivisions totales (ex. 10 pour dixièmes, 100 pour centièmes)
+// Nouveau : on peut avoir des segs à den différent via overrides (voir p2)
+function numLine(den, segs, marks, opts){
+  opts=opts||{};
+  const PADL=30, PADR=20, avail=360;
+  const barH=16, barY=30, lineY=barY+barH+5, H=lineY+42;
+  const W=avail+PADL+PADR;
+  const dw=avail/den;
+  function vx(v){ return PADL+v*avail; }
+
+  const buf=[];
+  buf.push(`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`);
+
+  // Barre
+  for(let i=0;i<den;i++){
+    const v=i/den;
+    let fill=i%2===1?'#d8e8f8':'#e8f2fc';
+    for(const s of segs){
+      if(v>=s.from-0.00001&&v<s.to-0.00001){ fill=i%2===1?s.dark:s.light; break; }
+    }
+    buf.push(`<rect x="${PADL+i*dw}" y="${barY}" width="${dw}" height="${barH}" fill="${fill}"/>`);
+  }
+
+  // Sur-couche centièmes si demandée (pour page 2 : 4 dixièmes bleus + 13 centièmes violets)
+  if(opts.overlay){
+    const {den:den2,segs:segs2}=opts.overlay;
+    const dw2=avail/den2;
+    // Dessiner seulement les centièmes de la sur-couche
+    for(const s of segs2){
+      const i0=Math.round(s.from*den2), i1=Math.round(s.to*den2);
+      for(let i=i0;i<i1;i++){
+        buf.push(`<rect x="${PADL+i*dw2}" y="${barY}" width="${dw2}" height="${barH}" fill="${i%2===1?s.dark:s.light}"/>`);
+      }
+    }
+  }
+
+  // Ligne numérique
+  buf.push(`<line x1="${vx(0)-8}" y1="${lineY}" x2="${vx(1)+8}" y2="${lineY}" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>`);
+
+  // Graduations 0 et 1
+  for(const v of [0,1]){
+    const x=vx(v);
+    buf.push(`<line x1="${x}" y1="${barY-2}" x2="${x}" y2="${lineY+6}" stroke="#1e293b" stroke-width="2"/>`);
+    buf.push(`<text x="${x}" y="${lineY+21}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="#1e293b" stroke="white" stroke-width="3" paint-order="stroke">${v}</text>`);
+  }
+
+  // Marques
+  for(const m of marks){
+    const x=vx(m.val), col=m.col||'#0d9488';
+    buf.push(`<line x1="${x}" y1="${barY-2}" x2="${x}" y2="${lineY+6}" stroke="${col}" stroke-width="2.5"/>`);
+    if(m.below){
+      // Étiquette fraction EN DESSOUS de la ligne
+      const fs=11;
+      const fw=Math.max(String(m.n).length,String(m.d).length)*fs*.7+10;
+      const fh=fs*2+8;
+      const fy=lineY+10;
+      buf.push(`<rect x="${x-fw/2}" y="${fy}" width="${fw}" height="${fh}" rx="5" fill="#f0fdfa" stroke="${col}" stroke-width="1.2"/>`);
+      buf.push(`<text x="${x}" y="${fy+fs+1}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${col}">${m.n}</text>`);
+      buf.push(`<rect x="${x-fw/2+3}" y="${fy+fs+2}" width="${fw-6}" height="1.5" fill="${col}"/>`);
+      buf.push(`<text x="${x}" y="${fy+fs*2+5}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${col}">${m.d}</text>`);
+    } else {
+      // Étiquette fraction AU-DESSUS de la barre
+      const fs=11;
+      const fw=Math.max(String(m.n).length,String(m.d).length)*fs*.7+10;
+      const fh=fs*2+8;
+      const fy=barY-fh-4;
+      buf.push(`<rect x="${x-fw/2}" y="${fy}" width="${fw}" height="${fh}" rx="5" fill="#f0fdfa" stroke="${col}" stroke-width="1.2"/>`);
+      buf.push(`<text x="${x}" y="${fy+fs+1}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${col}">${m.n}</text>`);
+      buf.push(`<rect x="${x-fw/2+3}" y="${fy+fs+2}" width="${fw-6}" height="1.5" fill="${col}"/>`);
+      buf.push(`<text x="${x}" y="${fy+fs*2+5}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${col}">${m.d}</text>`);
+    }
+  }
+
+  buf.push(`</svg>`);
+  return buf.join('');
+}
+
+// Raccourcis blocs — prop et def ont maintenant le même emoji 📘
+const B={
+  def: (txt)=>`<div class="bloc def fade-in"><div class="bloc-header">📘 Définition</div>${txt}</div>`,
+  prop:(txt)=>`<div class="bloc prop fade-in"><div class="bloc-header">📘 Propriété</div>${txt}</div>`,
+  ex:  (txt)=>`<div class="bloc ex fade-in"><div class="bloc-header">✏️ Exemple</div>${txt}</div>`,
+  rem: (txt)=>`<div class="bloc rem fade-in"><div class="bloc-header">💬 Remarque</div>${txt}</div>`,
+  // Exemple avec ligne numérique intégrée — fond vert très clair pour cohérence
+  exLine:(txt,svg)=>`<div class="bloc ex fade-in"><div class="bloc-header">✏️ Exemple</div>${txt}<div style="margin-top:8px">${svg}</div></div>`,
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+const STEPS=[
+
+// 0 — Page 1
+()=>`
+<div class="step-title pop">Qu'est-ce qu'un nombre décimal ?</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> Tous les nombres ne sont pas décimaux : savoir reconnaître un nombre décimal, c'est mieux comprendre ce que sont ces nombres et l'écriture à virgule.</div>
+
+${B.def(`Un <strong>nombre décimal</strong> est un nombre qui peut s'écrire comme une <strong>fraction décimale</strong>.`)}
+
+${B.ex(`Les <strong>unités</strong> sont des fractions décimales. Par exemple, 5 unités peut s'écrire ${frac(5,1,'var(--orange)',16)}, c'est donc un nombre décimal.`)}
+
+${B.exLine(
+  `${frac(1,2,'var(--vert)',16)} est un nombre décimal car on peut l'écrire comme une fraction décimale : ${frac(1,2,'var(--vert)',16)} = ${frac(5,10,'var(--bleu)',16)}.`,
+  numLine(10,
+    [{from:0,to:0.5,light:'#a0c4f0',dark:'#6a9ee8'}],
+    [{val:0.5,n:5,d:10,col:'var(--bleu)'},{val:0.5,n:1,d:2,col:'#0d9488',below:true}]
+  )
+)}
+
+${B.rem(`Certains nombres ne sont <strong>pas</strong> des nombres décimaux. Par exemple, ${frac(1,3,'#64748b',16)} ne peut pas s'écrire comme une fraction décimale : ce n'est <strong>pas</strong> un nombre décimal.`)}
+`,
+
+// 1 — Page 2
+()=>`
+<div class="step-title pop">Sommes de fractions décimales</div>
+
+${B.prop(`Toutes les <strong>sommes de fractions décimales</strong> sont des nombres décimaux.`)}
+
+${B.rem(`C'est parce que toutes les fractions décimales peuvent être transformées en une fraction décimale de rang inférieur. Par exemple, ${frac(4,10,'var(--bleu)',15)} c'est ${frac(40,100,'var(--violet)',15)}, ou encore ${frac(400,1000,'var(--vert)',15)}…`)}
+
+${B.exLine(
+  `${frac(4,10,'var(--bleu)',17)} + ${frac(13,100,'var(--violet)',17)} peut s'écrire comme une fraction décimale :<br>
+<span style="font-family:'Baloo 2',cursive;font-weight:800;font-size:1rem;display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap">
+${frac(4,10,'var(--bleu)',17)} + ${frac(13,100,'var(--violet)',17)} = ${frac(40,100,'var(--bleu)',17)} + ${frac(13,100,'var(--violet)',17)} = ${frac(53,100,'var(--vert)',17)}
+</span>
+<br>C'est donc un nombre décimal.`,
+  // Barre : 10 dixièmes comme unité de base, puis sur-couche de 13 centièmes violets sur les 40 bleus
+  numLine(10,
+    [{from:0,to:0.4,light:'#a0c4f0',dark:'#6a9ee8'}],
+    [{val:0.53,n:53,d:100,col:'#0d9488'}],
+    {overlay:{den:100, segs:[{from:0.40,to:0.53,light:'#c4b5fd',dark:'#a78bfa'}]}}
+  )
+)}
+`,
+
+// 2 — Page 3 : Condition sur le dénominateur
+()=>`
+<div class="step-title pop">Quelle fraction est un nombre décimal ?</div>
+
+${B.prop(`Pour qu'une fraction puisse être transformée en fraction décimale, il faut que la table de multiplication de son dénominateur contienne <strong>10, 100 ou 1000</strong>…`)}
+
+${B.ex(`Le dénominateur de ${frac(13,5,'var(--bleu)',17)} est <strong>5</strong>. Comme <strong>10</strong> est dans la table de 5, ${frac(13,5,'var(--bleu)',17)} est un nombre décimal.
+<br><span style="color:#94a3b8;font-size:.88rem">En effet, ${frac(13,5,'#94a3b8',14)} = ${frac(26,10,'#94a3b8',14)} qui est bien une fraction décimale.</span>`)}
+
+${B.ex(`Le dénominateur de ${frac(1,3,'#64748b',17)} est <strong>3</strong>. Or 10 n'est pas dans la table de 3, 100 non plus, 1000 non plus…
+<br>${frac(1,3,'#64748b',17)} ne peut pas s'écrire comme une fraction décimale : ce <strong>n'est pas</strong> un nombre décimal.`)}
+`,
+
+// 3 — Page 4 : Écriture décimale
+()=>`
+<div class="step-title pop">L'écriture décimale</div>
+
+${B.def(`Les <strong>nombres décimaux</strong> sont les nombres qui peuvent s'écrire comme une somme de fractions décimales. On peut les écrire avec une <strong>virgule</strong> : c'est l'<strong>écriture décimale</strong>.`)}
+
+${B.ex(`L'écriture décimale de ${frac(4,1000,'var(--vert)',17)} + ${frac(8,10,'var(--bleu)',17)} est <span style="font-family:'Baloo 2',cursive;font-weight:800;font-size:1.1rem;color:var(--bleu)">0,804</span>.`)}
+
+${B.ex(`Comme ${frac(2,5,'var(--orange)',17)} = ${frac(4,10,'var(--bleu)',17)}, l'écriture décimale de ${frac(2,5,'var(--orange)',17)} est <span style="font-family:'Baloo 2',cursive;font-weight:800;font-size:1.1rem;color:var(--bleu)">0,4</span>.`)}
+
+${B.ex(`Comme ${frac(21,20,'var(--violet)',17)} = ${frac(105,100,'var(--violet)',17)} = <span style="font-family:'Baloo 2',cursive;font-weight:800;font-size:17px;color:var(--violet)">1 +</span> ${frac(5,100,'var(--violet)',17)}, l'écriture décimale de ${frac(21,20,'var(--violet)',17)} est <span style="font-family:'Baloo 2',cursive;font-weight:800;font-size:1.1rem;color:var(--violet)">1,05</span>.`)}
+`,
+
+// 4 — Bilan
+()=>`
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  ${[
+    ['var(--violet)', `Un <strong>nombre décimal</strong> est un nombre qui peut s'écrire comme une fraction décimale.`],
+    ['var(--bleu)',   `Toute <strong>somme de fractions décimales</strong> est un nombre décimal.`],
+    ['var(--orange)', `Une fraction est un nombre décimal si la table de multiplication de son dénominateur contient <strong>10, ou 100, ou 1000…</strong>`],
+    ['var(--vert)',   `L'<strong>écriture décimale</strong> utilise la virgule pour représenter les nombres décimaux.`],
+  ].map(([c,t],i)=>`
+    <div class="recap-item fade-in" style="animation-delay:${i*.08}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${i+1}</div>
+      <span>${t}</span>
+    </div>`).join('')}
+</div>
+`,
+];
+
+let cur=0; const NP=STEPS.length;
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur]();
+  card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(NP-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator'); ind.innerHTML='';
+  for(let i=0;i<NP;i++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(i===cur?' active':i<cur?' done':'');
+    d.textContent=i<cur?'✓':i+1;
+    ind.appendChild(d);
+  }
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${NP}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===NP-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===NP-1?0:cur+1; render();}
+function prev(){if(cur>0){cur--;render();}}
+render();
+</script>
+</body>
+</html>

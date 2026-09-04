@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>N21 Écrire un entier comme fraction décimale</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{color-scheme:light;--bleu:#1a73e8;--bleu-clair:#e8f0fe;--vert:#16a34a;--vert-clair:#dcfce7;--violet:#7c3aed;--violet-clair:#f5f3ff;--gris:#94a3b8;--bg:#f0f4ff;--card:#fff;--texte:#1e293b;--border:#e2e8f0;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+  header{display:flex;justify-content:center;margin-bottom:22px;}
+  .header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+  .badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--bleu);background:var(--bleu-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--bleu);flex-shrink:0;}
+  .tache-label{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--bleu);line-height:1.3;}
+  .progress-bar-wrap{width:100%;max-width:680px;background:#dbeafe;border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+  .progress-bar{height:100%;background:linear-gradient(90deg,var(--bleu),var(--violet));border-radius:99px;transition:width .5s ease;}
+  .steps-indicator{display:flex;gap:10px;margin-bottom:20px;}
+  .step-dot{width:34px;height:34px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#93c5fd;transition:all .4s;border:2px solid transparent;}
+  .step-dot.active{background:var(--bleu);color:#fff;border-color:var(--bleu);transform:scale(1.15);box-shadow:0 0 0 4px #bfdbfe;}
+  .step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+  .card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:340px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(26,115,232,.10);position:relative;overflow-x:auto;}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--bleu),var(--violet));border-radius:20px 20px 0 0;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .fade-in{animation:fadeIn .4s ease both;}
+  @keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+  .pop{animation:pop .45s ease both;}
+  .step-title{font-family:'Baloo 2',cursive;font-size:1.2rem;font-weight:800;color:var(--bleu);text-align:center;line-height:1.3;}
+  .info{border-radius:12px;padding:12px 16px;font-weight:600;max-width:580px;width:100%;line-height:1.6;font-size:.9rem;}
+  .info.bleu{background:var(--bleu-clair);color:var(--bleu);border-left:4px solid var(--bleu);}
+  .info.violet{background:var(--violet-clair);color:var(--violet);border-left:4px solid var(--violet);}
+  .btn-complete{font-family:'Baloo 2',cursive;font-weight:700;font-size:.95rem;border:2px solid var(--vert);cursor:pointer;border-radius:10px;padding:10px 22px;background:var(--vert-clair);color:var(--vert);transition:all .2s;}
+  .btn-complete:hover{background:var(--vert);color:#fff;}
+  .recap-list{display:flex;flex-direction:column;gap:9px;max-width:580px;width:100%;}
+  .recap-item{display:flex;align-items:flex-start;gap:12px;background:#f8faff;border-radius:12px;padding:11px 16px;font-size:.92rem;font-weight:600;color:var(--texte);animation:fadeIn .4s ease both;border-left:4px solid transparent;line-height:1.5;}
+  .recap-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:700;flex-shrink:0;color:#fff;margin-top:1px;}
+  .calc{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;font-family:'Baloo 2',cursive;font-size:1.5rem;font-weight:800;}
+  .calc .op{color:var(--gris);}
+  .trou{display:inline-flex;align-items:center;justify-content:center;min-width:64px;height:72px;padding:0 8px;border-radius:14px;border:3px dashed var(--border);font-weight:800;transition:all .5s ease;}
+  .trou.plein{border-style:solid;}
+  .nav{display:flex;gap:14px;margin-top:10px;align-items:center;}
+  button.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;cursor:pointer;border-radius:12px;padding:12px 28px;transition:all .2s;}
+  .btn-next{background:linear-gradient(135deg,var(--bleu),var(--violet));color:#fff;box-shadow:0 4px 14px rgba(26,115,232,.3);}
+  .btn-next:hover{transform:translateY(-2px);}
+  .btn-next:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+  .btn-prev{background:#e0e7ff;color:var(--bleu);}
+  .btn-prev:hover{background:#c7d2fe;}
+  .step-counter{font-size:.85rem;color:var(--gris);font-weight:700;}
+  .pourquoi { position:relative; background:#f0fdfa; border-left:4px solid #0d9488; border-radius:10px; padding:12px 15px; font-size:0.92rem; font-weight:600; color:#134e4a; line-height:1.6; max-width:580px; width:100%; }
+  .pq-lead { font-family:'Baloo 2',cursive; font-weight:800; color:#0d9488; }
+</style>
+</head>
+<body>
+<header><div class="header-row">
+  <div class="badge-code">N21</div>
+  <div class="tache-label">Écrire un entier comme fraction décimale</div>
+</div></header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+function fracSVG(n,d,col,fs1,fs2){
+  col=col||'var(--texte)';fs1=fs1||22;fs2=fs2||22;
+  const W=Math.max(String(n).length,String(d).length)*fs1*.62+8;
+  const yN=fs1,yT=yN+Math.round(fs1*.28),yD=yT+3+Math.round(fs2*.93),H=yD+4;
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:inline-block;vertical-align:middle;overflow:visible">
+    <text x="${W/2}" y="${yN}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs1}" font-weight="800" fill="${col}">${n}</text>
+    <rect x="0" y="${yT}" width="${W}" height="3" rx="1" fill="${col}"/>
+    <text x="${W/2}" y="${yD}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs2}" font-weight="800" fill="${col}">${d}</text>
+  </svg>`;
+}
+
+const EXOS={};
+
+// ── Représentation : barres + ligne numérique ───────────────────────────────
+// mode: 'normal' (N → fraction) ou 'reverse' (fraction → N)
+function drawRepr(totalUnits, den, completed, mode){
+  const PADL=24, PADR=20, avail=360;
+  const UW=avail/totalUnits;
+  const isDix=den===10;
+  const barH=isDix?18:18;
+  const layers=isDix?1:2;
+  const layerGap=isDix?0:2;
+  const topBarY=36; // espace pour les étiquettes fraction au-dessus
+  const botBarY=topBarY+(layers>1?barH+layerGap:0);
+  const lineY=botBarY+barH+5;
+  const lineEnd=PADL+avail+UW*0.12;
+  const W=lineEnd+PADR, H=lineY+28;
+  const ppu=den; // parts per unit
+  const totalParts=totalUnits*ppu;
+  const pw=avail/totalParts;
+
+  // quelles parts dessiner ?
+  let drawFrom=0, drawTo=totalParts;
+  if(mode==='normal' && !completed){ drawTo=ppu; } // seulement 1ère unité
+
+  function fracLab(cx,y,num,denom,col,fs,highlight){
+    fs=fs||10; col=col||'#7c3aed';
+    const fw=Math.max(String(num).length,String(denom).length)*fs*0.65+6;
+    const yN=fs, yT=fs+2, yD=yT+2+fs, labH=yD+3;
+    let r='';
+    if(highlight){
+      r+=`<rect x="${cx-fw/2-3}" y="${y-1}" width="${fw+6}" height="${labH+2}" rx="5" fill="${isDix?'#dbeafe':'#ede9fe'}" stroke="${col}" stroke-width="1.2"/>`;
+    }
+    r+=`<text x="${cx}" y="${y+yN}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${col}">${num}</text>`;
+    r+=`<rect x="${cx-fw/2+1}" y="${y+yT}" width="${fw-2}" height="2" fill="${col}"/>`;
+    r+=`<text x="${cx}" y="${y+yD}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="${fs}" font-weight="800" fill="${col}">${denom}</text>`;
+    return r;
+  }
+
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+
+  // ── Barres (sans traits de séparation internes) ──
+  if(isDix){
+    // Dixièmes seuls
+    for(let p=drawFrom;p<drawTo;p++){
+      const x=PADL+p*pw;
+      const dark=p%2===1;
+      s+=`<rect x="${x}" y="${botBarY}" width="${pw}" height="${barH}" fill="${dark?'#7eaef0':'#bfdbfe'}"/>`;
+    }
+  } else {
+    // Centièmes (haut) + Dixièmes (bas)
+    const dixPW=avail/(totalUnits*10);
+    const dixFrom=Math.floor(drawFrom/10), dixTo=Math.ceil(drawTo/10);
+    // Dixièmes
+    for(let p=dixFrom;p<dixTo;p++){
+      const x=PADL+p*dixPW;
+      const dark=p%2===1;
+      s+=`<rect x="${x}" y="${botBarY}" width="${dixPW}" height="${barH}" fill="${dark?'#7eaef0':'#bfdbfe'}"/>`;
+    }
+    // Centièmes
+    const cCL='#f5f3ff',cCD='#e8e0ff',cDL='#bcabfa',cDD='#8b6cf5';
+    for(let p=drawFrom;p<drawTo;p++){
+      const x=PADL+p*pw;
+      const dixIdx=Math.floor(p/10);
+      const dixDark=dixIdx%2===1;
+      const odd=p%2===1;
+      let fill;
+      if(!dixDark) fill=odd?cCD:cCL;
+      else fill=odd?cDD:cDL;
+      s+=`<rect x="${x}" y="${topBarY}" width="${pw}" height="${barH}" fill="${fill}"/>`;
+    }
+    // contours barres
+    const bx0=PADL+drawFrom*pw, bw=(drawTo-drawFrom)*pw;
+    s+=`<rect x="${bx0}" y="${topBarY}" width="${bw}" height="${barH}" fill="none" stroke="#7c3aed" stroke-width="1.5" rx="1"/>`;
+    s+=`<rect x="${bx0}" y="${botBarY}" width="${bw}" height="${barH}" fill="none" stroke="#1a73e8" stroke-width="1.5" rx="1"/>`;
+  }
+  // contour barre dixièmes (ou unique)
+  if(isDix){
+    const bx0=PADL+drawFrom*pw, bw=(drawTo-drawFrom)*pw;
+    s+=`<rect x="${bx0}" y="${botBarY}" width="${bw}" height="${barH}" fill="none" stroke="#1a73e8" stroke-width="1.5" rx="1"/>`;
+  }
+
+  // ── Ligne numérique ──
+  s+=`<line x1="${PADL}" y1="${lineY}" x2="${lineEnd}" y2="${lineY}" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>`;
+
+  // ── Graduations unités + traits noirs traversant les barres ──
+  const tickTop=isDix?botBarY:topBarY;
+  function drawUnitTick(u, showLabel, highlight){
+    const x=PADL+u*UW;
+    // trait noir du haut de la barre jusqu'à sous la ligne
+    s+=`<line x1="${x}" y1="${tickTop}" x2="${x}" y2="${lineY+6}" stroke="#1e293b" stroke-width="2"/>`;
+    if(showLabel){
+      if(highlight){
+        s+=`<rect x="${x-12}" y="${lineY+10}" width="24" height="18" rx="4" fill="#dbeafe" stroke="#1a73e8" stroke-width="1.2"/>`;
+      }
+      s+=`<text x="${x}" y="${lineY+24}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="${highlight?'#1a73e8':'#1e293b'}" stroke="white" stroke-width="${highlight?0:3}" stroke-linejoin="round" paint-order="stroke">${u}</text>`;
+    }
+  }
+
+  if(mode==='normal'){
+    for(let u=0;u<=totalUnits;u++) drawUnitTick(u, true, false);
+  } else {
+    // reverse : avant clic, seulement 0 et 1
+    if(!completed){
+      drawUnitTick(0, true, false);
+      drawUnitTick(1, true, false);
+    } else {
+      for(let u=0;u<=totalUnits;u++){
+        drawUnitTick(u, true, u===totalUnits);
+      }
+    }
+  }
+
+  // ── Étiquettes fraction au-dessus (après compléter) ──
+  if(completed){
+    const labY=2;
+    const ansU=mode==='normal'?totalUnits:null; // position de la réponse
+    const col=isDix?'#1a73e8':'#7c3aed';
+    for(let u=1;u<=totalUnits;u++){
+      const cx=PADL+u*UW;
+      const num=u*den;
+      const hl=(mode==='normal' && u===totalUnits);
+      s+=fracLab(cx, labY, num, den, col, 9, hl);
+    }
+  }
+
+  s+=`</svg>`;
+  return s;
+}
+
+// ── Bloc exercice ────────────────────────────────────────────────────────────
+function exoBlock(uid,cfg){
+  EXOS[uid]=cfg;
+  const vis0=drawRepr(cfg.units, cfg.den, false, cfg.mode);
+  const ansCol=cfg.den===10?'var(--bleu)':'var(--violet)';
+  let calcHTML;
+  if(cfg.mode==='normal'){
+    const answer=cfg.units*cfg.den;
+    calcHTML=`
+      <span style="color:var(--texte);font-size:1.6rem">${cfg.units}</span>
+      <span class="op">=</span>
+      <span class="trou" id="trou-${uid}">${fracSVG('?',cfg.den,'#cbd5e1',22,22)}</span>`;
+  } else {
+    const frac=cfg.units*cfg.den;
+    calcHTML=`
+      ${fracSVG(frac,cfg.den,ansCol,22,22)}
+      <span class="op">=</span>
+      <span class="trou" id="trou-${uid}" style="min-width:48px;height:52px;font-size:1.5rem;color:#cbd5e1">?</span>`;
+  }
+  return `
+<div id="wrap-${uid}" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:12px">
+  <div id="vis-${uid}" class="fade-in" style="width:100%">${vis0}</div>
+  <div class="calc fade-in">${calcHTML}</div>
+  <button class="btn-complete" onclick="completer('${uid}')">✏️ Compléter</button>
+  <div id="res-${uid}" style="display:none;text-align:center" class="fade-in">
+    <span style="font-family:Baloo 2,cursive;font-size:.95rem;font-weight:700;color:var(--texte)">${cfg.resText}</span>
+  </div>
+</div>`;
+}
+
+function completer(uid){
+  const c=EXOS[uid];
+  const ansCol=c.den===10?'var(--bleu)':'var(--violet)';
+  const bgCol=c.den===10?'var(--bleu-clair)':'var(--violet-clair)';
+  // redessiner la représentation complétée
+  document.getElementById('vis-'+uid).innerHTML=drawRepr(c.units, c.den, true, c.mode);
+  // compléter le trou
+  const trou=document.getElementById('trou-'+uid);
+  if(c.mode==='normal'){
+    trou.innerHTML=fracSVG(c.units*c.den, c.den, ansCol, 22, 22);
+  } else {
+    trou.textContent=c.units;
+    trou.style.color=ansCol;
+    trou.style.fontSize='1.5rem';
+  }
+  trou.className='trou plein';
+  trou.style.borderColor=ansCol;
+  trou.style.background=bgCol;
+  document.getElementById('wrap-'+uid).querySelector('.btn-complete').style.display='none';
+  document.getElementById('res-'+uid).style.display='block';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+const STEPS=[
+
+// 0 — Règle
+()=>`
+<div class="step-title pop">💡 Dixièmes et centièmes</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> Les fractions décimales permettent de construire des partages de nombres de manière inverse à la construction de dizaines, de centaines… Transformer un nombre entier en fraction décimale permet de faire le lien entre les nombres entiers que nous connaissons bien, et les fractions décimales que nous avons besoin de comprendre.</div>
+<div class="recap-list">
+  ${[
+    ['var(--bleu)',`Une unité, c'est <strong>10 dixièmes</strong>. Pour écrire un entier en dixièmes, on le multiplie par 10.`],
+    ['var(--violet)',`Une unité, c'est <strong>100 centièmes</strong>. Pour écrire un entier en centièmes, on le multiplie par 100.`],
+    ['var(--gris)',`Les centièmes sont <strong>plus petits</strong> que les dixièmes : il en faut 10 fois plus pour faire une unité.`],
+  ].map(([c,t],i)=>`
+    <div class="recap-item fade-in" style="animation-delay:${i*.12}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${i+1}</div>
+      <span>${t}</span>
+    </div>`).join('')}
+</div>
+`,
+
+// 1 — 2 = 20/10
+()=>`
+<div class="step-title pop">✏️ Écrire 2 en dixièmes</div>
+${exoBlock('ex1',{units:2, den:10, mode:'normal',
+  resText:'2 unités = 20 dixièmes'})}`,
+
+// 2 — 13 = 130/10
+()=>`
+<div class="step-title pop">✏️ Écrire 13 en dixièmes</div>
+${exoBlock('ex2',{units:13, den:10, mode:'normal',
+  resText:'13 unités = 130 dixièmes'})}`,
+
+// 3 — 3 = 300/100
+()=>`
+<div class="step-title pop">✏️ Écrire 3 en centièmes</div>
+${exoBlock('ex3',{units:3, den:100, mode:'normal',
+  resText:'3 unités = 300 centièmes'})}`,
+
+// 4 — 100/10 = 10 (inversé)
+()=>`
+<div class="step-title pop">✏️ 100 dixièmes, combien d'unités ?</div>
+${exoBlock('ex4',{units:10, den:10, mode:'reverse',
+  resText:'100 dixièmes = 10 unités'})}`,
+
+// 5 — Bilan
+()=>`
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  ${[
+    [`var(--bleu)`,`Pour écrire un entier en <strong>dixièmes</strong>, on multiplie par 10 : par exemple 13 = ${fracSVG(130,10,'var(--bleu)',14,14)}.`],
+    [`var(--violet)`,`Pour écrire un entier en <strong>centièmes</strong>, on multiplie par 100 : par exemple 3 = ${fracSVG(300,100,'var(--violet)',14,14)}.`],
+  ].map(([c,t],i)=>`
+    <div class="recap-item fade-in" style="animation-delay:${i*.09}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${i+1}</div>
+      <span>${t}</span>
+    </div>`).join('')}
+</div>
+`,
+];
+
+let cur=0;const N=STEPS.length;
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur]();card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(N-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator');ind.innerHTML='';
+  for(let i=0;i<N;i++){const d=document.createElement('div');d.className='step-dot'+(i===cur?' active':i<cur?' done':'');d.textContent=i<cur?'✓':i+1;ind.appendChild(d);}
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${N}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===N-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===N-1?0:cur+1;render();}
+function prev(){if(cur>0){cur--;render();}}
+render();
+</script>
+</body>
+</html>

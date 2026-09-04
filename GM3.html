@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>GM3 — Comparer ou ranger des aires</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --primary:#e11d48;--primary2:#fb7185;--primary-clair:#ffe4e6;
+  --bg:#fff1f2;--cote:#9f1239;
+  --bleu:#1a73e8;--bleu-clair:#e8f0fe;
+  --orange:#ea580c;--orange-clair:#ffedd5;
+  --vert:#16a34a;--vert-clair:#f0fdf4;
+  --violet:#7c3aed;--violet-clair:#f5f3ff;
+  --gris:#94a3b8;
+  --teal:#0d9488;--teal-clair:#f0fdfa;
+  --card:#fff;--texte:#1e293b;--border:#e2e8f0;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+header{display:flex;justify-content:center;margin-bottom:22px;}
+.header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+.badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--primary);background:var(--primary-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--primary);flex-shrink:0;}
+.tache-label{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--primary);line-height:1.3;}
+.progress-bar-wrap{width:100%;max-width:680px;background:var(--primary-clair);border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .5s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+.step-dot{width:34px;height:34px;border-radius:50%;background:var(--primary-clair);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--primary2);transition:all .4s;border:2px solid transparent;}
+.step-dot.active{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+.card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:360px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(0,0,0,.07);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .45s ease both;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;color:var(--primary);text-align:center;line-height:1.3;}
+.step-text{font-size:.97rem;line-height:1.7;text-align:center;max-width:580px;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:580px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 16px;font-weight:600;font-size:.92rem;line-height:1.6;max-width:580px;width:100%;}
+.info.primary{background:var(--primary-clair);border-left:4px solid var(--primary);}
+.info.vert{background:var(--vert-clair);border-left:4px solid var(--vert);color:#14532d;}
+.info.bleu{background:var(--bleu-clair);border-left:4px solid var(--bleu);color:#1e3a5f;}
+.btn-complete{border:2px solid var(--vert);background:var(--vert-clair);color:var(--vert);font-family:'Baloo 2',cursive;font-size:1rem;font-weight:700;border-radius:10px;padding:10px 22px;cursor:pointer;transition:all .2s;}
+.btn-complete:hover{background:var(--vert);color:#fff;}
+.btn-anim{border:2px solid var(--bleu);background:var(--bleu-clair);color:var(--bleu);font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;transition:all .2s;}
+.btn-anim:hover{background:var(--bleu);color:#fff;}
+.recap-list{display:flex;flex-direction:column;gap:12px;width:100%;max-width:580px;}
+.recap-item{display:flex;gap:12px;align-items:flex-start;background:#f8faff;border-radius:12px;padding:11px 16px;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;}
+.nav{display:flex;align-items:center;justify-content:space-between;max-width:680px;width:100%;margin-top:20px;gap:12px;}
+.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;border-radius:12px;padding:11px 22px;cursor:pointer;transition:all .25s;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-prev:disabled{opacity:.35;cursor:default;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;}
+.btn-next:hover{opacity:.9;}
+.step-counter{font-family:'Baloo 2',cursive;font-weight:700;color:var(--primary);font-size:.95rem;white-space:nowrap;}
+.deux-fig{display:flex;gap:20px;width:100%;max-width:580px;justify-content:center;align-items:flex-start;}
+.fig-col{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;}
+.fig-label{font-family:'Baloo 2',cursive;font-weight:800;font-size:1rem;color:var(--bleu);}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">GM3</div>
+    <div class="tache-label">Comparer ou ranger des aires</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+const CS = 20;
+
+function pStr(pts,ox,oy){ return pts.map(([c,r])=>`${ox+c*CS},${oy+r*CS}`).join(' '); }
+
+function resetFillEl(el){
+  if(!el) return;
+  el.style.transition='none'; el.style.opacity='0';
+  el.style.clipPath='polygon(0% 100%,100% 100%,100% 100%,0% 100%)';
+}
+function animFillClip(el,dur){
+  dur=dur||1800;
+  el.style.opacity='0.38';
+  el.style.clipPath='polygon(0% 100%,100% 100%,100% 100%,0% 100%)';
+  const start=performance.now();
+  requestAnimationFrame(function step(now){
+    const t=Math.min((now-start)/dur,1);
+    const ease=t<0.5?2*t*t:(4-2*t)*t-1;
+    const pct=(1-ease)*100;
+    el.style.clipPath=`polygon(0% ${pct}%,100% ${pct}%,100% 100%,0% 100%)`;
+    if(t<1) requestAnimationFrame(step);
+  });
+}
+
+// ── PAGE 2 ──────────────────────────────────────────────────────────────────
+// Carré A : 5×5 = 25 carreaux
+// Polygone B : carré 5×5 avec niche à DROITE (cols 4, rows 1-2 → recule de 1)
+//              ET niche à GAUCHE (col 0, rows 2-3 → recule de 1)
+//              Chaque niche = 2 carreaux → 25 - 2 - 2 = 21 ≠ 25.
+// Pour avoir la MÊME aire avec deux niches symétriques de 2 carreaux :
+//   impossible par niches seules (on enlève toujours).
+// Solution retenue : niche à DROITE 2 carreaux + niche à GAUCHE 2 carreaux
+//   → aire B = 21, aire A = 25 → elles DIFFÈRENT.
+// On adapte l'objectif de la page 2 : "Lequel a la plus grande aire ?"
+// (cohérent avec l'esprit de la capsule).
+// ─
+// ── PAGE 2 : données géométriques ───────────────────────────────────────────
+// CS=20px par carreau. Offset ox=12, oy=12 dans le SVG.
+// Carré A : 5×5 carreaux, cols 1-6 (offset +1 pour laisser place à la saillie B)
+// Polygone B : même carré avec saillie GAUCHE rows 2-4 (+2) et niche DROITE rows 1-3 (-2) → même aire ✓
+const PTS_A_P2 = [[1,0],[6,0],[6,5],[1,5]];
+const PTS_B_P2 = [[1,0],[6,0],[6,1],[5,1],[5,3],[6,3],[6,5],[1,5],[1,4],[0,4],[0,2],[1,2]];
+const P2_OX=12, P2_OY=12;
+const P2_W=7*CS+24, P2_H=5*CS+24;
+
+function svgP2A(){
+  const ox=P2_OX, oy=P2_OY, W=P2_W, H=P2_H;
+  const ptStr=pStr(PTS_A_P2,ox,oy);
+  let s=`<svg id="svg-p2a" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  s+=`<polygon points="${ptStr}" fill="white" stroke="none"/>`;
+  // remplissage bleu (invisible au départ)
+  s+=`<polygon id="fill-p2a" points="${ptStr}" fill="var(--bleu)" opacity="0" style="clip-path:polygon(0% 100%,100% 100%,100% 100%,0% 100%)"/>`;
+  s+=`<polygon points="${ptStr}" fill="none" stroke="#64748b" stroke-width="2"/>`;
+  s+=`</svg>`;
+  return `<div style="display:flex;justify-content:center">${s}</div>`;
+}
+
+function svgP2B(){
+  const ox=P2_OX, oy=P2_OY, W=P2_W, H=P2_H;
+  const ptStr=pStr(PTS_B_P2,ox,oy);
+  // saillie gauche : col 0, rows 2-4 → x=ox, y=oy+2*CS, w=CS, h=2*CS
+  const sailX=ox, sailY=oy+2*CS, sailW=CS, sailH=2*CS;
+  // niche droite : col 5, rows 1-3 → x=ox+5*CS, y=oy+1*CS, w=CS, h=2*CS
+  const nicheX=ox+5*CS, nicheY=oy+1*CS, nicheW=CS, nicheH=2*CS;
+  // carré de base (cols 1-6, rows 0-5) pour le coloriage B sans la saillie
+  const sqPts = pStr([[1,0],[6,0],[6,5],[1,5]], ox, oy);
+
+  let s=`<svg id="svg-p2b" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  // fond blanc forme B complète
+  s+=`<polygon points="${ptStr}" fill="white" stroke="none"/>`;
+  // remplissage bleu du CARRÉ (sans la saillie gauche) — s'anime à t2
+  s+=`<polygon id="fill-p2b" points="${sqPts}" fill="var(--bleu)" opacity="0" style="clip-path:polygon(0% 100%,100% 100%,100% 100%,0% 100%)"/>`;
+  // morceau bleu mobile : positionné sur la saillie gauche, glisse vers la niche puis revient
+  s+=`<rect id="fill-p2b-extra" x="${sailX}" y="${sailY}" width="${sailW}" height="${sailH}" fill="var(--bleu)" opacity="0"/>`;
+  // rect blanc qui recouvre la niche au retour du morceau (rend la niche blanche)
+  s+=`<rect id="niche-cache" x="${nicheX}" y="${nicheY}" width="${nicheW}" height="${nicheH}" fill="white" opacity="0"/>`;
+  // contour réel de B — unique, visible du début à la fin
+  s+=`<polygon id="contour-b" points="${ptStr}" fill="none" stroke="#64748b" stroke-width="2"/>`;
+  // morceau bleu (invisible au départ)
+  s+=`<rect id="morceau" x="${sailX}" y="${sailY}" width="${sailW}" height="${sailH}" fill="var(--bleu)" opacity="0"/>`;
+  s+=`</svg>`;
+  return `<div style="display:flex;justify-content:center">${s}</div>`;
+}
+
+// Séquence :
+// t0 : morceau bleu apparaît sur la saillie gauche
+// t1 : morceau bleu glisse vers la niche (+dx,+dy)
+// t2 : A et B-carré se colorient en bleu simultanément ; morceau disparaît
+//      → saillie gauche de B reste blanche
+// t3 : morceau bleu (fill-p2b-extra) part de la niche et revient à la saillie
+function lancerP2(){
+  const morceau=document.getElementById('morceau');
+  const extra=document.getElementById('fill-p2b-extra');
+  if(!morceau||!extra) return;
+
+  const dx=5*CS, dy=-1*CS;
+
+  // Reset
+  morceau.style.transition='none'; morceau.style.transform='translate(0,0)'; morceau.style.opacity='0';
+  extra.style.transition='none'; extra.style.transform='translate(0,0)'; extra.style.opacity='0';
+  const nc=document.getElementById('niche-cache');
+  if(nc){ nc.style.transition='none'; nc.style.opacity='0'; }
+  ['fill-p2a','fill-p2b'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){ el.style.transition='none'; el.style.opacity='0'; el.style.clipPath='polygon(0% 100%,100% 100%,100% 100%,0% 100%)'; }
+  });
+  const cb=document.getElementById('contour-b');
+  if(cb){ cb.style.transition='none'; cb.style.opacity='1'; }
+
+  // t0 : morceau bleu apparaît
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    morceau.style.transition='opacity 0.4s'; morceau.style.opacity='0.38';
+  }));
+
+  // t1 : morceau bleu glisse vers la niche (800ms)
+  setTimeout(()=>{
+    morceau.style.transition='transform 1s ease-in-out';
+    morceau.style.transform=`translate(${dx}px,${dy}px)`;
+  }, 800);
+
+  // t2 : A et B-carré en bleu, morceau disparaît (2100ms)
+  setTimeout(()=>{
+    morceau.style.transition='opacity 1.8s linear'; morceau.style.opacity='0';
+    ['fill-p2a','fill-p2b'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(!el) return;
+      el.style.opacity='0.38';
+      el.style.clipPath='polygon(0% 100%,100% 100%,100% 100%,0% 100%)';
+      const start=performance.now();
+      requestAnimationFrame(function step(now){
+        const t=Math.min((now-start)/1800,1);
+        const ease=t<0.5?2*t*t:(4-2*t)*t-1;
+        const pct=(1-ease)*100;
+        el.style.clipPath=`polygon(0% ${pct}%,100% ${pct}%,100% 100%,0% 100%)`;
+        if(t<1) requestAnimationFrame(step);
+      });
+    });
+  }, 2100);
+
+  // t3 : morceau bleu part de la niche, revient à la saillie gauche (4200ms)
+  // En même temps : la niche redevient blanche
+  setTimeout(()=>{
+    // Rect blanc recouvre la niche instantanément
+    const nc=document.getElementById('niche-cache');
+    if(nc){ nc.style.transition='none'; nc.style.opacity='1'; }
+    // Morceau bleu apparaît à la position de la niche et glisse vers la saillie
+    extra.style.transition='none';
+    extra.style.transform=`translate(${dx}px,${dy}px)`;
+    extra.style.opacity='0.38';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      extra.style.transition='transform 1s ease-in-out';
+      extra.style.transform='translate(0,0)';
+    }));
+  }, 4200);
+}
+
+// ── PAGE 3 ──────────────────────────────────────────────────────────────────
+// Rectangle de base : 4 cols × 6 rows = 24 carreaux
+//
+// POLYGONE A (22 carreaux) :
+//   Base 4×6 = 24
+//   − 1 sur largeur gauche : col 0 absent à row 2  → -1
+//   − 1 sur largeur droite : col 3 absent à row 2  → -1  (en face de la gauche, même row)
+//   − 2 sur longueur bas   : cols 1-2 absents à row 5 → -2
+//   + 2 sur longueur haut  : cols 1-2 présents à row -1 (saillie, offset +1 → row 0) → +2
+//   Total = 24 - 1 - 1 - 2 + 2 = 22 ✓
+//   Avec offset row+1 (saillie à row 0, base rows 1-6) :
+const CELLS_A = [
+  // saillie haut (row 0)
+  [1,0],[2,0],
+  // rows 1-2 : 4 carreaux chacune
+  [0,1],[1,1],[2,1],[3,1],
+  [0,2],[1,2],[2,2],[3,2],
+  // row 3 : col 0 ET col 3 absents (niches gauche et droite en face à row 2→3)
+  // Attention : la niche est SUR la largeur = sur le bord gauche/droit
+  // col 0 absent à row 3 (niche gauche), col 3 absent à row 3 (niche droite)
+  [1,3],[2,3],
+  // rows 4-5 : 4 carreaux
+  [0,4],[1,4],[2,4],[3,4],
+  [0,5],[1,5],[2,5],[3,5],
+  // row 6 : cols 1-2 absents (niche bas)
+  [0,6],[3,6],
+];
+// Décompte : 2+4+4+2+4+4+2 = 22 ✓
+const A_COLS=4, A_ROWS=7;
+
+// POLYGONE B (23 carreaux) :
+//   Base 4×6 = 24, rows 1-6 (décalé +1 pour laisser row 0 à la saillie)
+//   + 1 saillie AU-DESSUS du bord haut : col 2, row 0 → +1
+//   − 1 niche longueur gauche : col 0 absent à row 3 → -1
+//   − 1 niche longueur droite : col 3 absent à row 3 (en face) → -1
+//   Total = 24 - 1 - 1 + 1 = 23 ✓
+const CELLS_B = [
+  // row 0 : saillie au-dessus du milieu du côté haut
+  [2,0],
+  // rows 1-2 : base cols 0-3
+  [0,1],[1,1],[2,1],[3,1],
+  [0,2],[1,2],[2,2],[3,2],
+  // row 3 : col 0 et col 3 absents (niches gauche/droite en face)
+  [1,3],[2,3],
+  // rows 4-6 : base cols 0-3
+  [0,4],[1,4],[2,4],[3,4],
+  [0,5],[1,5],[2,5],[3,5],
+  [0,6],[1,6],[2,6],[3,6],
+];
+// Décompte : 1+4+4+2+4+4+4 = 23 ✓
+const B_COLS=4, B_ROWS=7;
+
+// ── PAGE 3 : SVG et animation ────────────────────────────────────────────────
+// Polygone A : on anime les 2 carreaux de la saillie haut [1,0],[2,0]
+//   qui descendent vers la niche bas (positions manquantes [1,6],[2,6])
+//   dx=0 cols, dy=+6 rows
+// Polygone B : on colorie tout sauf [2,0] (saillie) en bleu, puis [2,0] en bleu foncé
+
+function svgP3anim(uid, cells, gridW, gridH, hasMobileSquares){
+  const ox=10, oy=10;
+  const W=gridW*CS+20, H=gridH*CS+20+20;
+  const cellSet=new Set(cells.map(([c,r])=>`${c},${r}`));
+
+  let s=`<svg id="svg3-${uid}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+
+  // Carreaux individuels
+  cells.forEach(([c,r],i)=>{
+    const x=ox+c*CS, y=oy+r*CS;
+    s+=`<rect x="${x}" y="${y}" width="${CS}" height="${CS}" fill="white"/>`;
+    s+=`<rect x="${x}" y="${y}" width="${CS}" height="${CS}" fill="none" stroke="#e2e8f0" stroke-width="1"/>`;
+    s+=`<rect id="cell-${uid}-${i}" x="${x+1}" y="${y+1}" width="${CS-2}" height="${CS-2}" fill="var(--bleu)" opacity="0"/>`;
+  });
+
+  // Contour
+  const dirs=[
+    {dc:0,dr:-1,ax:0,ay:0,bx:1,by:0},
+    {dc:1,dr:0, ax:1,ay:0,bx:1,by:1},
+    {dc:0,dr:1, ax:0,ay:1,bx:1,by:1},
+    {dc:-1,dr:0,ax:0,ay:0,bx:0,by:1}
+  ];
+  cells.forEach(([c,r])=>{
+    dirs.forEach(({dc,dr,ax,ay,bx,by})=>{
+      if(!cellSet.has(`${c+dc},${r+dr}`)){
+        s+=`<line x1="${ox+c*CS+ax*CS}" y1="${oy+r*CS+ay*CS}" x2="${ox+c*CS+bx*CS}" y2="${oy+r*CS+by*CS}" stroke="#64748b" stroke-width="2" stroke-linecap="square"/>`;
+      }
+    });
+  });
+
+  // Morceau mobile (carreaux [1,0] et [2,0] de A) — bleu clair, invisible au départ
+  if(hasMobileSquares){
+    [[1,0],[2,0]].forEach(([c,r],k)=>{
+      const x=ox+c*CS, y=oy+r*CS;
+      s+=`<rect id="mob-${uid}-${k}" x="${x+1}" y="${y+1}" width="${CS-2}" height="${CS-2}" fill="var(--bleu)" opacity="0"/>`;
+    });
+    // Rect blanc pour masquer la niche bas quand le morceau revient
+    [[1,6],[2,6]].forEach(([c,r],k)=>{
+      const x=ox+c*CS, y=oy+r*CS;
+      s+=`<rect id="niche-bas-${k}" x="${x}" y="${y}" width="${CS}" height="${CS}" fill="white" opacity="0"/>`;
+    });
+  }
+
+  // Texte Aire → N
+  // (total supprimé)
+  s+=`</svg>`;
+  return `<div style="display:flex;justify-content:center">${s}</div>`;
+}
+
+// Anime le remplissage bleu d'un ensemble de carreaux par clip-path vertical (bas→haut)
+function animCellsBleu(uid, cells, excludeIdxs, dur, onDone){
+  dur=dur||1800;
+  // Trier les carreaux par row décroissant (bas en premier)
+  const toColor=cells.map(([c,r],i)=>({c,r,i}))
+    .filter(({i})=>!excludeIdxs.includes(i))
+    .sort((a,b)=>b.r-a.r);
+  const maxRow=Math.max(...cells.map(([,r])=>r));
+  const minRow=Math.min(...cells.map(([,r])=>r));
+  const span=maxRow-minRow||1;
+  const start=performance.now();
+  requestAnimationFrame(function step(now){
+    const t=Math.min((now-start)/dur,1);
+    const ease=t<0.5?2*t*t:(4-2*t)*t-1;
+    // Révèle les carreaux dont la position normalisée ≤ progress
+    const progress=ease;
+    toColor.forEach(({r,i})=>{
+      const norm=1-(r-minRow)/span; // bas=0, haut=1
+      if(norm<=progress){
+        const el=document.getElementById(`cell-${uid}-${i}`);
+        if(el&&el.style.opacity==='0'){ el.style.transition='opacity 0.2s'; el.style.opacity='0.38'; }
+      }
+    });
+    if(t<1) requestAnimationFrame(step);
+    else onDone&&onDone();
+  });
+}
+
+function lancerP3(){
+  const dy=6*CS; // les carreaux [1,0],[2,0] descendent de 6 rows vers [1,6],[2,6]
+
+  // Reset A
+  CELLS_A.forEach((_,i)=>{
+    const el=document.getElementById(`cell-pa-${i}`);
+    if(el){el.style.transition='none';el.style.opacity='0';}
+  });
+  // Reset B
+  CELLS_B.forEach((_,i)=>{
+    const el=document.getElementById(`cell-pb-${i}`);
+    if(el){el.style.transition='none';el.style.opacity='0';}
+  });
+  // Reset mobiles
+  [0,1].forEach(k=>{
+    const m=document.getElementById(`mob-pa-${k}`);
+    if(m){m.style.transition='none';m.style.transform='translate(0,0)';m.style.opacity='0';}
+    const nb=document.getElementById(`niche-bas-${k}`);
+    if(nb){nb.style.transition='none';nb.style.opacity='0';}
+  });
+  ['total-pa','total-pb'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.style.transition='none';el.style.opacity='0';}
+  });
+
+  // Indices des carreaux [1,0] et [2,0] dans CELLS_A (indices 0 et 1)
+  const mobIdx=[0,1];
+
+  // t0 : bleu clair apparaît sur [1,0] et [2,0]
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    [0,1].forEach(k=>{
+      const m=document.getElementById(`mob-pa-${k}`);
+      if(m){m.style.transition='opacity 0.4s';m.style.opacity='0.38';}
+    });
+  }));
+
+  // t1 : bleu clair glisse vers le bas (800ms)
+  setTimeout(()=>{
+    [0,1].forEach(k=>{
+      const m=document.getElementById(`mob-pa-${k}`);
+      if(m){m.style.transition='transform 1s ease-in-out';m.style.transform=`translate(0,${dy}px)`;}
+    });
+  }, 800);
+
+  // t2 : coloriage bleu simultané A (sauf [1,0],[2,0]) et B (sauf saillie [2,0]=index 0)
+  //      le bleu clair reste visible (pas de fondu)
+  setTimeout(()=>{
+    // B sauf index 0 ([2,0])
+    animCellsBleu('pb', CELLS_B, [0], 1800, null);
+    // A sauf indices 0,1 ([1,0],[2,0])
+    animCellsBleu('pa', CELLS_A, [0,1], 1800, null);
+  }, 2100);
+
+  // t3 : le carreau [2,0] de B (index 0) se colore en bleu foncé (4200ms)
+  setTimeout(()=>{
+    const el=document.getElementById('cell-pb-0');
+    if(el){el.style.transition='opacity 0.5s';el.style.fill='#1251a3';el.style.opacity='0.7';}
+  }, 4200);
+
+  // t4 : les deux carreaux bleu clair en bas de A reviennent en haut (5000ms)
+  setTimeout(()=>{
+    // Rects blancs sur la niche bas
+    [0,1].forEach(k=>{
+      const nb=document.getElementById(`niche-bas-${k}`);
+      if(nb){nb.style.transition='none';nb.style.opacity='1';}
+    });
+    // Mobiles déjà bleu clair : les repositionner en bas et les faire remonter
+    [0,1].forEach(k=>{
+      const m=document.getElementById(`mob-pa-${k}`);
+      if(!m) return;
+      m.style.transition='none';
+      m.style.transform=`translate(0,${dy}px)`;
+      m.style.opacity='0.38';
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        m.style.transition='transform 1s ease-in-out';
+        m.style.transform='translate(0,0)';
+      }));
+    });
+  }, 5000);
+
+
+}
+
+// svgP3 : version sans mobiles, avec numéros (pour page 4 comptage)
+function svgP3(uid, cells, gridW, gridH){
+  const ox=10, oy=10;
+  const W=gridW*CS+20, H=gridH*CS+20+20;
+  const cellSet=new Set(cells.map(([c,r])=>`${c},${r}`));
+  let s=`<svg id="svg3-${uid}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  cells.forEach(([c,r],i)=>{
+    const x=ox+c*CS, y=oy+r*CS;
+    s+=`<rect x="${x}" y="${y}" width="${CS}" height="${CS}" fill="white"/>`;
+    s+=`<rect x="${x}" y="${y}" width="${CS}" height="${CS}" fill="none" stroke="#e2e8f0" stroke-width="1"/>`;
+    s+=`<rect id="cell-${uid}-${i}" x="${x+1}" y="${y+1}" width="${CS-2}" height="${CS-2}" fill="var(--bleu)" opacity="0"/>`;
+    const cx=x+CS/2, cy=y+CS/2+4;
+    s+=`<text id="nh-${uid}-${i}" x="${cx}" y="${cy}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="9" font-weight="800" fill="white" stroke="white" stroke-width="3" paint-order="stroke" opacity="0">${i+1}</text>`;
+    s+=`<text id="nm-${uid}-${i}" x="${cx}" y="${cy}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="9" font-weight="800" fill="#1251a3" opacity="0">${i+1}</text>`;
+  });
+  const dirs=[{dc:0,dr:-1,ax:0,ay:0,bx:1,by:0},{dc:1,dr:0,ax:1,ay:0,bx:1,by:1},{dc:0,dr:1,ax:0,ay:1,bx:1,by:1},{dc:-1,dr:0,ax:0,ay:0,bx:0,by:1}];
+  cells.forEach(([c,r])=>{
+    dirs.forEach(({dc,dr,ax,ay,bx,by})=>{
+      if(!cellSet.has(`${c+dc},${r+dr}`))
+        s+=`<line x1="${ox+c*CS+ax*CS}" y1="${oy+r*CS+ay*CS}" x2="${ox+c*CS+bx*CS}" y2="${oy+r*CS+by*CS}" stroke="#64748b" stroke-width="2" stroke-linecap="square"/>`;
+    });
+  });
+  // (total supprimé)
+  s+=`</svg>`;
+  return `<div style="display:flex;justify-content:center">${s}</div>`;
+}
+
+function lancerComptage(uidA,cellsA,uidB,cellsB){
+  const DELAY=150;
+  [uidA,uidB].forEach((uid,idx)=>{
+    const cells=idx===0?cellsA:cellsB;
+    cells.forEach((_,i)=>{
+      ['cell-','nh-','nm-'].forEach(p=>{const el=document.getElementById(p+uid+'-'+i);if(el){el.style.transition='none';el.style.opacity='0';}});
+    });
+    const tot=document.getElementById('total-'+uid);if(tot){tot.style.transition='none';tot.style.opacity='0';}
+  });
+  [uidA,uidB].forEach((uid,idx)=>{
+    const cells=idx===0?cellsA:cellsB;
+    cells.forEach((_,i)=>{
+      setTimeout(()=>{
+        const cell=document.getElementById('cell-'+uid+'-'+i);
+        const nh=document.getElementById('nh-'+uid+'-'+i);
+        const nm=document.getElementById('nm-'+uid+'-'+i);
+        if(cell){cell.style.transition='opacity 0.15s';cell.style.opacity='0.35';}
+        if(nh){nh.style.transition='opacity 0.15s';nh.style.opacity='1';}
+        if(nm){nm.style.transition='opacity 0.15s';nm.style.opacity='1';}
+      }, i*DELAY);
+    });
+    setTimeout(()=>{const tot=document.getElementById('total-'+uid);if(tot){tot.style.transition='opacity 0.4s';tot.style.opacity='1';}}, cells.length*DELAY+200);
+  });
+}
+
+const STEPS=[
+
+// PAGE 1
+()=>`
+<div class="step-title pop">💡 Comparer des aires</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> Comparer des aires permet de travailler sur l'aire et de vérifier qu'on ne la confond pas avec le périmètre.</div>
+<p class="step-text fade-in">Le polygone qui a la plus grande aire est celui qui a la <strong>surface intérieure la plus grande</strong>.</p>
+<div class="info primary fade-in">💡 Un exemple : imagine que ce sont des champs. À l'intérieur duquel des animaux auraient-ils <strong>le plus de place</strong> pour se promener ?</div>
+<div class="info bleu fade-in" style="margin-top:-4px">⚠️ Attention : quand on compare des aires, ce ne sont pas les périmètres qu'il faut comparer !</div>
+`,
+
+// PAGE 2
+()=>`
+<div class="step-title pop">✏️ Ces deux polygones ont-ils la même aire ?</div>
+<p class="step-text fade-in" style="color:#475569">Le polygone B est obtenu en déplaçant un morceau du polygone A d'un côté à l'autre.</p>
+<div class="deux-fig fade-in">
+  <div class="fig-col">
+    <div class="fig-label">Polygone A</div>
+    ${svgP2A()}
+  </div>
+  <div class="fig-col">
+    <div class="fig-label">Polygone B</div>
+    ${svgP2B()}
+  </div>
+</div>
+<button class="btn-anim fade-in" onclick="lancerP2()">▶ Animation</button>
+<button id="btn-comp-p2" class="btn-complete" onclick="completerP2()">✏️ Compléter</button>
+<div id="expl-p2" class="info vert" style="opacity:0;transition:opacity 0.4s">Les deux polygones ont la <strong>même aire</strong> : on a creusé un morceau d'un côté et on l'a ajouté de l'autre, sans rien perdre ni gagner.</div>
+`,
+
+// PAGE 3 — animation morceau A
+()=>`
+<div class="step-title pop">✏️ Quel polygone a la plus grande aire ?</div>
+<p class="step-text fade-in" style="color:#475569">Le polygone B est obtenu en transformant le polygone A.</p>
+<div class="deux-fig fade-in" style="gap:16px;align-items:flex-start">
+  <div class="fig-col">
+    <div class="fig-label">Polygone A</div>
+    ${svgP3anim('pa', CELLS_A, A_COLS, A_ROWS, true)}
+  </div>
+  <div class="fig-col">
+    <div class="fig-label">Polygone B</div>
+    ${svgP3anim('pb', CELLS_B, B_COLS, B_ROWS, false)}
+  </div>
+</div>
+<button class="btn-anim fade-in" onclick="lancerP3()">▶ Animation</button>
+<button id="btn-comp-p3" class="btn-complete" onclick="completerP3()">✏️ Compléter</button>
+<div id="expl-p3" class="info vert" style="opacity:0;transition:opacity 0.4s">Le polygone B a l'aire la plus grande : sa surface est plus grande.<br>Il y a la surface d'un carreau en plus dans le polygone B.</div>
+`,
+
+// PAGE 4 — comptage (copie de l'ancienne page 3)
+()=>`
+<div class="step-title pop">✏️ Quel polygone a la plus grande aire ?</div>
+<p class="step-text fade-in" style="color:#475569">Pour comparer les aires, ici on peut utiliser le quadrillage.</p>
+<div class="deux-fig fade-in" style="gap:16px;align-items:flex-start">
+  <div class="fig-col">
+    <div class="fig-label">Polygone A</div>
+    ${svgP3('pa4', CELLS_A, A_COLS, A_ROWS)}
+  </div>
+  <div class="fig-col">
+    <div class="fig-label">Polygone B</div>
+    ${svgP3('pb4', CELLS_B, B_COLS, B_ROWS)}
+  </div>
+</div>
+<button class="btn-anim fade-in" onclick="lancerComptage('pa4',CELLS_A,'pb4',CELLS_B)">🔢 Compter</button>
+<button id="btn-comp-p4" class="btn-complete" onclick="completerP4()">✏️ Compléter</button>
+<div id="expl-p4" class="info vert" style="opacity:0;transition:opacity 0.4s">Le polygone B a l'aire la plus grande : sa surface est plus grande.<br>Il y a la surface d'un carreau en plus dans le polygone B.</div>
+`,
+
+// PAGE 5 — Ce qu'il faut retenir
+()=>`
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  ${[
+    ['var(--bleu)','L\'<strong>aire</strong>, c\'est la mesure de la surface intérieure. Le polygone qui a la plus grande aire est celui dont la surface contient <strong>le plus de place</strong>.'],
+    ['var(--vert)','Un exemple : imagine des champs. À l\'intérieur duquel des animaux auraient-ils <strong>le plus de place</strong> ?'],
+    ['var(--violet)','Sur un quadrillage, on peut <strong>compter les carreaux intérieurs</strong> pour comparer les aires de deux polygones.'],
+    ['var(--primary)','Quand on travaille sur l\'aire, notre cerveau peut nous donner envie de penser au périmètre. Il faut se forcer à penser : <em>« on travaille sur l\'aire et pas sur le périmètre »</em>.'],
+  ].map(([c,t],i)=>`
+    <div class="recap-item fade-in" style="animation-delay:${i*.08}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${i+1}</div>
+      <span>${t}</span>
+    </div>`).join('')}
+</div>
+`,
+];
+
+let cur=0; const N=STEPS.length;
+function completerP2(){
+  document.getElementById('btn-comp-p2').style.display='none';
+  document.getElementById('expl-p2').style.opacity='1';
+}
+function completerP3(){
+  document.getElementById('btn-comp-p3').style.display='none';
+  document.getElementById('expl-p3').style.opacity='1';
+}
+function completerP4(){
+  document.getElementById('btn-comp-p4').style.display='none';
+  document.getElementById('expl-p4').style.opacity='1';
+}
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur](); card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(N-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator'); ind.innerHTML='';
+  for(let i=0;i<N;i++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(i===cur?' active':i<cur?' done':'');
+    d.textContent=i<cur?'✓':i+1; ind.appendChild(d);
+  }
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${N}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===N-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===N-1?0:cur+1; render();}
+function prev(){if(cur>0){cur--; render();}}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>GM7 — Déterminer l'aire d'une figure complexe</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --primary:#e11d48;--primary2:#fb7185;--primary-clair:#ffe4e6;
+  --bg:#fff1f2;
+  --bleu:#1a73e8;--bleu-clair:#e8f0fe;
+  --orange:#ea580c;
+  --vert:#16a34a;--vert-clair:#f0fdf4;
+  --violet:#7c3aed;
+  --teal:#0d9488;--teal-clair:#f0fdfa;
+  --card:#fff;--texte:#1e293b;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+header{display:flex;justify-content:center;margin-bottom:22px;}
+.header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+.badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--primary);background:var(--primary-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--primary);flex-shrink:0;}
+.tache-label{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--primary);line-height:1.3;}
+.progress-bar-wrap{width:100%;max-width:680px;background:var(--primary-clair);border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .5s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+.step-dot{width:34px;height:34px;border-radius:50%;background:var(--primary-clair);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--primary2);transition:all .4s;border:2px solid transparent;}
+.step-dot.active{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+.card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:360px;display:flex;flex-direction:column;align-items:center;gap:12px;box-shadow:0 4px 24px rgba(0,0,0,.07);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .45s ease both;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;color:var(--primary);text-align:center;line-height:1.3;}
+.step-text{font-size:.97rem;line-height:1.7;text-align:center;max-width:580px;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:580px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 16px;font-weight:600;font-size:.92rem;line-height:1.6;max-width:580px;width:100%;}
+.info.primary{background:var(--primary-clair);border-left:4px solid var(--primary);}
+.btn-anim{border:2px solid var(--bleu);background:var(--bleu-clair);color:var(--bleu);font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;transition:all .2s;}
+.btn-anim:hover{background:var(--bleu);color:#fff;}
+.recap-list{display:flex;flex-direction:column;gap:12px;width:100%;max-width:580px;}
+.recap-item{display:flex;gap:12px;align-items:flex-start;background:#f8faff;border-radius:12px;padding:11px 16px;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;}
+.nav{display:flex;align-items:center;justify-content:space-between;max-width:680px;width:100%;margin-top:20px;gap:12px;}
+.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;border-radius:12px;padding:11px 22px;cursor:pointer;transition:all .25s;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-prev:disabled{opacity:.35;cursor:default;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;}
+.btn-next:hover{opacity:.9;}
+.step-counter{font-family:'Baloo 2',cursive;font-weight:700;color:var(--primary);font-size:.95rem;white-space:nowrap;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">GM7</div>
+    <div class="tache-label">Déterminer l'aire d'une figure complexe</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+const CS = 22; // px par carreau
+const COL_A='#1a73e8', COL_B='#ea580c', COL_C='#7c3aed';
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function showEl(id, delay){
+  setTimeout(()=>{
+    const el=document.getElementById(id);
+    if(el){el.style.transition='opacity 0.4s';el.style.opacity='1';}
+  }, delay||0);
+}
+
+// Remplissage clip-path vertical bas→haut
+function animFill(el, dur, cb){
+  el.style.opacity='0.38';
+  el.style.clipPath='polygon(0% 100%,100% 100%,100% 100%,0% 100%)';
+  const s=performance.now();
+  requestAnimationFrame(function step(n){
+    const t=Math.min((n-s)/dur,1), e=t<.5?2*t*t:(4-2*t)*t-1;
+    el.style.clipPath=`polygon(0% ${(1-e)*100}%,100% ${(1-e)*100}%,100% 100%,0% 100%)`;
+    t<1?requestAnimationFrame(step):cb&&cb();
+  });
+}
+
+// Anime un trait en le faisant grandir depuis une extrémité (stroke-dashoffset)
+function animLine(el, len, dur, cb){
+  el.style.strokeDasharray=len;
+  el.style.strokeDashoffset=len;
+  el.style.opacity='1';
+  el.style.transition='none';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    el.style.transition=`stroke-dashoffset ${dur}ms linear`;
+    el.style.strokeDashoffset=0;
+    if(cb) setTimeout(cb,dur);
+  }));
+}
+
+// Grille SVG dans une bounding box
+function grilleRect(uid,x,y,w,h){
+  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#gr-${uid})"/>`;
+}
+
+// Grille apparaissant par balayage (clip-path bas→haut)
+function grilleAnimRect(uid,x,y,w,h,gid){
+  return `<rect id="${gid}" x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#gr-${uid})" opacity="0" style="clip-path:polygon(0% 100%,100% 100%,100% 100%,0% 100%)"/>`;
+}
+
+function animGrille(gid, dur, cb){
+  const el=document.getElementById(gid);
+  if(!el){cb&&cb();return;}
+  el.style.opacity='1';
+  el.style.clipPath='polygon(0% 100%,100% 100%,100% 100%,0% 100%)';
+  const s=performance.now();
+  requestAnimationFrame(function step(n){
+    const t=Math.min((n-s)/dur,1), e=t<.5?2*t*t:(4-2*t)*t-1;
+    el.style.clipPath=`polygon(0% ${(1-e)*100}%,100% ${(1-e)*100}%,100% 100%,0% 100%)`;
+    t<1?requestAnimationFrame(step):cb&&cb();
+  });
+}
+
+// Label formule : une ligne centrée
+function lblFormule(id, cx, cy, txt, col){
+  return `<text id="${id}" x="${cx}" y="${cy}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="white" stroke="${col}" stroke-width="3" paint-order="stroke" opacity="0">${txt}</text>`;
+}
+
+// Label formule : deux lignes (lbl1 + lbl2) centrées ensemble
+function lblFormule2(id1, id2, cx, cy, txt1, txt2, col){
+  return `<text id="${id1}" x="${cx}" y="${cy-7}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="white" stroke="${col}" stroke-width="3" paint-order="stroke" opacity="0">${txt1}</text>` +
+    `<text id="${id2}" x="${cx}" y="${cy+9}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="white" stroke="${col}" stroke-width="3" paint-order="stroke" opacity="0">${txt2}</text>`;
+}
+
+// Contour d'un polygone (path SVG)
+function polygonePath(pts){ // pts = [[x,y],...]
+  return pts.map(([x,y],i)=>(i?'L':'M')+x+' '+y).join(' ')+' Z';
+}
+
+// ── CONSTRUCTION DES FIGURES ──────────────────────────────────────────────────
+// Chaque figure est décrite par :
+//  - le chemin du polygone global (contour extérieur)
+//  - les rectangles intérieurs [x,y,w,h,col,formule,aire]
+//  - les séparations intérieures [[x1,y1,x2,y2],...]
+
+// ── Page 1 (intro) ───────────────────────────────────────────────────────────
+// Figure en L : A(5×4) en haut-gauche, B(3×2) en bas-droite
+// ox=14, oy=14, CS=22
+function buildIntro(){
+  const ox=14,oy=14;
+  // contour extérieur (sens horaire)
+  const poly=[[ox,oy],[ox+5*CS,oy],[ox+5*CS,oy+2*CS],[ox+8*CS,oy+2*CS],[ox+8*CS,oy+4*CS],[ox,oy+4*CS]];
+  const W=8*CS+28, H=4*CS+28; const Hpoly=4*CS;
+  return {poly,W,H,Hpoly,ox,oy,
+    rects:[
+      {x:ox,y:oy,w:5*CS,h:4*CS,col:COL_A,lbl:'A',aire:''},
+      {x:ox+5*CS,y:oy+2*CS,w:3*CS,h:2*CS,col:COL_B,lbl:'B',aire:''},
+    ],
+    seps:[[[ox+5*CS,oy+2*CS],[ox+5*CS,oy+4*CS]]],
+    withGrid:true,
+  };
+}
+
+// ── Page 2 — Figure en L, quadrillage visible ──────────────────────────────
+// A : 5×3=15, B : 8×2=16, total=31
+function buildL(){
+  const ox=14,oy=14;
+  const poly=[[ox,oy],[ox+5*CS,oy],[ox+5*CS,oy+3*CS],[ox+8*CS,oy+3*CS],[ox+8*CS,oy+5*CS],[ox,oy+5*CS]];
+  const W=8*CS+28, H=5*CS+28+36; const Hpoly=5*CS;
+  return {poly,W,H,Hpoly,ox,oy,
+    rects:[
+      {x:ox,y:oy,w:5*CS,h:3*CS,col:COL_A,lbl:'5 × 3 = 15',aire:15},
+      {x:ox,y:oy+3*CS,w:8*CS,h:2*CS,col:COL_B,lbl:'8 × 2 = 16',aire:16},
+    ],
+    seps:[[[ox,oy+3*CS],[ox+5*CS,oy+3*CS]]],
+    withGrid:true,
+    calcul:'15 + 16 = 31 carreaux',
+    total:'Aire → 31 carreaux',
+  };
+}
+
+// ── Page 3 — Figure en U, quadrillage visible ─────────────────────────────
+// A:3×6=18, B:5×3=15, C:3×6=18, total=51
+function buildU(){
+  const ox=14,oy=14;
+  const poly=[
+    [ox,oy],[ox+3*CS,oy],[ox+3*CS,oy+3*CS],
+    [ox+8*CS,oy+3*CS],[ox+8*CS,oy],[ox+11*CS,oy],
+    [ox+11*CS,oy+6*CS],[ox,oy+6*CS]
+  ];
+  const W=11*CS+28, H=6*CS+28+36; const Hpoly=6*CS;
+  return {poly,W,H,Hpoly,ox,oy,
+    rects:[
+      {x:ox,y:oy,w:3*CS,h:6*CS,col:COL_A,lbl:'3 × 6 = 18',aire:18},
+      {x:ox+3*CS,y:oy+3*CS,w:5*CS,h:3*CS,col:COL_B,lbl:'5 × 3 = 15',aire:15},
+      {x:ox+8*CS,y:oy,w:3*CS,h:6*CS,col:COL_C,lbl:'3 × 6 = 18',aire:18},
+    ],
+    seps:[
+      [[ox+3*CS,oy+3*CS],[ox+3*CS,oy+6*CS]],
+      [[ox+8*CS,oy+3*CS],[ox+8*CS,oy+6*CS]],
+    ],
+    withGrid:true,
+    calcul:'18 + 15 + 18 = 51 carreaux',
+    total:'Aire → 51 carreaux',
+  };
+}
+
+// ── Page 4 — Figure en L avec mesures cm, pas de quadrillage au départ ─────
+// A:6×4=24, B:3×3=9, total=33
+function buildLcm(){
+  const PX=CS;
+  const aW=6*PX,aH=4*PX,bW=5*PX,bH=3*PX;
+  const ox=44,oy=32;
+  const poly=[
+    [ox,oy],[ox+aW,oy],[ox+aW,oy+aH-bH],
+    [ox+aW+bW,oy+aH-bH],[ox+aW+bW,oy+aH],[ox,oy+aH]
+  ];
+  const W=aW+bW+ox+44, H=aH+oy+52; const Hpoly=aH;
+  return {poly,W,H,Hpoly,ox,oy,aW,aH,bW,bH,PX,
+    rects:[
+      {x:ox,y:oy,w:aW,h:aH,col:COL_A,lbl1:'6 cm × 4 cm',lbl2:'24 cm²',aire:24},
+      {x:ox+aW,y:oy+aH-bH,w:bW,h:bH,col:COL_B,lbl1:'5 cm × 3 cm',lbl2:'15 cm²',aire:15},
+    ],
+    seps:[[[ox+aW,oy+aH-bH],[ox+aW,oy+aH]]],
+    withGrid:false,
+    calcul:'24 cm² + 15 cm² = 39 cm²',
+    total:'Aire → 39 cm²',
+  };
+}
+
+// ── Rendu SVG générique ───────────────────────────────────────────────────────
+function svgFigure(uid, fig, showGrid){
+  const {poly,W,H,rects,seps,withGrid}=fig;
+  let s=`<svg id="svg-${uid}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+
+  // Grille (définie pour tout le SVG)
+  // Grille alignée sur le coin bas-gauche du polygone
+  const {ox,oy,Hpoly}=fig;
+  const gy=oy+(Hpoly||0);
+  s+=`<defs><pattern id="gr-${uid}" width="${CS}" height="${CS}" patternUnits="userSpaceOnUse" x="${ox}" y="${gy}">
+    <path d="M ${CS} 0 L 0 0 0 ${CS}" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+  </pattern></defs>`;
+
+  // Fond blanc sur chaque rectangle
+  rects.forEach(r=>{ s+=`<rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="white"/>`; });
+
+  // Grille : visible au départ ou animée
+  if(showGrid){
+    rects.forEach((r,i)=>{ s+=grilleRect(uid,r.x,r.y,r.w,r.h); });
+  } else {
+    rects.forEach((r,i)=>{ s+=grilleAnimRect(uid,r.x,r.y,r.w,r.h,`gr-rect-${uid}-${i}`); });
+  }
+
+  // Remplissages colorés (invisibles au départ)
+  rects.forEach((r,i)=>{
+    s+=`<rect id="fill-${uid}-${i}" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="${r.col}" opacity="0" style="clip-path:polygon(0% 100%,100% 100%,100% 100%,0% 100%)"/>`;
+  });
+
+  // Grille par-dessus les remplissages (toujours définie)
+  if(showGrid){
+    rects.forEach(r=>{ s+=grilleRect(uid,r.x,r.y,r.w,r.h); });
+  } else {
+    rects.forEach((r,i)=>{ s+=grilleAnimRect(uid,r.x,r.y,r.w,r.h,`gr-rect2-${uid}-${i}`); });
+  }
+
+  // Contour extérieur du polygone (seul contour visible au départ)
+  s+=`<path d="${polygonePath(poly)}" fill="none" stroke="#64748b" stroke-width="2" stroke-linejoin="round"/>`;
+
+  // Séparations intérieures (invisibles au départ, stroke-dasharray pour animation)
+  seps.forEach(([[x1,y1],[x2,y2]],i)=>{
+    const len=Math.sqrt((x2-x1)**2+(y2-y1)**2);
+    s+=`<line id="sep-${uid}-${i}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#94a3b8" stroke-width="2" stroke-dasharray="${len}" stroke-dashoffset="${len}" opacity="0" style="stroke-dasharray:${len};stroke-dashoffset:${len}"/>`;
+  });
+
+  // Labels formule centrés
+  rects.forEach((r,i)=>{
+    if(r.lbl) s+=lblFormule(`lbl-${uid}-${i}`, r.x+r.w/2, r.y+r.h/2+5, r.lbl, r.col);
+  });
+
+  // Textes résultats (invisibles)
+  if(fig.calcul){
+    s+=`<text id="calcul-${uid}" x="${W/2}" y="${H-20}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--texte)" opacity="0">${fig.calcul}</text>`;
+    s+=`<text id="total-${uid}" x="${W/2}" y="${H-4}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--vert)" opacity="0">${fig.total}</text>`;
+  }
+
+  s+=`</svg>`;
+  return `<div style="display:flex;justify-content:center">${s}</div>`;
+}
+
+// ── Animation générique ───────────────────────────────────────────────────────
+function lancerFigure(uid, fig, hasGridAnim){
+  const {rects,seps}=fig;
+  // Reset
+  rects.forEach((_,i)=>{
+    const f=document.getElementById(`fill-${uid}-${i}`);
+    if(f){f.style.opacity='0';f.style.clipPath='polygon(0% 100%,100% 100%,100% 100%,0% 100%)';}
+    [`lbl-${uid}-${i}`,`lbl-${uid}-${i}a`,`lbl-${uid}-${i}b`].forEach(id=>{
+      const l=document.getElementById(id);
+      if(l){l.style.transition='none';l.style.opacity='0';}
+    });
+    if(hasGridAnim){
+      [0,1].forEach(k=>{
+        const g=document.getElementById(`gr-rect${k?'2':''}-${uid}-${i}`);
+        if(g){g.style.opacity='0';g.style.clipPath='polygon(0% 100%,100% 100%,100% 100%,0% 100%)';}
+      });
+    }
+  });
+  seps.forEach((_,i)=>{
+    const s=document.getElementById(`sep-${uid}-${i}`);
+    if(s){s.style.transition='none';s.style.strokeDashoffset=s.getAttribute('stroke-dasharray')||100;s.style.opacity='0';}
+  });
+  // reset egal si présent
+  const egalEl=document.getElementById('egal-'+uid);
+  if(egalEl){egalEl.style.transition='none';egalEl.style.opacity='0';}
+  ['calcul-','total-'].forEach(p=>{
+    const el=document.getElementById(p+uid);
+    if(el){el.style.transition='none';el.style.opacity='0';}
+  });
+
+  // Calcul de la longueur de chaque séparation
+  const sepLens=seps.map(([[x1,y1],[x2,y2]])=>Math.sqrt((x2-x1)**2+(y2-y1)**2));
+
+  // Séquence
+  let t=0;
+
+  // Étape 1 : séparations apparaissent en s'allongeant (400ms chacune)
+  seps.forEach((_,i)=>{
+    setTimeout(()=>{
+      const el=document.getElementById(`sep-${uid}-${i}`);
+      if(el) animLine(el, sepLens[i], 400);
+    }, t);
+    t+=500;
+  });
+
+  // Étape 2 : quadrillage animé (page 4 seulement)
+  if(hasGridAnim){
+    setTimeout(()=>{
+      let gt=0;
+      rects.forEach((_,i)=>{
+        setTimeout(()=>{
+          animGrille(`gr-rect-${uid}-${i}`, 600);
+          animGrille(`gr-rect2-${uid}-${i}`, 600);
+        }, gt);
+        gt+=100;
+      });
+    }, t);
+    t+=800;
+  }
+
+  // Étape 3 : colorier chaque rectangle + label (une ou deux lignes)
+  rects.forEach((_,i)=>{
+    setTimeout(()=>{
+      const f=document.getElementById(`fill-${uid}-${i}`);
+      if(f) animFill(f, 900, ()=>{
+        // deux lignes (a + b avec délai) ou une ligne
+        const la=document.getElementById(`lbl-${uid}-${i}a`);
+        if(la){
+          showEl(`lbl-${uid}-${i}a`);
+          setTimeout(()=>showEl(`lbl-${uid}-${i}b`), 400);
+        } else {
+          showEl(`lbl-${uid}-${i}`);
+        }
+      });
+    }, t);
+    t+=1100;
+  });
+
+  // Étape 4 : calcul + total
+  if(fig.calcul){
+    setTimeout(()=>showEl(`calcul-${uid}`), t+100);
+    setTimeout(()=>showEl(`total-${uid}`), t+600);
+  }
+}
+
+// ── Cotes pour la page 4 ─────────────────────────────────────────────────────
+function cotesLcm(uid, fig){
+  const {ox,oy,aW,aH,bW,bH}=fig;
+  let s='';
+  s+=`<defs>
+    <marker id="ma1-${uid}" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--bleu)"/></marker>
+    <marker id="ma2-${uid}" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto-start-reverse"><path d="M0,0 L6,3 L0,6 Z" fill="var(--bleu)"/></marker>
+  </defs>`;
+  const mk=`marker-start="url(#ma2-${uid})" marker-end="url(#ma1-${uid})"`;
+  // A largeur (6cm) — au-dessus
+  s+=`<line x1="${ox}" y1="${oy-14}" x2="${ox+aW}" y2="${oy-14}" stroke="var(--bleu)" stroke-width="1.5" ${mk}/>`;
+  s+=`<text x="${ox+aW/2}" y="${oy-17}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="var(--bleu)">6 cm</text>`;
+  // A hauteur (4cm) — à gauche
+  s+=`<line x1="${ox-14}" y1="${oy}" x2="${ox-14}" y2="${oy+aH}" stroke="var(--bleu)" stroke-width="1.5" ${mk}/>`;
+  s+=`<text x="${ox-17}" y="${oy+aH/2+4}" text-anchor="end" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="var(--bleu)">4 cm</text>`;
+  // B largeur (3cm) — au-dessus de B
+  s+=`<line x1="${ox+aW}" y1="${oy+aH-bH-13}" x2="${ox+aW+bW}" y2="${oy+aH-bH-13}" stroke="var(--bleu)" stroke-width="1.5" ${mk}/>`;
+  s+=`<text x="${ox+aW+bW/2}" y="${oy+aH-bH-16}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="var(--bleu)">5 cm</text>`;
+  // B hauteur (3cm) — à droite de B
+  s+=`<line x1="${ox+aW+bW+13}" y1="${oy+aH-bH}" x2="${ox+aW+bW+13}" y2="${oy+aH}" stroke="var(--bleu)" stroke-width="1.5" ${mk}/>`;
+  s+=`<text x="${ox+aW+bW+17}" y="${oy+aH-bH/2+4}" text-anchor="start" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="var(--bleu)">3 cm</text>`;
+  return s;
+}
+
+// ── SVG page 4 avec cotes injectées dans le SVG ──────────────────────────────
+function svgFigure4(uid){
+  const fig=buildLcm();
+  const {poly,W,H,rects,seps,ox,oy,aW,aH,bW,bH,Hpoly}=fig;
+  let s=`<svg id="svg-${uid}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  const gy=oy+(Hpoly||0);
+  s+=`<defs><pattern id="gr-${uid}" width="${CS}" height="${CS}" patternUnits="userSpaceOnUse" x="${ox}" y="${gy}">
+    <path d="M ${CS} 0 L 0 0 0 ${CS}" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+  </pattern></defs>`;
+  // cotes
+  s+=cotesLcm(uid,fig);
+  // fond blanc
+  rects.forEach(r=>{ s+=`<rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="white"/>`; });
+  // grille animée
+  rects.forEach((r,i)=>{ s+=grilleAnimRect(uid,r.x,r.y,r.w,r.h,`gr-rect-${uid}-${i}`); });
+  // remplissages
+  rects.forEach((r,i)=>{
+    s+=`<rect id="fill-${uid}-${i}" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="${r.col}" opacity="0" style="clip-path:polygon(0% 100%,100% 100%,100% 100%,0% 100%)"/>`;
+  });
+  // grille par-dessus
+  rects.forEach((r,i)=>{ s+=grilleAnimRect(uid,r.x,r.y,r.w,r.h,`gr-rect2-${uid}-${i}`); });
+  // contour extérieur
+  s+=`<path d="${polygonePath(poly)}" fill="none" stroke="#64748b" stroke-width="2" stroke-linejoin="round"/>`;
+  // séparations
+  seps.forEach(([[x1,y1],[x2,y2]],i)=>{
+    const len=Math.sqrt((x2-x1)**2+(y2-y1)**2);
+    s+=`<line id="sep-${uid}-${i}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#94a3b8" stroke-width="2" stroke-dasharray="${len}" stroke-dashoffset="${len}" opacity="0"/>`;
+  });
+  // labels deux lignes pour page 4
+  rects.forEach((r,i)=>{
+    if(r.lbl1) s+=lblFormule2(`lbl-${uid}-${i}a`,`lbl-${uid}-${i}b`, r.x+r.w/2, r.y+r.h/2, r.lbl1, r.lbl2, r.col);
+    else s+=lblFormule(`lbl-${uid}-${i}`,r.x+r.w/2,r.y+r.h/2+5,r.lbl,r.col);
+  });
+  // résultats
+  s+=`<text id="calcul-${uid}" x="${W/2}" y="${H-18}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--texte)" opacity="0">${fig.calcul}</text>`;
+  s+=`<text id="total-${uid}" x="${W/2}" y="${H-2}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--vert)" opacity="0">${fig.total}</text>`;
+  s+=`</svg>`;
+  return `<div style="display:flex;justify-content:center">${s}</div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// PAGE 5 — Soustraction
+// Grand : 10×6 cm, Trou : 4×2 cm à l'intérieur (1cm des bords gauche/bas, 1cm du bord droit)
+// TX=1cm depuis gauche, TY=2cm depuis haut → trou ne touche aucun côté
+
+function svgSoustraction(uid){
+  const PX=24;
+  const GW=10*PX, GH=6*PX;
+  const TW=4*PX, TH=2*PX;
+  // Trou : décalé 2cm du bord gauche, 2cm du bord haut
+  const TX=2*PX, TY=2*PX;
+  const ox=48, oy=36;
+  const W=GW+ox+28, H=GH+oy+32;
+
+  let s=`<svg id="svg-${uid}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  s+=`<defs>
+    <marker id="ss1b-${uid}" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--bleu)"/></marker>
+    <marker id="ss2b-${uid}" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto-start-reverse"><path d="M0,0 L6,3 L0,6 Z" fill="var(--bleu)"/></marker>
+  </defs>`;
+  const mkB=`marker-start="url(#ss2b-${uid})" marker-end="url(#ss1b-${uid})"`;
+
+
+  // ── Doubles flèches grand rectangle ──
+  // 10 cm en haut
+  s+=`<line x1="${ox}" y1="${oy-14}" x2="${ox+GW}" y2="${oy-14}" stroke="var(--bleu)" stroke-width="1.5" ${mkB}/>`;
+  s+=`<text x="${ox+GW/2}" y="${oy-18}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--bleu)">10 m</text>`;
+  // 6 cm à gauche
+  s+=`<line x1="${ox-14}" y1="${oy}" x2="${ox-14}" y2="${oy+GH}" stroke="var(--bleu)" stroke-width="1.5" ${mkB}/>`;
+  s+=`<text x="${ox-18}" y="${oy+GH/2+4}" text-anchor="end" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--bleu)">6 m</text>`;
+
+  // ── Doubles flèches trou : SUR les côtés du trou ──
+  // Labels 4cm et 2cm : textes simples visibles dès le départ (pas de flèches)
+  s+=`<text x="${ox+TX+TW/2}" y="${oy+TY-4}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="#7c3aed">4 m</text>`;
+  s+=`<text x="${ox+TX+TW+4}" y="${oy+TY+TH/2+4}" text-anchor="start" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="#7c3aed">2 m</text>`;
+
+  // ── Figure grise au départ ──
+  s+=`<rect x="${ox}" y="${oy}" width="${GW}" height="${GH}" fill="#d1d5db"/>`;
+  s+=`<rect id="trou-init-${uid}" x="${ox+TX}" y="${oy+TY}" width="${TW}" height="${TH}" fill="white"/>`;
+
+  // ── Remplissage bleu (grand rectangle entier) ──
+  s+=`<rect id="fill-grand-${uid}" x="${ox}" y="${oy}" width="${GW}" height="${GH}" fill="${COL_A}" opacity="0" style="clip-path:polygon(0% 100%,100% 100%,100% 100%,0% 100%)"/>`;
+
+  // ── Trou blanc par-dessus le bleu ──
+  s+=`<rect id="trou-blanc-${uid}" x="${ox+TX}" y="${oy+TY}" width="${TW}" height="${TH}" fill="white" opacity="0"/>`;
+
+  // ── Contours ──
+  s+=`<rect x="${ox}" y="${oy}" width="${GW}" height="${GH}" fill="none" stroke="#64748b" stroke-width="2"/>`;
+  s+=`<rect x="${ox+TX}" y="${oy+TY}" width="${TW}" height="${TH}" fill="none" stroke="#64748b" stroke-width="1.5"/>`;
+
+  // ── Labels 4m et 2m : APRÈS les contours pour être visibles dès le départ ──
+  s+=`<text x="${ox+TX+TW/2}" y="${oy+TY-5}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="#7c3aed">4 m</text>`;
+  s+=`<text x="${ox+TX+TW+5}" y="${oy+TY+TH/2+4}" text-anchor="start" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="#7c3aed">2 m</text>`;
+
+  // ── Labels grand rectangle : AU CENTRE du grand rectangle ──
+  const gcx=ox+GW/2, gcy=oy+GH/2;
+  s+=`<text id="lga-${uid}" x="${gcx}" y="${gcy-6}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="14" font-weight="800" fill="white" stroke="${COL_A}" stroke-width="3" paint-order="stroke" opacity="0">10 m × 6 m</text>`;
+  s+=`<text id="lgb-${uid}" x="${gcx}" y="${gcy+12}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="14" font-weight="800" fill="white" stroke="${COL_A}" stroke-width="3" paint-order="stroke" opacity="0">= 60 m²</text>`;
+
+  // ── Labels trou : au centre du trou, plus grands ──
+  const tcx=ox+TX+TW/2, tcy=oy+TY+TH/2;
+  s+=`<text id="lta-${uid}" x="${tcx}" y="${tcy-5}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="#7c3aed" stroke="white" stroke-width="3" paint-order="stroke" opacity="0">4 m × 2 m</text>`;
+  s+=`<text id="ltb-${uid}" x="${tcx}" y="${tcy+11}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="#7c3aed" stroke="white" stroke-width="3" paint-order="stroke" opacity="0">= 8 m²</text>`;
+
+  // ── Résultat sous le dessin : un seul text avec tspan colorés ──
+  const ry=oy+GH+24, rx=ox+GW/2;
+  s+=`<text id="res-${uid}" x="${rx}" y="${ry}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="14" font-weight="800" opacity="0">`;
+  s+=`<tspan id="res-a-${uid}" fill="${COL_A}" opacity="0">60 m²</tspan>`;
+  s+=`<tspan id="res-b-${uid}" fill="var(--texte)" opacity="0"> − </tspan>`;
+  s+=`<tspan id="res-c-${uid}" fill="#7c3aed" opacity="0">8 m²</tspan>`;
+  s+=`<tspan id="res-d-${uid}" fill="var(--texte)" opacity="0"> = 52 m²</tspan>`;
+  s+=`</text>`;
+
+  s+=`</svg>`;
+  return `<div style="display:flex;justify-content:center">${s}</div>`;
+}
+
+function lancerSoustraction(uid){
+  ['fill-grand-','trou-blanc-','lga-','lgb-','lta-','ltb-'].forEach(p=>{
+    const el=document.getElementById(p+uid);
+    if(el){el.style.transition='none';el.style.opacity='0';
+      if(p==='fill-grand-') el.style.clipPath='polygon(0% 100%,100% 100%,100% 100%,0% 100%)';}
+  });
+  ['res-a-','res-b-','res-c-','res-d-'].forEach(p=>{
+    const el=document.getElementById(p+uid);
+    if(el){el.style.transition='none';el.style.opacity='0';}
+  });
+  // Rendre le text parent visible (transparent au départ via tspan)
+  const resParent=document.getElementById('res-'+uid);
+  if(resParent){resParent.style.transition='none';resParent.style.opacity='1';}
+  const init=document.getElementById('trou-init-'+uid);
+  if(init){init.style.transition='none';init.style.opacity='1';}
+
+  // t1 : grand rectangle bleu (2s)
+  const fG=document.getElementById('fill-grand-'+uid);
+  if(!fG) return;
+  animFill(fG, 2000, ()=>{
+    // Calcul au centre du grand rect
+    showEl(`lga-${uid}`);
+    setTimeout(()=>showEl(`lgb-${uid}`), 700);
+    // "60 cm²" sous le dessin
+    setTimeout(()=>showEl('res-a-'+uid), 900);
+    // t2 : 2.5s → trou blanc + effacer labels bleus
+    setTimeout(()=>{
+      if(init){init.style.transition='opacity 0.3s';init.style.opacity='0';}
+      const tB=document.getElementById('trou-blanc-'+uid);
+      if(tB){tB.style.transition='opacity 0.5s';tB.style.opacity='1';}
+      [`lga-${uid}`,`lgb-${uid}`].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el){el.style.transition='opacity 0.4s';el.style.opacity='0';}
+      });
+      // Labels trou
+      setTimeout(()=>{
+        showEl(`lta-${uid}`);
+        setTimeout(()=>showEl(`ltb-${uid}`), 600);
+        setTimeout(()=>{showEl('res-b-'+uid);showEl('res-c-'+uid);}, 1000);
+        setTimeout(()=>showEl('res-d-'+uid), 2000);
+        setTimeout(()=>{
+          const el=document.getElementById('expl-fin-'+uid);
+          if(el){el.style.display='block';requestAnimationFrame(()=>requestAnimationFrame(()=>{el.style.opacity='1';}));}
+        }, 3000);
+      }, 600);
+    }, 2500);
+  });
+}
+
+const STEPS=[
+
+// PAGE 1 — intro auto
+()=>{
+  const fig=buildIntro();
+  setTimeout(()=>lancerFigure('intro',fig,false),1500);
+  return `
+<div class="step-title pop">💡 Décomposer une figure en rectangles</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> Certaines figures ne sont pas des rectangles simples. On peut les <strong>décomposer en rectangles</strong>, calculer l'aire de chacun, puis additionner.</div>
+${svgFigure('intro',fig,true)}
+<div class="info primary fade-in">📐 La figure se décompose en deux rectangles (A en bleu, B en orange). On calcule l'aire de chacun, puis on additionne.</div>
+`;},
+
+// PAGE 2
+()=>{
+  const fig=buildL();
+  return `
+<div class="step-title pop">✏️ Figure en L</div>
+<p class="step-text fade-in" style="color:#475569">On décompose cette figure en deux rectangles et on calcule l'aire de chacun.</p>
+${svgFigure('p2',fig,true)}
+<button class="btn-anim fade-in" onclick="lancerFigure('p2',buildL(),false)">▶ Décomposer et calculer</button>
+`;},
+
+// PAGE 3
+()=>{
+  const fig=buildU();
+  return `
+<div class="step-title pop">✏️ Figure en U</div>
+<p class="step-text fade-in" style="color:#475569">Cette figure se décompose en trois rectangles.</p>
+${svgFigure('p3',fig,true)}
+<button class="btn-anim fade-in" onclick="lancerFigure('p3',buildU(),false)">▶ Décomposer et calculer</button>
+`;},
+
+// PAGE 4
+()=>`
+<div class="step-title pop">✏️ Avec des mesures en cm</div>
+<p class="step-text fade-in" style="color:#475569">Les dimensions sont données en cm.</p>
+${svgFigure4('p4')}
+<button class="btn-anim fade-in" onclick="lancerFigure('p4',buildLcm(),true)">▶ Décomposer et calculer</button>
+`,
+
+// PAGE 5
+()=>`
+<div class="step-title pop">✏️ Enlever un rectangle</div>
+<p class="step-text fade-in" style="color:#475569">Pour avoir l'aire de cette forme, on peut calculer l'aire du grand rectangle et enlever l'aire du petit rectangle.</p>
+${svgSoustraction('p5')}
+<button class="btn-anim fade-in" onclick="lancerSoustraction('p5')">▶ Calculer l'aire</button>
+<div id="expl-fin-p5" class="info vert" style="display:none;opacity:0;transition:opacity 0.5s">La surface colorée a une aire de <strong>52 m²</strong>.</div>
+`,
+
+// PAGE 6 — bilan
+()=>`
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  ${[
+    ['var(--bleu)','Pour calculer l\'aire d\'une figure complexe :<br>— on la décompose en rectangles,<br>— on calcule l\'aire de chaque rectangle,<br>— puis on additionne.'],
+    ['var(--primary)','Quand on travaille sur l\'aire, notre cerveau peut nous donner envie de penser au périmètre. Il faut se forcer à penser : <em>« on travaille sur l\'aire et pas sur le périmètre »</em>.'],
+  ].map(([c,t],i)=>`
+    <div class="recap-item fade-in" style="animation-delay:${i*.08}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${i+1}</div>
+      <span>${t}</span>
+    </div>`).join('')}
+</div>
+`,
+];
+
+let cur=0; const N=STEPS.length;
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur](); card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(N-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator'); ind.innerHTML='';
+  for(let i=0;i<N;i++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(i===cur?' active':i<cur?' done':'');
+    d.textContent=i<cur?'✓':i+1; ind.appendChild(d);
+  }
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${N}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===N-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===N-1?0:cur+1;render();}
+function prev(){if(cur>0){cur--;render();}}
+render();
+</script>
+</body>
+</html>

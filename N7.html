@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>N7 Placer un nombre entier sur la ligne numérique</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme:light;
+    --bleu:#1a73e8; --bleu-clair:#e8f0fe;
+    --orange:#ea580c; --orange-clair:#ffedd5;
+    --vert:#16a34a; --vert-clair:#f0fdf4;
+    --violet:#7c3aed; --violet-clair:#f5f3ff;
+    --gris:#94a3b8; --bg:#f0f4ff;
+    --card:#ffffff; --texte:#1e293b; --border:#e2e8f0;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Nunito',sans-serif; background:var(--bg); min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:20px 16px 40px; color:var(--texte); }
+  header { display:flex; justify-content:center; margin-bottom:22px; }
+  .header-row { display:flex; align-items:center; gap:14px; max-width:680px; width:100%; }
+  .badge-code { display:inline-flex; align-items:center; justify-content:center; min-width:48px; height:48px; border-radius:12px; border:2.5px solid var(--bleu); background:var(--bleu-clair); font-family:'Baloo 2',cursive; font-size:1.3rem; font-weight:800; color:var(--bleu); flex-shrink:0; }
+  .tache-label { font-family:'Baloo 2',cursive; font-size:1.1rem; font-weight:800; color:var(--bleu); line-height:1.3; }
+  .progress-bar-wrap { width:100%; max-width:680px; background:#dbeafe; border-radius:99px; height:10px; margin-bottom:18px; overflow:hidden; }
+  .progress-bar { height:100%; background:linear-gradient(90deg,var(--bleu),var(--violet)); border-radius:99px; transition:width 0.5s ease; }
+  .steps-indicator { display:flex; gap:10px; margin-bottom:20px; }
+  .step-dot { width:34px; height:34px; border-radius:50%; background:#dbeafe; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:#93c5fd; transition:all 0.4s; border:2px solid transparent; }
+  .step-dot.active { background:var(--bleu); color:white; border-color:var(--bleu); transform:scale(1.15); box-shadow:0 0 0 4px #bfdbfe; }
+  .step-dot.done   { background:var(--vert); color:white; border-color:var(--vert); }
+  .card { background:var(--card); border-radius:20px; padding:26px 28px; max-width:680px; width:100%; min-height:360px; display:flex; flex-direction:column; align-items:center; gap:14px; box-shadow:0 4px 24px rgba(26,115,232,0.10); position:relative; overflow:hidden; }
+  .card::before { content:''; position:absolute; top:0; left:0; right:0; height:5px; background:linear-gradient(90deg,var(--bleu),var(--violet)); border-radius:20px 20px 0 0; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation:fadeIn 0.4s ease both; }
+  @keyframes pop { 0%{transform:scale(0.8);opacity:0} 70%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
+  .pop { animation:pop 0.45s ease both; }
+  .step-title { font-family:'Baloo 2',cursive; font-size:1.2rem; font-weight:800; color:var(--bleu); text-align:center; line-height:1.3; }
+  .step-text  { font-size:0.97rem; color:var(--texte); text-align:center; line-height:1.75; max-width:540px; font-weight:600; }
+  .info { border-radius:12px; padding:12px 18px; font-size:0.93rem; font-weight:600; max-width:580px; width:100%; line-height:1.6; }
+  .info.bleu { background:var(--bleu-clair); color:var(--bleu); border-left:4px solid var(--bleu); }
+  .info.vert { background:#f1f5f9; color:#475569; border-left:4px solid var(--gris); }
+  .btn-complete { font-family:'Baloo 2',cursive; font-weight:700; font-size:0.95rem; border:2px solid var(--vert); cursor:pointer; border-radius:10px; padding:10px 22px; background:var(--vert-clair); color:var(--vert); transition:all 0.2s; }
+  .btn-complete:hover { background:var(--vert); color:white; }
+  .abscisse-result { font-family:'Baloo 2',cursive; font-size:1.4rem; font-weight:800; text-align:center; background:var(--vert-clair); border-radius:14px; padding:12px 24px; color:var(--vert); border:2px solid var(--vert); max-width:400px; width:100%; }
+  .recap-list { display:flex; flex-direction:column; gap:9px; max-width:580px; width:100%; }
+  .recap-item { display:flex; align-items:flex-start; gap:12px; background:#f8faff; border-radius:12px; padding:11px 16px; font-size:0.93rem; font-weight:600; color:var(--texte); animation:fadeIn 0.4s ease both; border-left:4px solid transparent; line-height:1.5; }
+  .recap-num  { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.82rem; font-weight:700; flex-shrink:0; color:white; margin-top:1px; }
+  .nav { display:flex; gap:14px; margin-top:10px; align-items:center; }
+  button.btn-nav { font-family:'Baloo 2',cursive; font-weight:700; font-size:1rem; border:none; cursor:pointer; border-radius:12px; padding:12px 28px; transition:all 0.2s; }
+  .btn-next { background:linear-gradient(135deg,var(--bleu),var(--violet)); color:white; box-shadow:0 4px 14px rgba(26,115,232,0.3); }
+  .btn-next:hover { transform:translateY(-2px); }
+  .btn-next:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+  .btn-prev { background:#e0e7ff; color:var(--bleu); }
+  .btn-prev:hover { background:#c7d2fe; }
+  .step-counter { font-size:0.85rem; color:var(--gris); font-weight:700; }
+  .pourquoi { position:relative; background:#f0fdfa; border-left:4px solid #0d9488; border-radius:10px; padding:12px 15px; font-size:0.92rem; font-weight:600; color:#134e4a; line-height:1.6; max-width:580px; width:100%; }
+  .pq-lead { font-family:'Baloo 2',cursive; font-weight:800; color:#0d9488; }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">N7</div>
+    <div class="tache-label">Placer un nombre entier sur la ligne numérique</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+const CONFIGS = {};
+
+// ── Droite numérique ─────────────────────────────────────────────────────────
+// cfg.showPoint : false → le point n'apparaît pas encore (avant compléter)
+function buildDroite(cfg, uid) {
+  const W=520, LM=28, RM=28, lineW=W-LM-RM;
+  const lineY=52, tickH=8, totalH=lineY+48;
+  const range = cfg.max - cfg.min;
+  function xOf(v){ return LM + (v-cfg.min)/range*lineW; }
+
+  const grads=[];
+  for(let v=cfg.min; v<=cfg.max+0.001; v+=cfg.step) grads.push(Math.round(v*1000)/1000);
+  if(cfg.completed && cfg.extraCompleted)
+    cfg.extraCompleted.forEach(v=>{ if(!grads.includes(v)) grads.push(v); });
+  grads.sort((a,b)=>a-b);
+
+  let s=`<svg width="${W}" height="${totalH}" viewBox="0 0 ${W} ${totalH}"
+    style="display:block;width:100%;max-width:${W}px;height:auto;overflow:visible">`;
+  s+=`<line x1="${LM}" y1="${lineY}" x2="${LM+lineW}" y2="${lineY}"
+    stroke="#cbd5e1" stroke-width="3" stroke-linecap="round"/>`;
+
+  grads.forEach(v=>{
+    const x=xOf(v);
+    const isLabeled=cfg.labeled.some(l=>Math.abs(l-v)<0.001);
+    const isTarget=Math.abs(v-cfg.target)<0.001;
+    // hideInitial : masqué avant compléter, visible après
+    const isHideInitial=cfg.hideInitial && cfg.hideInitial.some(h=>Math.abs(h-v)<0.001);
+    const effectiveLabeled = isLabeled && !(isHideInitial && !cfg.completed);
+    // après compléter, hideInitial reste "non-labeled" pour l'épaisseur du tick
+    const tickLabeled = isLabeled && !isHideInitial;
+    const showLabel=cfg.completed||effectiveLabeled;
+    const hideTick=cfg.hideTicks && !effectiveLabeled && !cfg.completed;
+    // masquer la dernière graduation (hideMax)
+    const isMax=Math.abs(v-cfg.max)<0.001;
+    if(cfg.hideMax && isMax) return;
+    // masquer certaines valeurs même complété (hideVals) — priorité sur labeled
+    const isHidden=cfg.hideVals && cfg.hideVals.some(h=>Math.abs(h-v)<0.001);
+    if(isHidden) return;
+    // masquer hideInitial avant compléter
+    if(isHideInitial && !cfg.completed) return;
+
+    if(!hideTick){
+      const col=tickLabeled?'#94a3b8':(cfg.completed?(isTarget?'var(--vert)':'#cbd5e1'):'#cbd5e1');
+      s+=`<line x1="${x}" y1="${lineY-tickH}" x2="${x}" y2="${lineY+tickH}"
+        stroke="${col}" stroke-width="${tickLabeled?2:1.5}" stroke-linecap="round"/>`;
+    }
+    if(showLabel){
+      const col=isTarget&&cfg.completed?'var(--vert)':'#94a3b8';
+      const fw=isTarget&&cfg.completed?'800':'700';
+      const fs=isTarget&&cfg.completed?'13':'11';
+      s+=`<text x="${x}" y="${lineY+tickH+15}" text-anchor="middle"
+        font-family="Baloo 2,cursive" font-size="${fs}" font-weight="${fw}"
+        fill="${col}">${v.toLocaleString('fr-FR')}</text>`;
+    }
+  });
+
+  // Point : affiché uniquement après compléter
+  if(cfg.showPoint){
+    const px=xOf(cfg.target);
+    const isBetween=cfg.between;
+    s+=`<circle cx="${px}" cy="${lineY}" r="7" fill="var(--orange)"/>`;
+    if(isBetween){
+      // label lettre en haut + valeur en bas en orange
+      s+=`<line x1="${px}" y1="${lineY-7}" x2="${px}" y2="${lineY-28}"
+        stroke="var(--orange)" stroke-width="1.5" stroke-dasharray="3,2"/>`;
+      s+=`<text x="${px}" y="${lineY-32}" text-anchor="middle"
+        font-family="Baloo 2,cursive" font-size="14" font-weight="800"
+        fill="var(--orange)">${cfg.point.label}</text>`;
+      // valeur sous la ligne en orange
+      s+=`<text x="${px}" y="${lineY+tickH+15}" text-anchor="middle"
+        font-family="Baloo 2,cursive" font-size="13" font-weight="800"
+        fill="var(--orange)">${cfg.target.toLocaleString('fr-FR')}</text>`;
+    } else {
+      s+=`<text x="${px}" y="${lineY-14}" text-anchor="middle"
+        font-family="Baloo 2,cursive" font-size="14" font-weight="800"
+        fill="var(--orange)">${cfg.point.label}</text>`;
+    }
+  }
+
+  s+=`</svg>`;
+  return s;
+}
+
+function exoBlock(cfg, uid, explText) {
+  CONFIGS[uid]=cfg;
+  return `
+    <div id="block-${uid}" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:10px">
+      <div id="droite-${uid}" class="fade-in" style="width:100%">
+        ${buildDroite({...cfg, completed:false, showPoint:false}, uid+'i')}
+      </div>
+      <button class="btn-complete" onclick="completer('${uid}')">✏️ Compléter et placer</button>
+      <div id="result-${uid}" style="display:none">
+        <div class="info vert fade-in" style="margin-top:4px">${explText}</div>
+        <div class="abscisse-result fade-in" style="margin-top:10px">
+          Le point ${cfg.point.label} a pour abscisse <strong>${cfg.target.toLocaleString('fr-FR')}</strong>.
+        </div>
+      </div>
+    </div>`;
+}
+
+function completer(uid){
+  const cfg=CONFIGS[uid];
+  if(!cfg) return;
+  const droiteEl=document.getElementById('droite-'+uid);
+  droiteEl.innerHTML=buildDroite({...cfg, completed:true, showPoint:true}, uid+'c');
+  droiteEl.parentElement.querySelector('.btn-complete').style.display='none';
+  const resEl=document.getElementById('result-'+uid);
+  resEl.style.display='flex';
+  resEl.style.flexDirection='column';
+  resEl.style.alignItems='center';
+  resEl.style.gap='10px';
+  resEl.style.width='100%';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+const STEPS = [
+
+// 0 — L'idée
+() => `
+<div class="step-title pop">💡 Comment placer un nombre sur la ligne numérique</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> Pour mieux comprendre comment sont organisés les nombres et les opérations qui les utilisent, il est important de savoir représenter les nombres sur la ligne numérique.</div>
+<p class="step-text fade-in">
+  On commence par observer l'<strong style="color:var(--bleu)">écart</strong>
+  entre deux graduations étiquetées : c'est le nombre qu'on ajoute à chaque fois.<br><br>
+  On <strong style="color:var(--vert)">complète les graduations</strong> manquantes
+  en continuant avec le même écart, jusqu'à atteindre le nombre à placer.<br><br>
+  Puis on place le point à la bonne position.
+</p>
+<div class="info bleu fade-in">
+  📌 Si le nombre est <strong>entre deux graduations</strong>, on estime sa position :
+  à mi-chemin, au quart, plus près de l'une ou de l'autre.
+</div>
+`,
+
+// 1 — Écart 6, placer 30 : 0, 6, 12 visibles
+() => `
+<div class="step-title pop">✏️ Exemple 1 : les graduations sont placées</div>
+<p class="step-text fade-in">
+  Entre 2 graduations on ajoute <strong style="color:var(--bleu)">6</strong>.<br>
+  Placer le point <strong style="color:var(--orange)">A</strong> d'abscisse <strong>30</strong>.
+</p>
+${exoBlock(
+  { min:0, max:36, step:6,
+    labeled:[0,6,12],
+    target:30, point:{label:'A'},
+    between:false, hideTicks:false, hideMax:true },
+  'ex1',
+  'On continue de 6 en 6 : 12 → 18 → 24 → 30.<br>On place le point A sur la graduation 30.'
+)}
+`,
+
+// 2 — Écart 10, placer 60 : 0, 10, 30 visibles (20 manquant)
+() => `
+<div class="step-title pop">✏️ Exemple 2 : des graduations manquantes</div>
+<p class="step-text fade-in">
+  Entre 2 graduations on ajoute <strong style="color:var(--bleu)">10</strong>.<br>
+  Placer le point <strong style="color:var(--orange)">B</strong> d'abscisse <strong>60</strong>.
+</p>
+${exoBlock(
+  { min:0, max:70, step:10,
+    labeled:[0,10,30],
+    hideInitial:[30],
+    target:60, point:{label:'B'},
+    between:false, hideTicks:true, hideVals:[70] },
+  'ex2',
+  'On rajoute les graduations manquantes en gardant toujours le même écart.<br>On continue de 10 en 10 : 30 → 40 → 50 → 60.<br>On place le point B sur la graduation 60.'
+)}
+`,
+
+// 3 — Écart 10, placer 45 entre deux graduations : 0, 10, 20 visibles
+() => `
+<div class="step-title pop">✏️ Exemple 3 : point entre deux graduations</div>
+<p class="step-text fade-in">
+  Entre 2 graduations on ajoute <strong style="color:var(--bleu)">10</strong>.<br>
+  Placer le point <strong style="color:var(--orange)">C</strong> d'abscisse <strong>45</strong>.<br>
+  On place d'abord 40 et 50, puis 45 sera au milieu.
+</p>
+${exoBlock(
+  { min:0, max:70, step:10,
+    labeled:[0,10,20],
+    target:45, point:{label:'C'},
+    between:true, hideTicks:true, hideVals:[60,70] },
+  'ex3',
+  'On rajoute les graduations manquantes en gardant toujours le même écart.<br>On continue de 10 en 10 : 10 → 20 → 30 → 40 → 50 → 60.<br>Le point C est à mi-chemin entre 40 et 50.'
+)}
+`,
+
+// 4 — Écart 100, placer 260 entre deux graduations : 0, 100, 200 visibles
+() => `
+<div class="step-title pop">✏️ Exemple 4 : plus proche d'une graduation</div>
+<p class="step-text fade-in">
+  Entre 2 graduations on ajoute <strong style="color:var(--bleu)">100</strong>.<br>
+  Placer le point <strong style="color:var(--orange)">D</strong> d'abscisse <strong>260</strong>.<br>
+  On place d'abord 200 et 300, puis 260 sera un peu plus proche de 300.
+</p>
+${exoBlock(
+  { min:0, max:400, step:100,
+    labeled:[0,100],
+    hideInitial:[200],
+    target:260, point:{label:'D'},
+    between:true, hideTicks:true, hideVals:[400] },
+  'ex4',
+  'On rajoute les graduations manquantes en gardant toujours le même écart.<br>On continue de 100 en 100 : 100 → 200 → 300.<br>Le point D est entre 200 et 300, un peu plus proche de 300.'
+)}
+`,
+
+// 5 — Récap
+() => `
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  ${[
+    ['var(--bleu)',   'On repère d\'abord l\'<strong>écart</strong> entre deux graduations consécutives étiquetées.'],
+    ['var(--vert)',   'On <strong>complète les graduations</strong> manquantes en continuant avec le même écart.'],
+    ['var(--orange)', 'Si le nombre tombe <strong>sur une graduation</strong>, on place le point exactement dessus.'],
+    ['var(--violet)', 'Si le nombre est <strong>entre deux graduations</strong>, on estime sa position : à mi-chemin, au tiers, plus proche de l\'une ou de l\'autre.'],
+  ].map(([c,t],i)=>`
+    <div class="recap-item" style="animation-delay:${i*0.09}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${i+1}</div>
+      <span>${t}</span>
+    </div>`).join('')}
+</div>
+`,
+];
+
+let cur=0; const N=STEPS.length;
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur](); card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(N-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator'); ind.innerHTML='';
+  for(let i=0;i<N;i++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(i===cur?' active':i<cur?' done':'');
+    d.textContent=i<cur?'✓':i+1; ind.appendChild(d);
+  }
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${N}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===N-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===N-1?0:cur+1;render();}
+function prev(){if(cur>0){cur--;render();}}
+render();
+</script>
+</body>
+</html>
