@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>GM13 — Types d'angles</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --primary:#e11d48;--primary2:#fb7185;--primary-clair:#ffe4e6;
+  --bg:#fff1f2;
+  --bleu:#1a73e8;--bleu-clair:#e8f0fe;
+  --orange:#ea580c;--orange-clair:#ffedd5;
+  --vert:#16a34a;--vert-clair:#f0fdf4;
+  --violet:#7c3aed;--violet-clair:#f5f3ff;
+  --teal:#0d9488;--teal-clair:#f0fdfa;
+  --card:#fff;--texte:#1e293b;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+header{display:flex;justify-content:center;margin-bottom:22px;}
+.header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+.badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--primary);background:var(--primary-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--primary);flex-shrink:0;}
+.tache-label{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--primary);line-height:1.3;}
+.progress-bar-wrap{width:100%;max-width:680px;background:var(--primary-clair);border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .5s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+.step-dot{width:34px;height:34px;border-radius:50%;background:var(--primary-clair);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--primary2);transition:all .4s;border:2px solid transparent;}
+.step-dot.active{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+.card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:360px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(0,0,0,.07);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .45s ease both;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;color:var(--primary);text-align:center;line-height:1.3;}
+.step-text{font-size:.97rem;line-height:1.7;text-align:center;max-width:580px;color:#475569;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:580px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 16px;font-weight:600;font-size:.92rem;line-height:1.7;max-width:580px;width:100%;}
+.info.bleu{background:var(--bleu-clair);border-left:4px solid var(--bleu);color:#1e3a5f;}
+.info.vert{background:var(--vert-clair);border-left:4px solid var(--vert);color:#14532d;}
+.info.orange{background:var(--orange-clair);border-left:4px solid var(--orange);color:#7c2d12;}
+.info.violet{background:var(--violet-clair);border-left:4px solid var(--violet);color:#4c1d95;}
+.recap-list{display:flex;flex-direction:column;gap:12px;width:100%;max-width:580px;}
+.recap-item{display:flex;gap:12px;align-items:flex-start;background:#f8faff;border-radius:12px;padding:11px 16px;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;}
+.nav{display:flex;align-items:center;justify-content:space-between;max-width:680px;width:100%;margin-top:20px;gap:12px;}
+.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;border-radius:12px;padding:11px 22px;cursor:pointer;transition:all .25s;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-prev:disabled{opacity:.35;cursor:default;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;}
+.btn-next:hover{opacity:.9;}
+.step-counter{font-family:'Baloo 2',cursive;font-weight:700;color:var(--primary);font-size:.95rem;white-space:nowrap;}
+/* Blocs type N30 */
+  .bloc{border-radius:12px;padding:12px 16px;width:100%;max-width:580px;line-height:1.68;font-size:.92rem;font-weight:600;}
+  .bloc-header{font-family:'Baloo 2',cursive;font-size:.8rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;}
+  .def  {background:#ede9fe;border-left:5px solid var(--violet);color:#2e1065;}
+  .def  .bloc-header{color:var(--violet);}
+  .prop {background:var(--bleu-clair);border-left:5px solid var(--bleu);color:#1e3a5f;}
+  .prop .bloc-header{color:var(--bleu);}
+  .ex   {background:var(--orange-clair);border-left:5px solid var(--orange);color:#7c2d12;}
+  .ex   .bloc-header{color:var(--orange);}
+  .rem  {background:#f1f5f9;border-left:5px solid #94a3b8;color:#475569;}
+  .rem  .bloc-header{color:#64748b;}
+  /* Grille du bilan P6 */
+.angles-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;max-width:400px;}
+.angle-card{background:#f8faff;border-radius:14px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.angle-card span{font-family:'Baloo 2',cursive;font-weight:800;font-size:.88rem;color:var(--texte);text-align:center;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">GM13</div>
+    <div class="tache-label">Reconnaître les types d'angles</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+const STEPS=[
+
+// ── PAGE 1 : Définition de l'angle ──────────────────────────────────────────
+()=>`
+<div class="step-title pop">💡 Qu'est-ce qu'un angle ?</div>
+<div class="bloc def fade-in"><div class="bloc-header">📘 Définition</div>Un angle, c'est une <strong>ouverture entre deux demi-droites</strong> qui ont le même point de départ, appelé le <strong>sommet</strong>.</div>
+<div style="display:flex;justify-content:center">
+<svg width="200" height="160" viewBox="0 0 200 160">
+  <!-- Sommet S = (70, 120) -->
+  <!-- Demi-droite fixe (horizontale vers la droite) -->
+  <line x1="70" y1="120" x2="180" y2="120" stroke="#222" stroke-width="3" stroke-linecap="round"/>
+  <!-- Demi-droite animée (tourne de -5° à -70° autour de S) -->
+  <g>
+    <line x1="70" y1="120" x2="180" y2="120" stroke="#222" stroke-width="3" stroke-linecap="round">
+      <animateTransform attributeName="transform" attributeType="XML" type="rotate"
+        values="-5 70 120;-70 70 120;-5 70 120" dur="3s" repeatCount="indefinite"/>
+    </line>
+  </g>
+  <!-- Arc fixe de (110,120) à (83.7,82.4), rayon=40, dasharray anime -->
+  <path d="M 110 120 A 40 40 0 0 0 83.7 82.4" fill="none" stroke="#e11d48" stroke-width="3"
+    stroke-linecap="round" pathLength="70" stroke-dasharray="1 70">
+    <animate attributeName="stroke-dasharray" values="1 70;70 70;1 70" dur="3s" repeatCount="indefinite"/>
+  </path>
+</svg>
+</div>
+<p class="step-text fade-in">L'angle mesure de <strong>combien il faut tourner</strong> pour passer d'une demi-droite à l'autre.</p>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> On apprend à reconnaître les angles aigus, droits, obtus ou plats pour avoir une première information sur leur taille, sans avoir besoin de les mesurer.</div>
+`,
+
+// ── PAGE 2 : Angle droit ─────────────────────────────────────────────────────
+()=>`
+<div class="step-title pop">💡 L'angle droit</div>
+<div class="bloc def fade-in"><div class="bloc-header">📘 Définition</div>Un angle droit correspond à un <strong>quart de tour</strong>.</div>
+<div style="display:flex;justify-content:center">
+<svg width="220" height="220" viewBox="0 0 220 220">
+  <g transform="rotate(20 110 110)">
+    <!-- Droite noire fixe (horizontale complète) -->
+    <line x1="20" y1="110" x2="200" y2="110" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Perpendiculaire noire fixe (verticale complète) -->
+    <line x1="110" y1="20" x2="110" y2="200" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Demi-droite grise animée (tourne de -1° à -90°) -->
+    <g>
+      <line x1="110" y1="110" x2="210" y2="110" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round">
+        <animateTransform attributeName="transform" attributeType="XML" type="rotate"
+          values="-1 110 110;-90 110 110;-1 110 110" dur="3s" repeatCount="indefinite"/>
+      </line>
+    </g>
+    <!-- Arc fixe r=40 de (150,110) à (110,70), dasharray anime 1→90 -->
+    <path d="M 150 110 A 40 40 0 0 0 110 70" fill="none" stroke="#1a73e8" stroke-width="3"
+      stroke-linecap="round" pathLength="90" stroke-dasharray="1 90">
+      <animate attributeName="stroke-dasharray" values="1 90;90 90;1 90" dur="3s" repeatCount="indefinite"/>
+    </path>
+    <!-- Carré de codage (visible quand arc plein) -->
+    <path d="M 110 110 L 122 110 L 122 98 L 110 98 Z" fill="none" stroke="#1a73e8" stroke-width="2">
+      <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.4;0.55;0.65;0.8" dur="3s" repeatCount="indefinite"/>
+    </path>
+  </g>
+</svg>
+</div>
+<p class="step-text fade-in">On peut reconnaître ou construire un angle droit avec une <strong>équerre</strong>.</p>
+<div class="bloc rem fade-in"><div class="bloc-header">💬 Remarque</div>On code un angle droit avec un <strong>petit carré</strong> dans le coin de l'angle.</div>
+`,
+
+// ── PAGE 3 : Angle plat ──────────────────────────────────────────────────────
+()=>`
+<div class="step-title pop">💡 L'angle plat</div>
+<div class="bloc def fade-in"><div class="bloc-header">📘 Définition</div>Un angle plat correspond à un <strong>demi-tour</strong>.</div>
+<div style="display:flex;justify-content:center">
+<svg width="300" height="160" viewBox="-50 0 310 160">
+  <!-- Sommet S=(70,110), angle plat, pause à 180° + demi-droite grise à 90° -->
+  <line x1="-50" y1="110" x2="240" y2="110" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="70" cy="110" r="4" fill="#7c3aed"/>
+  <!-- Demi-droite grise à 90° (apparaît quand arc passe par 90°) -->
+  <line x1="70" y1="110" x2="70" y2="10" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-dasharray="5 4">
+    <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.2;0.25;0.7;0.75;1" dur="9s" repeatCount="indefinite"/>
+  </line>
+  <!-- Demi-droite rouge animée : -5° → -180° (pause) → -5° -->
+  <g>
+    <line x1="70" y1="110" x2="170" y2="110" stroke="#e11d48" stroke-width="3" stroke-linecap="round">
+      <animateTransform attributeName="transform" attributeType="XML" type="rotate"
+        values="-5 70 110;-180 70 110;-180 70 110;-5 70 110"
+        keyTimes="0;0.444;0.556;1" dur="9s" repeatCount="indefinite"/>
+    </line>
+  </g>
+  <!-- Arc fixe de (110,110) à (30,110), rayon=40, 180°, dasharray anime 1→180 avec pause -->
+  <path d="M 110 110 A 40 40 0 0 0 30 110" fill="none" stroke="#e11d48" stroke-width="3"
+    stroke-linecap="round" pathLength="180" stroke-dasharray="1 180">
+    <animate attributeName="stroke-dasharray"
+      values="1 180;180 180;180 180;1 180"
+      keyTimes="0;0.444;0.556;1" dur="9s" repeatCount="indefinite"/>
+  </path>
+</svg>
+</div>
+<p class="step-text fade-in">Un angle plat est formé de <strong>deux angles droits</strong> mis bout à bout.</p>
+`,
+
+// ── PAGE 4 : Angle aigu ──────────────────────────────────────────────────────
+()=>`
+<div class="step-title pop">✏️ L'angle aigu</div>
+<div class="bloc def fade-in"><div class="bloc-header">📘 Définition</div>Un angle aigu est un angle <strong>plus petit qu'un angle droit</strong>.</div>
+<div style="display:flex;justify-content:center">
+<svg width="200" height="160" viewBox="0 0 200 160">
+  <!-- Sommet S=(75,120), rayon=41, calqué sur P6 aigu -->
+  <line x1="75" y1="120" x2="180" y2="120" stroke="#222" stroke-width="3" stroke-linecap="round"/>
+  <g>
+    <line x1="75" y1="120" x2="180" y2="120" stroke="#222" stroke-width="3" stroke-linecap="round">
+      <animateTransform attributeName="transform" attributeType="XML" type="rotate"
+        values="-1 75 120;-89 75 120;-1 75 120" dur="3s" repeatCount="indefinite"/>
+    </line>
+  </g>
+  <!-- Arc fixe de (116,120) à (75.7,79.0), rayon=41, dasharray anime -->
+  <path d="M 116 120 A 41 41 0 0 0 75.7 79.0" fill="none" stroke="#ea580c" stroke-width="3"
+    stroke-linecap="round" pathLength="89" stroke-dasharray="1 89">
+    <animate attributeName="stroke-dasharray" values="1 89;89 89;1 89" dur="3s" repeatCount="indefinite"/>
+  </path>
+</svg>
+</div>
+`,
+
+// ── PAGE 5 : Angle obtus ─────────────────────────────────────────────────────
+()=>`
+<div class="step-title pop">✏️ L'angle obtus</div>
+<div class="bloc def fade-in"><div class="bloc-header">📘 Définition</div>Un angle obtus est un angle <strong>plus grand qu'un angle droit</strong> et <strong>plus petit qu'un angle plat</strong>.</div>
+<div style="display:flex;justify-content:center">
+<svg width="330" height="200" viewBox="-70 0 400 200">
+  <!-- Sommet S=(95,140), rayon=45, calqué sur P6 obtus -->
+  <line x1="95" y1="140" x2="250" y2="140" stroke="#222" stroke-width="3" stroke-linecap="round"/>
+  <g>
+    <line x1="95" y1="140" x2="250" y2="140" stroke="#222" stroke-width="3" stroke-linecap="round">
+      <animateTransform attributeName="transform" attributeType="XML" type="rotate"
+        values="-91 95 140;-179 95 140;-91 95 140" dur="3s" repeatCount="indefinite"/>
+    </line>
+  </g>
+  <!-- Arc fixe de (140,140) à (50.0,139.2), rayon=45, dasharray 91→179 -->
+  <path d="M 140 140 A 45 45 0 0 0 50.0 139.2" fill="none" stroke="#7c3aed" stroke-width="3"
+    stroke-linecap="round" pathLength="179" stroke-dasharray="91 179">
+    <animate attributeName="stroke-dasharray" values="91 179;179 179;91 179" dur="3s" repeatCount="indefinite"/>
+  </path>
+</svg>
+</div>
+`,
+
+// ── PAGE 6 : Bilan ───────────────────────────────────────────────────────────
+()=>`
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="angles-grid fade-in">
+
+  <!-- Aigu -->
+  <div class="angle-card">
+    <svg width="110" height="90" viewBox="0 0 110 90">
+      <line x1="20" y1="75" x2="100" y2="75" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>
+      <g><line x1="20" y1="75" x2="100" y2="75" stroke="#222" stroke-width="2.5" stroke-linecap="round">
+        <animateTransform attributeName="transform" attributeType="XML" type="rotate"
+          values="-1 20 75;-89 20 75;-1 20 75" dur="3s" repeatCount="indefinite"/>
+      </g>
+      <path d="M 61 75 A 41 41 0 0 0 20.5 34.5" fill="none" stroke="#ea580c" stroke-width="2.5"
+        stroke-linecap="round" pathLength="89" stroke-dasharray="1 89">
+        <animate attributeName="stroke-dasharray" values="1 89;89 89;1 89" dur="3s" repeatCount="indefinite"/>
+      </path>
+      <circle cx="20" cy="75" r="3" fill="#ea580c"/>
+    </svg>
+    <span style="color:#ea580c">Angle aigu</span>
+    <span style="font-size:.75rem;font-weight:600;color:#64748b">Plus petit qu'un angle droit</span>
+  </div>
+
+  <!-- Droit -->
+  <div class="angle-card">
+    <svg width="110" height="90" viewBox="0 0 110 90">
+      <line x1="20" y1="75" x2="100" y2="75" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="20" y1="75" x2="20" y2="10" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M 28 75 A 8 8 0 0 0 20 67" fill="#bfdbfe" stroke="#1a73e8" stroke-width="2"/>
+      <!-- Codage carré -->
+      <path d="M 20 75 L 28 75 L 28 67 L 20 67 Z" fill="#bfdbfe" stroke="#1a73e8" stroke-width="2"/>
+    </svg>
+    <span style="color:#1a73e8">Angle droit</span>
+    <span style="font-size:.75rem;font-weight:600;color:#64748b">Un quart de tour</span>
+  </div>
+
+  <!-- Obtus -->
+  <div class="angle-card">
+    <svg width="130" height="90" viewBox="-20 0 130 90">
+      <!-- S=(50,70), r=41, demi-droite tourne -91° à -179° -->
+      <line x1="50" y1="70" x2="120" y2="70" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>
+      <g><line x1="50" y1="70" x2="120" y2="70" stroke="#222" stroke-width="2.5" stroke-linecap="round">
+        <animateTransform attributeName="transform" attributeType="XML" type="rotate"
+          values="-91 50 70;-179 50 70;-91 50 70" dur="3s" repeatCount="indefinite"/>
+      </g>
+      <!-- Arc fixe de (91,70) à (9,70.7), r=41, dasharray 91→179 -->
+      <path d="M 91 70 A 41 41 0 0 0 9 70.7" fill="none" stroke="#7c3aed" stroke-width="2.5"
+        stroke-linecap="round" pathLength="179" stroke-dasharray="91 179">
+        <animate attributeName="stroke-dasharray" values="91 179;179 179;91 179" dur="3s" repeatCount="indefinite"/>
+      </path>
+      <circle cx="50" cy="70" r="3" fill="#7c3aed"/>
+    </svg>
+    <span style="color:#7c3aed">Angle obtus</span>
+    <span style="font-size:.75rem;font-weight:600;color:#64748b">Plus grand qu'un angle droit</span>
+  </div>
+
+  <!-- Plat -->
+  <div class="angle-card">
+    <svg width="110" height="90" viewBox="0 0 110 90">
+      <line x1="10" y1="60" x2="100" y2="60" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="55" cy="60" r="3" fill="#e11d48"/>
+      <path d="M 90 60 A 35 35 0 0 0 20 60" fill="#fecdd3" fill-opacity="0.6" stroke="#e11d48" stroke-width="2"/>
+    </svg>
+    <span style="color:#e11d48">Angle plat</span>
+    <span style="font-size:.75rem;font-weight:600;color:#64748b">Un demi-tour (2 angles droits)</span>
+  </div>
+
+</div>
+`,
+];
+
+let cur=0;
+const NSTEPS=STEPS.length;
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur]();card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(NSTEPS-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator');ind.innerHTML='';
+  for(let i=0;i<NSTEPS;i++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(i===cur?' active':i<cur?' done':'');
+    d.textContent=i<cur?'✓':i+1;ind.appendChild(d);
+  }
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${NSTEPS}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===NSTEPS-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===NSTEPS-1?0:cur+1;render();}
+function prev(){if(cur>0){cur--;render();}}
+render();
+</script>
+</body>
+</html>

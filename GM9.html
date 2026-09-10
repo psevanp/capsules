@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>GM9 — Calculer le périmètre d'un disque</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --primary:#e11d48;--primary2:#fb7185;--primary-clair:#ffe4e6;
+  --bg:#fff1f2;
+  --bleu:#1a73e8;--bleu-clair:#e8f0fe;
+  --orange:#ea580c;--orange-clair:#ffedd5;
+  --vert:#16a34a;--vert-clair:#f0fdf4;
+  --violet:#7c3aed;--violet-clair:#f5f3ff;
+  --teal:#0d9488;--teal-clair:#f0fdfa;
+  --card:#fff;--texte:#1e293b;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+header{display:flex;justify-content:center;margin-bottom:22px;}
+.header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+.badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--primary);background:var(--primary-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--primary);flex-shrink:0;}
+.tache-label{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--primary);line-height:1.3;}
+.progress-bar-wrap{width:100%;max-width:680px;background:var(--primary-clair);border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .5s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+.step-dot{width:34px;height:34px;border-radius:50%;background:var(--primary-clair);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--primary2);transition:all .4s;border:2px solid transparent;}
+.step-dot.active{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+.card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:360px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(0,0,0,.07);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .45s ease both;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;color:var(--primary);text-align:center;line-height:1.3;}
+.step-text{font-size:.97rem;line-height:1.7;text-align:center;max-width:580px;color:#475569;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:580px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 16px;font-weight:600;font-size:.92rem;line-height:1.7;max-width:580px;width:100%;}
+.info.bleu{background:var(--bleu-clair);border-left:4px solid var(--bleu);color:#1e3a5f;}
+.info.vert{background:var(--vert-clair);border-left:4px solid var(--vert);color:#14532d;}
+.info.primary{background:var(--primary-clair);border-left:4px solid var(--primary);}
+.info.violet{background:var(--violet-clair);border-left:4px solid var(--violet);color:#4c1d95;}
+.btn-anim{border:2px solid var(--bleu);background:var(--bleu-clair);color:var(--bleu);font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;transition:all .2s;}
+.btn-anim:hover{background:var(--bleu);color:#fff;}
+.btn-primary{border:2px solid var(--primary);background:var(--primary-clair);color:var(--primary);font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;transition:all .2s;}
+.btn-primary:hover{background:var(--primary);color:#fff;}
+.recap-list{display:flex;flex-direction:column;gap:12px;width:100%;max-width:580px;}
+.recap-item{display:flex;gap:12px;align-items:flex-start;background:#f8faff;border-radius:12px;padding:11px 16px;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;}
+.nav{display:flex;align-items:center;justify-content:space-between;max-width:680px;width:100%;margin-top:20px;gap:12px;}
+.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;border-radius:12px;padding:11px 22px;cursor:pointer;transition:all .25s;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-prev:disabled{opacity:.35;cursor:default;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;}
+.btn-next:hover{opacity:.9;}
+.step-counter{font-family:'Baloo 2',cursive;font-weight:700;color:var(--primary);font-size:.95rem;white-space:nowrap;}
+.pi{font-style:italic;font-family:'Baloo 2',cursive;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">GM9</div>
+    <div class="tache-label">Calculer le périmètre d'un disque</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+// ── PAGE 1 : disque animé en boucle ──────────────────────────────────────────
+const R1=80, CX1=110, CY1=100;
+const CIRC1=2*Math.PI*R1;
+
+function svgP1(){
+  return `<svg id="svg-p1" width="220" height="200" viewBox="0 0 220 200" style="display:block;overflow:visible">
+    <circle cx="${CX1}" cy="${CY1}" r="${R1}" fill="#e8f0fe" stroke="#cbd5e1" stroke-width="2"/>
+    <circle id="contour-p1" cx="${CX1}" cy="${CY1}" r="${R1}" fill="none"
+      stroke="var(--primary)" stroke-width="4" stroke-linecap="round"
+      stroke-dasharray="${CIRC1}" stroke-dashoffset="${CIRC1}"
+      transform="rotate(-90 ${CX1} ${CY1})"/>
+  </svg>`;
+}
+
+let p1AnimId=null;
+function lancerP1Loop(){
+  const el=document.getElementById('contour-p1');
+  if(!el) return;
+  let forward=true, startTime=null;
+  const DUR=2200, PAUSE=800;
+  function tick(ts){
+    if(!document.getElementById('contour-p1')){return;}
+    if(!startTime) startTime=ts;
+    const elapsed=(ts-startTime)%((DUR+PAUSE)*2);
+    let offset;
+    if(elapsed<DUR){
+      // dessin
+      const t=elapsed/DUR, e=t<.5?2*t*t:(4-2*t)*t-1;
+      offset=CIRC1*(1-e);
+    } else if(elapsed<DUR+PAUSE){
+      offset=0;
+    } else if(elapsed<DUR*2+PAUSE){
+      // effacement
+      const t=(elapsed-DUR-PAUSE)/DUR, e=t<.5?2*t*t:(4-2*t)*t-1;
+      offset=CIRC1*e;
+    } else {
+      offset=CIRC1;
+    }
+    el.style.strokeDashoffset=offset;
+    p1AnimId=requestAnimationFrame(tick);
+  }
+  p1AnimId=requestAnimationFrame(tick);
+}
+
+// ── PAGE 2 : cercle qui roule ─────────────────────────────────────────────────
+const R2=40;
+const CIRC2=2*Math.PI*R2; // ≈ 251px = π × 80
+
+function svgP2(){
+  // La circonférence = π×d = π×1 ≈ 3.14159
+  // On veut que la ligne aille de 0 à un peu après 3 (pour montrer π entre 3 et 4)
+  // On scale : 1 unité = CIRC2/Math.PI pixels (donc π unités = CIRC2 px)
+  const UNIT=CIRC2/Math.PI; // ≈ 80px par unité
+  const groundY=130, startX=20;
+  const lineEnd=startX+UNIT*3.5; // ligne jusqu'à ~3.5
+  const W=Math.round(lineEnd+20), H=170;
+  return `<svg id="svg-p2" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;overflow:visible">
+    <!-- Ligne du sol : commence exactement à 0 -->
+    <line x1="${startX}" y1="${groundY}" x2="${lineEnd}" y2="${groundY}" stroke="#64748b" stroke-width="2"/>
+    <!-- Graduations 0,1,2,3 -->
+    ${[0,1,2,3].map(n=>`
+    <line x1="${startX+n*UNIT}" y1="${groundY-6}" x2="${startX+n*UNIT}" y2="${groundY+6}" stroke="#64748b" stroke-width="2"/>
+    <text x="${startX+n*UNIT}" y="${groundY+18}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="#64748b">${n}</text>`).join('')}
+    <!-- Graduation π (entre 3 et 4) -->
+    <line id="grad-pi" x1="${startX+CIRC2}" y1="${groundY-6}" x2="${startX+CIRC2}" y2="${groundY+6}" stroke="var(--primary)" stroke-width="2" opacity="0"/>
+    <text id="lbl-pi-grad" x="${startX+CIRC2}" y="${groundY+18}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--primary)" opacity="0">π</text>
+    <!-- Trait déroulé (rouge) -->
+    <line id="trail-p2" x1="${startX}" y1="${groundY}" x2="${startX}" y2="${groundY}" stroke="var(--primary)" stroke-width="3" stroke-linecap="round"/>
+    <!-- Cercle roulant -->
+    <circle id="rolling-c" cx="${startX}" cy="${groundY-R2}" r="${R2}" fill="#e8f0fe" stroke="#cbd5e1" stroke-width="1.5"/>
+    <!-- Contour rouge : plein au départ, diminue depuis le bas en anti-horaire -->
+    <circle id="rolling-arc" cx="${startX}" cy="${groundY-R2}" r="${R2}" fill="none"
+      stroke="var(--primary)" stroke-width="3.5" stroke-linecap="round"
+      stroke-dasharray="${CIRC2}" stroke-dashoffset="0"
+      transform="rotate(90 ${startX} ${groundY-R2})"/>
+    <!-- Diamètre tournant -->
+    <g id="diam-g" transform="translate(${startX},${groundY-R2})">
+      <line x1="${-R2}" y1="0" x2="${R2}" y2="0" stroke="var(--bleu)" stroke-width="2"/>
+      <text x="0" y="5" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="var(--bleu)" stroke="white" stroke-width="2.5" paint-order="stroke">1</text>
+    </g>
+    <!-- Label ≈3,14 -->
+    <text id="lbl-pi" x="${startX+CIRC2/2}" y="${groundY-8}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--primary)" opacity="0">≈ 3,14</text>
+  </svg>`;
+}
+
+let p2AnimId=null, p2StartTime=null;
+function lancerP2Loop(){
+  const DUR=3000, PAUSE=1000;
+  const UNIT=CIRC2/Math.PI;
+  const startX=20, groundY=130;
+  // Phase : 0=aller, 1=pause, 2=retour, 3=pause
+  let phase=0, phaseStart=null;
+  const PHASES=[DUR, PAUSE, DUR, PAUSE];
+
+  function ease(t){return t<.5?2*t*t:(4-2*t)*t-1;}
+
+  function tick(ts){
+    if(!document.getElementById('rolling-c')) return;
+    if(!phaseStart) phaseStart=ts;
+    const el_c  =document.getElementById('rolling-c');
+    const el_arc=document.getElementById('rolling-arc');
+    const el_dg =document.getElementById('diam-g');
+    const el_trail=document.getElementById('trail-p2');
+    const el_pi =document.getElementById('lbl-pi');
+    const el_gradpi=document.getElementById('grad-pi');
+    const el_lblpi=document.getElementById('lbl-pi-grad');
+    if(!el_c) return;
+
+    let elapsed=ts-phaseStart;
+    // Avancer de phase si nécessaire
+    while(elapsed>=PHASES[phase]){
+      elapsed-=PHASES[phase];
+      phaseStart+=PHASES[phase];
+      phase=(phase+1)%4;
+    }
+
+    let dist, e, cx, angle;
+    if(phase===0){
+      // aller : 0 → CIRC2
+      e=ease(elapsed/DUR);
+      dist=CIRC2*e; cx=startX+dist; angle=dist/R2*180/Math.PI;
+      el_arc.style.strokeDashoffset=CIRC2*e;
+      el_arc.setAttribute('transform',`rotate(${90+angle} ${cx} ${groundY-R2})`);
+      el_pi.style.opacity=e>0.97?'1':'0';
+      el_gradpi.style.opacity=e>0.97?'1':'0';
+      el_lblpi.style.opacity=e>0.97?'1':'0';
+    } else if(phase===1){
+      // pause en fin d'aller
+      dist=CIRC2; cx=startX+CIRC2; angle=CIRC2/R2*180/Math.PI;
+      el_arc.style.strokeDashoffset=CIRC2;
+      el_arc.setAttribute('transform',`rotate(${90+angle} ${cx} ${groundY-R2})`);
+      el_pi.style.opacity='1'; el_gradpi.style.opacity='1'; el_lblpi.style.opacity='1';
+    } else if(phase===2){
+      // retour : CIRC2 → 0
+      e=ease(elapsed/DUR);
+      dist=CIRC2*(1-e); cx=startX+dist; angle=dist/R2*180/Math.PI;
+      el_arc.style.strokeDashoffset=CIRC2*(1-e);
+      el_arc.setAttribute('transform',`rotate(${90+angle} ${cx} ${groundY-R2})`);
+      el_pi.style.opacity='0'; el_gradpi.style.opacity='0'; el_lblpi.style.opacity='0';
+    } else {
+      // pause en fin de retour
+      dist=0; cx=startX; angle=0;
+      el_arc.style.strokeDashoffset=0;
+      el_arc.setAttribute('transform',`rotate(90 ${cx} ${groundY-R2})`);
+    }
+    el_c.setAttribute('cx',cx);
+    el_arc.setAttribute('cx',cx);
+    if(el_dg) el_dg.setAttribute('transform',`translate(${cx},${groundY-R2}) rotate(${angle})`);
+    el_trail.setAttribute('x2',cx);
+    p2AnimId=requestAnimationFrame(tick);
+  }
+  phaseStart=null; phase=0;
+  p2AnimId=requestAnimationFrame(tick);
+}
+
+// ── PAGE 3 : deux cercles, diamètres ─────────────────────────────────────────
+const R3A=40, R3B=80;
+const C3AX=60, C3AY=95, C3BX=270, C3BY=95;
+
+function svgP3(){
+  const W=390, H=260;
+  const CIRC3A=2*Math.PI*R3A, CIRC3B=2*Math.PI*R3B;
+  const midX=(C3AX+R3A+C3BX-R3B)/2;
+  const arrowX1=C3AX+R3A+10, arrowX2=C3BX-R3B-10;
+  const arrowLen=arrowX2-arrowX1;
+  return `<svg id="svg-p3" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;overflow:visible">
+    <defs>
+      <marker id="mx1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" fill="var(--orange)"/>
+      </marker>
+    </defs>
+
+    <!-- Cercle A toujours visible avec contour bleu COMPLET dès le départ -->
+    <circle cx="${C3AX}" cy="${C3AY}" r="${R3A}" fill="#e8f0fe" stroke="#64748b" stroke-width="1.5"/>
+    <circle cx="${C3AX}" cy="${C3AY}" r="${R3A}" fill="none" stroke="var(--bleu)" stroke-width="3.5"/>
+    <line x1="${C3AX-R3A}" y1="${C3AY}" x2="${C3AX+R3A}" y2="${C3AY}" stroke="var(--bleu)" stroke-width="1.5"/>
+    <text x="${C3AX}" y="${C3AY+14}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--bleu)">1 cm</text>
+
+    <!-- Flèche ×2 : invisible au départ, grandit depuis gauche -->
+    <line id="fleche-x2" x1="${arrowX1}" y1="${C3AY}" x2="${arrowX1}" y2="${C3AY}"
+      stroke="var(--orange)" stroke-width="2.5" marker-end="url(#mx1)" opacity="0"/>
+    <text id="lbl-x2" x="${midX}" y="${C3AY+3}" text-anchor="middle" font-family="Baloo 2,cursive"
+      font-size="16" font-weight="800" fill="var(--orange)" stroke="white" stroke-width="3"
+      paint-order="stroke" opacity="0">× 2</text>
+
+    <!-- Cercle B : invisible au départ, contour déjà orange COMPLET quand il apparaît -->
+    <g id="groupe-B" opacity="0">
+      <circle cx="${C3BX}" cy="${C3BY}" r="${R3B}" fill="#fff7ed" stroke="#64748b" stroke-width="1.5"/>
+      <circle cx="${C3BX}" cy="${C3BY}" r="${R3B}" fill="none" stroke="var(--orange)" stroke-width="3.5"/>
+      <line x1="${C3BX-R3B}" y1="${C3BY}" x2="${C3BX+R3B}" y2="${C3BY}" stroke="var(--orange)" stroke-width="1.5"/>
+      <text x="${C3BX}" y="${C3BY+14}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--orange)">2 cm</text>
+    </g>
+
+    <!-- Anneau animé (copie du contour A qui grossit et se déplace vers B) -->
+    <circle id="anim-ring" cx="${C3AX}" cy="${C3AY}" r="${R3A}" fill="none"
+      stroke="var(--orange)" stroke-width="3.5" opacity="0"/>
+
+    <!-- Résultats -->
+    <text id="res-A1" x="${C3AX}" y="${C3AY+R3A+32}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--bleu)" opacity="0">Périmètre → π</text>
+    <text id="res-A2" x="${C3AX}" y="${C3AY+R3A+48}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--bleu)" opacity="0"><tspan id="val-A2">≈ 3 cm</tspan></text>
+    <text id="res-B1" x="${C3BX}" y="${C3BY+R3B+32}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--orange)" opacity="0">Périmètre → 2 × π</text>
+    <text id="res-B2" x="${C3BX}" y="${C3BY+R3B+48}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--orange)" opacity="0"><tspan id="val-B2a">≈ 2 ×</tspan> <tspan id="val-B2b">3 cm</tspan> <tspan>= </tspan><tspan id="val-B2c">6 cm</tspan></text>
+  </svg>`;
+}
+
+function animerP3(){
+  // Reset
+  ['res-A1','res-A2','res-B1','res-B2','fleche-x2','lbl-x2','groupe-B','anim-ring'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.style.transition='none'; el.style.opacity='0';
+  });
+  const fleche=document.getElementById('fleche-x2');
+  const x2lbl=document.getElementById('lbl-x2');
+  const ring=document.getElementById('anim-ring');
+  const grpB=document.getElementById('groupe-B');
+  const arrowX1=C3AX+R3A+10, arrowX2=C3BX-R3B-10;
+  const ease=(t)=>t<.5?2*t*t:(4-2*t)*t-1;
+
+  // 1. Résultat A apparaît d'abord
+  setTimeout(()=>{
+    const r1=document.getElementById('res-A1');
+    const r2=document.getElementById('res-A2');
+    if(r1){r1.style.transition='opacity 0.4s';r1.style.opacity='1';}
+    setTimeout(()=>{ if(r2){r2.style.transition='opacity 0.4s';r2.style.opacity='1';} },500);
+  }, 300);
+
+  // 2. Après 1.2s : l'anneau part du cercle A, grossit et se déplace vers B
+  //    En même temps la flèche grandit
+  setTimeout(()=>{
+    if(ring) ring.style.opacity='1';
+    const DUR=1400;
+    const s=performance.now();
+    requestAnimationFrame(function tick(n){
+      const t=Math.min((n-s)/DUR,1), e=ease(t);
+      // Anneau : cx A→B, r R3A→R3B
+      const cx=C3AX+(C3BX-C3AX)*e;
+      const cy=C3AY+(C3BY-C3AY)*e;
+      const r=R3A+(R3B-R3A)*e;
+      if(ring){ring.setAttribute('cx',cx);ring.setAttribute('cy',cy);ring.setAttribute('r',r);}
+      // Flèche grandit depuis gauche
+      if(fleche){
+        fleche.style.opacity='1';
+        const fx2=arrowX1+(arrowX2-arrowX1)*e;
+        fleche.setAttribute('x2',fx2);
+      }
+      // ×2 apparaît à mi-chemin
+      if(e>0.4 && x2lbl) x2lbl.style.opacity='1';
+      if(t<1) requestAnimationFrame(tick);
+      else{
+        // Anneau arrivé : masquer l'anneau, révéler le cercle B
+        if(ring){ring.style.transition='opacity 0.2s';ring.style.opacity='0';}
+        if(grpB){grpB.style.transition='opacity 0.3s';grpB.style.opacity='1';}
+        // Pulse ×2
+        setTimeout(()=>{
+          let n2=0;
+          const blink=setInterval(()=>{
+            if(x2lbl){
+              x2lbl.setAttribute('fill',n2%2===0?'var(--primary)':'var(--orange)');
+              x2lbl.setAttribute('font-size',n2%2===0?'20':'16');
+            }
+            if(++n2>=6){clearInterval(blink);if(x2lbl){x2lbl.setAttribute('fill','var(--orange)');x2lbl.setAttribute('font-size','16');}}
+          },200);
+        },300);
+        // Résultats B
+        setTimeout(()=>{
+          const rb1=document.getElementById('res-B1');
+          const rb2=document.getElementById('res-B2');
+          if(rb1){rb1.style.transition='opacity 0.4s';rb1.style.opacity='1';}
+          setTimeout(()=>{
+            if(rb2){rb2.style.transition='opacity 0.4s';rb2.style.opacity='1';}
+            setTimeout(()=>{
+              const expl=document.getElementById('expl-p3');
+              if(expl){expl.style.display='block';requestAnimationFrame(()=>requestAnimationFrame(()=>{expl.style.opacity='1';}));}
+              const btnP=document.getElementById('btn-precision');
+              if(btnP) btnP.style.display='inline-flex';
+            },600);
+          },500);
+        },800);
+      }
+    });
+  }, 1200);
+}
+
+
+// Niveaux de précision de π
+const PI_LEVELS=['3','3,1','3,14','3,141','3,1415','3,14159'];
+let piIdx=0;
+
+function ameliorerPrecision(){
+  if(piIdx>=PI_LEVELS.length-1) return;
+  piIdx++;
+  const v=PI_LEVELS[piIdx];
+  const v2=(parseFloat(v.replace(',','.'))*2).toFixed(piIdx>0?piIdx:0).replace('.',',');
+  const v2str=`2 × ${v} cm = ${v2} cm`;
+
+  // Mettre à jour les textes SVG avec clignotage
+  function blink(id, newText, delay){
+    setTimeout(()=>{
+      const el=document.getElementById(id);
+      if(!el) return;
+      el.textContent=newText;
+      // Grossissement puis retour via font-size
+      const origSize=parseFloat(el.getAttribute('font-size')||'12');
+      const bigSize=origSize*1.7;
+      el.setAttribute('font-size', bigSize);
+      setTimeout(()=>el.setAttribute('font-size', origSize), 350);
+    },delay);
+  }
+
+  // val-A2 : "≈ X cm"
+  blink('val-A2',`≈ ${v} cm`,0);
+  // val-B2b : "X cm"
+  blink('val-B2b',`${v} cm`,400);
+  // val-B2c : "2X cm"
+  setTimeout(()=>{
+    const el=document.getElementById('val-B2c');
+    if(el){
+      el.textContent=`${v2} cm`;
+      const origSize=parseFloat(el.getAttribute('font-size')||'12');
+      el.setAttribute('font-size', origSize*1.7);
+      setTimeout(()=>el.setAttribute('font-size', origSize), 350);
+    }
+  },700);
+
+  // Cadre vert
+  setTimeout(()=>{
+    const expl=document.getElementById('expl-val');
+    if(expl) expl.textContent=v2str;
+  },900);
+
+  // Désactiver le bouton si on est au max
+  if(piIdx>=PI_LEVELS.length-1){
+    const btn=document.getElementById('btn-precision');
+    if(btn) btn.style.display='none';
+  }
+}
+
+// ── PAGE 4 : cercle diamètre ×4, unité = mètre ──────────────────────────────
+const R4A=25, R4B=100;
+const C4AX=50, C4AY=110, C4BX=240, C4BY=110;
+
+function svgP4(){
+  const W=390, H=270;
+  const CIRC4A=2*Math.PI*R4A, CIRC4B=2*Math.PI*R4B;
+  const midX4=(C4AX+R4A+C4BX-R4B)/2;
+  const arrowX1=C4AX+R4A+10, arrowX2=C4BX-R4B-10;
+  return `<svg id="svg-p4" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;overflow:visible">
+    <defs>
+      <marker id="mx4" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" fill="var(--violet)"/>
+      </marker>
+    </defs>
+
+    <!-- Cercle A : diamètre 1 m, petit -->
+    <circle cx="${C4AX}" cy="${C4AY}" r="${R4A}" fill="#e8f0fe" stroke="#64748b" stroke-width="1.5"/>
+    <circle cx="${C4AX}" cy="${C4AY}" r="${R4A}" fill="none" stroke="var(--bleu)" stroke-width="3"/>
+    <line x1="${C4AX-R4A}" y1="${C4AY}" x2="${C4AX+R4A}" y2="${C4AY}" stroke="var(--bleu)" stroke-width="1.5"/>
+    <text x="${C4AX}" y="${C4AY+14}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="var(--bleu)">1 m</text>
+
+    <!-- Flèche ×4 : invisible au départ -->
+    <line id="fleche-x4" x1="${arrowX1}" y1="${C4AY}" x2="${arrowX1}" y2="${C4AY}"
+      stroke="var(--violet)" stroke-width="2.5" marker-end="url(#mx4)" opacity="0"/>
+    <text id="lbl-x4" x="${midX4}" y="${C4AY+3}" text-anchor="middle" font-family="Baloo 2,cursive"
+      font-size="16" font-weight="800" fill="var(--violet)" stroke="white" stroke-width="3"
+      paint-order="stroke" opacity="0">× 4</text>
+
+    <!-- Cercle B : diamètre 4 m, invisible au départ -->
+    <g id="groupe-B4" opacity="0">
+      <circle cx="${C4BX}" cy="${C4BY}" r="${R4B}" fill="${'#f5f3ff'}" stroke="#64748b" stroke-width="1.5"/>
+      <circle cx="${C4BX}" cy="${C4BY}" r="${R4B}" fill="none" stroke="var(--violet)" stroke-width="3.5"/>
+      <line x1="${C4BX-R4B}" y1="${C4BY}" x2="${C4BX+R4B}" y2="${C4BY}" stroke="var(--violet)" stroke-width="1.5"/>
+      <text x="${C4BX}" y="${C4BY+14}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--violet)">4 m</text>
+    </g>
+
+    <!-- Anneau animé -->
+    <circle id="anim-ring4" cx="${C4AX}" cy="${C4AY}" r="${R4A}" fill="none"
+      stroke="var(--violet)" stroke-width="3.5" opacity="0"/>
+
+    <!-- Résultats -->
+    <text id="res-A4-1" x="${C4AX}" y="${C4AY+R4A+24}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--bleu)" opacity="0">Périmètre → π</text>
+    <text id="res-A4-2" x="${C4AX}" y="${C4AY+R4A+40}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="var(--bleu)" opacity="0"><tspan id="val-A4">≈ 3 m</tspan></text>
+    <text id="res-B4-1" x="${C4BX}" y="${C4BY+R4B+24}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--violet)" opacity="0">Périmètre → 4 × π</text>
+    <text id="res-B4-2" x="${C4BX}" y="${C4BY+R4B+40}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="var(--violet)" opacity="0">≈ 4 × <tspan id="val-B4b">3 m</tspan> = <tspan id="val-B4c">12 m</tspan></text>
+  </svg>`;
+}
+
+function animerP4(){
+  ['res-A4-1','res-A4-2','res-B4-1','res-B4-2','fleche-x4','lbl-x4','groupe-B4','anim-ring4'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.style.transition='none'; el.style.opacity='0';
+  });
+  const fleche=document.getElementById('fleche-x4');
+  const x4lbl=document.getElementById('lbl-x4');
+  const ring=document.getElementById('anim-ring4');
+  const grpB=document.getElementById('groupe-B4');
+  const arrowX1=C4AX+R4A+10, arrowX2=C4BX-R4B-10;
+  const ease=(t)=>t<.5?2*t*t:(4-2*t)*t-1;
+
+  // 1. Résultat A
+  setTimeout(()=>{
+    const r1=document.getElementById('res-A4-1');
+    const r2=document.getElementById('res-A4-2');
+    if(r1){r1.style.transition='opacity 0.4s';r1.style.opacity='1';}
+    setTimeout(()=>{if(r2){r2.style.transition='opacity 0.4s';r2.style.opacity='1';}},500);
+  },300);
+
+  // 2. Anneau + flèche
+  setTimeout(()=>{
+    if(ring) ring.style.opacity='1';
+    const DUR=1400, s=performance.now();
+    requestAnimationFrame(function tick(n){
+      const t=Math.min((n-s)/DUR,1), e=ease(t);
+      const cx=C4AX+(C4BX-C4AX)*e, cy=C4AY+(C4BY-C4AY)*e, r=R4A+(R4B-R4A)*e;
+      if(ring){ring.setAttribute('cx',cx);ring.setAttribute('cy',cy);ring.setAttribute('r',r);}
+      if(fleche){fleche.style.opacity='1'; fleche.setAttribute('x2',arrowX1+(arrowX2-arrowX1)*e);}
+      if(e>0.4 && x4lbl) x4lbl.style.opacity='1';
+      if(t<1) requestAnimationFrame(tick);
+      else{
+        if(ring){ring.style.transition='opacity 0.2s';ring.style.opacity='0';}
+        if(grpB){grpB.style.transition='opacity 0.3s';grpB.style.opacity='1';}
+        // Pulse ×4
+        setTimeout(()=>{
+          let n2=0;
+          const blink=setInterval(()=>{
+            if(x4lbl){x4lbl.setAttribute('fill',n2%2===0?'var(--primary)':'var(--violet)');x4lbl.setAttribute('font-size',n2%2===0?'20':'16');}
+            if(++n2>=6){clearInterval(blink);if(x4lbl){x4lbl.setAttribute('fill','var(--violet)');x4lbl.setAttribute('font-size','16');}}
+          },200);
+        },300);
+        // Résultats B
+        setTimeout(()=>{
+          const rb1=document.getElementById('res-B4-1'), rb2=document.getElementById('res-B4-2');
+          if(rb1){rb1.style.transition='opacity 0.4s';rb1.style.opacity='1';}
+          setTimeout(()=>{
+            if(rb2){rb2.style.transition='opacity 0.4s';rb2.style.opacity='1';}
+            setTimeout(()=>{
+              const expl=document.getElementById('expl-p4');
+              if(expl){expl.style.display='block';requestAnimationFrame(()=>requestAnimationFrame(()=>{expl.style.opacity='1';}));}
+              const btnP=document.getElementById('btn-precision4');
+              if(btnP) btnP.style.display='inline-flex';
+            },600);
+          },500);
+        },800);
+      }
+    });
+  },1200);
+}
+
+let piIdx4=0;
+function ameliorerPrecision4(){
+  if(piIdx4>=PI_LEVELS.length-1) return;
+  piIdx4++;
+  const v=PI_LEVELS[piIdx4];
+  const v4=(parseFloat(v.replace(',','.'))*4).toFixed(piIdx4>0?piIdx4:0).replace('.',',');
+
+  function grow(id, newText, delay){
+    setTimeout(()=>{
+      const el=document.getElementById(id); if(!el) return;
+      el.textContent=newText;
+      const origSize=parseFloat(el.getAttribute('font-size')||'11');
+      el.setAttribute('font-size',origSize*1.7);
+      setTimeout(()=>el.setAttribute('font-size',origSize),350);
+    },delay);
+  }
+  grow('val-A4',`≈ ${v} m`,0);
+  grow('val-B4b',`${v} m`,400);
+  grow('val-B4c',`${v4} m`,700);
+  setTimeout(()=>{const e=document.getElementById('expl-val4');if(e) e.textContent=`4 × ${v} m = ${v4} m`;},900);
+  if(piIdx4>=PI_LEVELS.length-1){const btn=document.getElementById('btn-precision4');if(btn) btn.style.display='none';}
+}
+
+const STEPS=[
+
+// PAGE 1
+()=>{
+  setTimeout(()=>lancerP1Loop(),100);
+  return `
+<div class="step-title pop">💡 Le périmètre d'un disque</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> Le disque est une forme souvent présente en géométrie. Il est utile de pouvoir trouver son périmètre.</div>
+<p class="step-text fade-in">Le disque n'a pas de côtés : ce n'est pas un polygone. Pour avoir son périmètre, on ne peut pas simplement mesurer le contour…</p>
+${svgP1()}
+`;},
+
+// PAGE 2
+()=>{
+  setTimeout(()=>lancerP2Loop(),200);
+  return `
+<div class="step-title pop">✏️ π — le périmètre du cercle de diamètre 1</div>
+<p class="step-text fade-in">Depuis des milliers d'années, les mathématiciens ont cherché la valeur exacte du périmètre du cercle de diamètre 1. Les Grecs lui ont même donné un nom : la première lettre du mot <em>périmètre</em> en grec — <strong>περίμετρον</strong> — soit la lettre <strong style="font-size:1.4em;color:var(--primary)">π</strong> (Pi).</p>
+${svgP2()}
+<div class="info primary fade-in">Un disque de diamètre <strong>1</strong> a un périmètre qui vaut <strong style="font-size:1.2em">π</strong>, dont la valeur est proche de <strong>3,14</strong>.</div>
+`;},
+
+// PAGE 3
+()=>`
+<div class="step-title pop">✏️ Périmètre d'un disque de diamètre 2 cm</div>
+<p class="step-text fade-in">On a agrandi deux fois un cercle de diamètre 1 cm. Son périmètre est donc deux fois plus grand.</p>
+${svgP3()}
+<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center">
+  <button class="btn-primary fade-in" onclick="animerP3()">▶ Périmètre</button>
+  <button id="btn-precision" class="btn-anim fade-in" onclick="ameliorerPrecision()" style="display:none">🔍 Améliorer la précision</button>
+</div>
+<div id="expl-p3" class="info vert" style="display:none;opacity:0;transition:opacity 0.5s;max-width:540px">
+  Un cercle de diamètre 2 cm a pour périmètre <strong>2 × π</strong>,<br>c'est-à-dire environ <strong id="expl-val">2 × 3 cm = 6 cm</strong>.
+</div>
+`,
+
+// PAGE 4
+()=>`
+<div class="step-title pop">✏️ Périmètre d'un disque de diamètre 4 m</div>
+<p class="step-text fade-in">On a agrandi quatre fois un cercle de diamètre 1 m. Son périmètre est donc quatre fois plus grand.</p>
+${svgP4()}
+<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center">
+  <button class="btn-primary fade-in" onclick="animerP4()">▶ Périmètre</button>
+  <button id="btn-precision4" class="btn-anim fade-in" onclick="ameliorerPrecision4()" style="display:none">🔍 Améliorer la précision</button>
+</div>
+<div id="expl-p4" class="info vert" style="display:none;opacity:0;transition:opacity 0.5s;max-width:540px">
+  Un cercle de diamètre 4 m a pour périmètre <strong>4 × π</strong>,<br>c'est-à-dire environ <strong id="expl-val4">4 × 3 m = 12 m</strong>.
+</div>
+`,
+// PAGE 5 — bilan
+()=>`
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  <div class="recap-item fade-in" style="border-left-color:var(--primary)">
+    <div class="recap-num" style="background:var(--primary)">1</div>
+    <span><strong style="color:var(--primary);font-size:1.1em">π</strong> est un nombre : c'est le périmètre d'un disque qui a pour diamètre 1. Sa valeur est proche de 3. Pour être plus précis, on peut prendre <strong>3,1</strong> ou <strong>3,14</strong> comme valeur approchée.</span>
+  </div>
+  <div class="recap-item fade-in" style="animation-delay:.08s;border-left-color:var(--bleu)">
+    <div class="recap-num" style="background:var(--bleu)">2</div>
+    <span>Pour trouver le périmètre d'un disque, il faut savoir combien de fois il est plus grand qu'un disque de diamètre 1. Il suffit de regarder son diamètre :<br>
+    <span style="display:block;margin-top:6px;line-height:2">
+      — si son diamètre vaut 2, son périmètre est <strong>2 × π</strong><br>
+      — si son diamètre vaut 3, son périmètre est <strong>3 × π</strong><br>
+      — …
+    </span></span>
+  </div>
+  <div class="recap-item fade-in" style="animation-delay:.16s;border-left-color:var(--vert)">
+    <div class="recap-num" style="background:var(--vert)">3</div>
+    <span>Pour trouver le périmètre d'un disque, on multiplie toujours son diamètre par <strong style="color:var(--primary);font-size:1.1em">π</strong> :<br>
+    <span style="display:block;text-align:center;font-family:\"Baloo 2\",cursive;font-weight:800;font-size:1.05rem;margin-top:8px;color:var(--vert)">
+      Périmètre = diamètre × π
+    </span></span>
+  </div>
+</div>
+`,
+]; const NSTEPS=STEPS.length;
+let cur=0;
+function render(){
+  if(p1AnimId){cancelAnimationFrame(p1AnimId);p1AnimId=null;}
+  if(p2AnimId){cancelAnimationFrame(p2AnimId);p2AnimId=null;}
+  piIdx=0; piIdx4=0;
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur](); card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(NSTEPS-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator'); ind.innerHTML='';
+  for(let i=0;i<NSTEPS;i++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(i===cur?' active':i<cur?' done':'');
+    d.textContent=i<cur?'✓':i+1; ind.appendChild(d);
+  }
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${NSTEPS}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===NSTEPS-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===NSTEPS-1?0:cur+1;render();}
+function prev(){if(cur>0){cur--;render();}}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>G2 — Reproduire un dessin géométrique</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  /* --- dominante du module Géométrie --- */
+  --primary:#16a34a;--primary2:#4ade80;--primary-clair:#dcfce7;
+  --bg:#f0fdf4;--cote:#166534;
+  /* --- palette pédagogique constante (identique aux autres modules) --- */
+  --bleu:#1a73e8;--bleu-clair:#e8f0fe;
+  --orange:#ea580c;--orange-clair:#ffedd5;
+  --vert:#16a34a;--vert-clair:#f0fdf4;
+  --violet:#7c3aed;--violet-clair:#f5f3ff;
+  --gris:#94a3b8;
+  --teal:#0d9488;--teal-clair:#f0fdfa;
+  --card:#fff;--texte:#1e293b;--border:#e2e8f0;
+  /* --- conventions de figures (identiques aux exercices WIMS du module) --- */
+  --fig-bleu:#1d4ed8;--fig-gris:#9ca3af;--fig-label:#4b5563;--fig-cod:#c4c9d1;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+header{display:flex;justify-content:center;margin-bottom:22px;}
+.header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+.badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--primary);background:var(--primary-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--primary);flex-shrink:0;}
+.tache-label{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--primary);line-height:1.3;}
+.progress-bar-wrap{width:100%;max-width:680px;background:var(--primary-clair);border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .5s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+.step-dot{width:34px;height:34px;border-radius:50%;background:var(--primary-clair);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--primary2);transition:all .4s;border:2px solid transparent;cursor:pointer;user-select:none;}
+.step-dot:hover{border-color:var(--primary2);}
+.step-dot.active{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+.card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:360px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(22,101,52,.10);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .45s ease both;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;color:var(--cote);text-align:center;line-height:1.3;}
+.step-text{font-size:.97rem;line-height:1.7;text-align:left;max-width:580px;width:100%;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:580px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 16px;font-weight:600;font-size:.92rem;line-height:1.6;max-width:580px;width:100%;}
+.info.primary{background:var(--primary-clair);border-left:4px solid var(--primary);color:var(--cote);}
+.info.vert{background:var(--vert-clair);border-left:4px solid var(--vert);color:#14532d;}
+.info.bleu{background:var(--bleu-clair);border-left:4px solid var(--bleu);color:#1e3a5f;}
+.info.violet{background:var(--violet-clair);border-left:4px solid var(--violet);color:#4c1d95;}
+.info.orange{background:var(--orange-clair);border-left:4px solid var(--orange);color:#7c2d12;}
+.definition{background:#eef2ff;border-left:4px solid #4f46e5;border-radius:10px;padding:12px 16px;font-size:.92rem;font-weight:600;line-height:1.6;color:#312e81;max-width:580px;width:100%;}
+.def-lead{font-family:'Baloo 2',cursive;font-weight:800;color:#4f46e5;display:block;margin-bottom:4px;}
+.etapes{display:flex;flex-direction:column;gap:10px;max-width:580px;width:100%;text-align:left;}
+.etape{display:flex;align-items:flex-start;gap:11px;}
+.etape-num{min-width:24px;height:24px;border-radius:50%;background:var(--primary);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;
+  font-weight:800;font-size:.8rem;flex-shrink:0;margin-top:1px;}
+.etape-txt{flex:1;line-height:1.55;}
+.liste-simple{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;max-width:580px;width:100%;text-align:left;font-size:.97rem;line-height:1.55;}
+.duo{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;max-width:580px;width:100%;}
+.duo figure{margin:0;flex:1 1 150px;max-width:230px;}
+.duo-anim{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;max-width:640px;width:100%;}
+.col-anim{flex:1 1 260px;max-width:300px;display:flex;flex-direction:column;gap:0;}
+.col-anim .step-text{max-width:none;}
+.col-anim figure{margin-top:-10px;}
+figure{text-align:center;width:100%;}
+svg{max-width:100%;height:auto;overflow:visible;}
+figcaption{font-size:.85rem;color:var(--gris);margin-top:4px;line-height:1.35;}
+.cle{color:var(--cote);font-weight:700;}
+.mot-bleu{color:var(--fig-bleu);font-weight:700;}
+.mot-orange{color:var(--orange);font-weight:700;}
+.rep{opacity:0;transition:opacity .3s ease;max-width:580px;width:100%;text-align:center;font-size:.95rem;line-height:1.7;}
+.rep.on{opacity:1;}
+.btn-complete{border:2px solid var(--teal);background:var(--teal-clair);color:var(--teal);font-family:'Baloo 2',cursive;font-size:1rem;font-weight:700;border-radius:10px;padding:10px 22px;cursor:pointer;transition:all .2s;}
+.btn-complete:hover{background:var(--teal);color:#fff;}
+.btn-complete:disabled{opacity:.45;cursor:default;}
+/* le bouton "Tracer" reste en violet dans le module Géométrie : il marque
+   spécifiquement "objet tracé via un clic sur Tracer", cohérent avec le violet
+   utilisé pour ces mêmes tracés dans les figures — écart assumé par rapport
+   au bleu de .btn-anim des autres modules. */
+.btn-anim{border:2px solid var(--violet);background:var(--violet-clair);color:var(--violet);font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;transition:all .2s;}
+.btn-anim:hover{background:var(--violet);color:#fff;}
+.recap-list{display:flex;flex-direction:column;gap:12px;width:100%;max-width:580px;}
+.recap-item{display:flex;gap:12px;align-items:flex-start;background:#f8faff;border-radius:12px;padding:11px 16px;border-left:4px solid transparent;text-align:left;font-size:.92rem;line-height:1.55;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;}
+.nav{display:flex;align-items:center;justify-content:space-between;max-width:680px;width:100%;margin-top:20px;gap:12px;}
+.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;border-radius:12px;padding:11px 22px;cursor:pointer;transition:all .25s;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-prev:disabled{opacity:.35;cursor:default;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;}
+.btn-next:hover{opacity:.9;}
+.step-counter{font-family:'Baloo 2',cursive;font-weight:700;color:var(--primary);font-size:.95rem;white-space:nowrap;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">G2</div>
+    <div class="tache-label">Reproduire un dessin géométrique</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext">Suivant →</button>
+</div>
+
+<script>
+/* =========================================================================
+   Conventions de figure (identiques aux exercices WIMS du module) :
+   objet mis en avant #1d4ed8 · contexte #9ca3af · étiquettes #4b5563
+   codage donné #c4c9d1 · codage révélé #ea580c
+   points = croix, SAUF intersection de 2 tracés déjà présents (aucun marqueur)
+   — exception assumée page 4 : l'intersection y est justement ce qu'on
+   cherche à faire voir, elle est donc marquée d'une croix rouge.
+   ========================================================================= */
+const BLEU='#1d4ed8', GRIS='#9ca3af', LAB='#4b5563', OR='#ea580c', VIOLET='#7c3aed';
+
+/* croix d'un point (un seul path, 2 diagonales) */
+function croix(x,y,col,w,t){
+  w=w||5.5; t=t||1.9;
+  return '<path d="M'+(x-w)+','+(y-w)+' L'+(x+w)+','+(y+w)+
+         ' M'+(x-w)+','+(y+w)+' L'+(x+w)+','+(y-w)+
+         '" stroke="'+col+'" stroke-width="'+t+'" stroke-linecap="round" fill="none"/>';
+}
+const H = r => r ? '' : ' opacity="0"';   /* réservé avant le clic, révélé après */
+
+/* intersection des droites (p1p2) et (p3p4) */
+function inter(p1,p2,p3,p4){
+  const [x1,y1]=p1,[x2,y2]=p2,[x3,y3]=p3,[x4,y4]=p4;
+  const d=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
+  const px=((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/d;
+  const py=((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/d;
+  return [px,py];
+}
+
+/* sommets A..H d'un octogone régulier, en partant du haut, sens horaire */
+function octogone(cx,cy,R){
+  const noms='ABCDEFGH', pts={};
+  for(let k=0;k<8;k++){
+    const a=(-90+k*45)*Math.PI/180;
+    pts[noms[k]] = [cx+R*Math.cos(a), cy+R*Math.sin(a)];
+  }
+  return pts;
+}
+
+/* ========================== LES PAGES ================================== */
+const STEPS=[
+
+/* ---------- 0. l'idée + pourquoi ---------- */
+{ titre:"💡 Reproduire un dessin géométrique",
+  html:()=>`
+  <div class="pourquoi fade-in">
+    <span class="pq-lead">🤔 Pourquoi ?</span>
+    Reproduire un dessin géométrique permet de travailler de nombreuses choses :
+    c'est l'observer, l'analyser, comprendre comment il est construit.
+  </div>
+  <p class="step-text fade-in">Pour reproduire un dessin, on doit d'abord :</p>
+  <div class="etapes fade-in">
+    <div class="etape"><div class="etape-num">1</div><div class="etape-txt">observer quelles sont les <span class="cle">formes</span> qui le constituent (carrés, triangles, disques…)</div></div>
+    <div class="etape"><div class="etape-num">2</div><div class="etape-txt">trouver les <span class="cle">objets mathématiques</span> du dessin (segments, cercles, points…)</div></div>
+    <div class="etape"><div class="etape-num">3</div><div class="etape-txt">chercher parfois comment obtenir certains <span class="cle">points</span> que nous ne connaissons pas bien</div></div>
+  </div>
+  <p class="step-text fade-in">Ensuite, avec nos outils de géométrie, il est possible de tracer une copie
+  du modèle.</p>`
+},
+
+/* ---------- 1. G2a — identifier les formes ---------- */
+{ titre:"💡 Identifier les formes d'un dessin",
+  html:()=>{
+    const KT='0;0.15;0.4;0.65;0.9;0.96;1';
+    const DUR='7s';
+    const op =vals=>`<animate attributeName="opacity" values="${vals}" keyTimes="${KT}" dur="${DUR}" repeatCount="indefinite"/>`;
+    const mv =vals=>`<animateTransform attributeName="transform" type="translate" values="${vals}" keyTimes="${KT}" dur="${DUR}" repeatCount="indefinite"/>`;
+
+    /* dessin de départ, commun aux deux animations : un quadrilatère ABCD, et
+       deux points E, F à l'INTÉRIEUR du quadrilatère (pas sur ses côtés), tels
+       que (EC) et (DF) se croisent en G à l'intérieur. Le quadrilatère est
+       volontairement resserré (marge tout autour) pour que les triangles
+       partent nettement de l'extérieur avant de venir se placer. Le tracé de
+       fond (quadrilatère + segments DE,EC,DF,FC) est statique, déjà en place
+       dès le début de la boucle — seules les formes colorées s'animent.
+       Aucune lettre n'est affichée aux élèves. */
+    const A=[70,50], B=[250,45], C=[260,175], D=[65,180];
+    const E=[110,100], F=[205,95];
+    const G=inter(E,C,D,F);
+
+    const base=`
+      <path d="M${A} L${B} L${C} L${D} Z" fill="none" stroke="${GRIS}" stroke-width="2.2"/>
+      <path d="M${D} L${E} L${C} M${D} L${F} L${C}" fill="none" stroke="${BLEU}" stroke-width="1.8"/>`;
+
+    /* ---- animation 1 : 3 triangles côte à côte (DEG, GFC, DGC) ---- */
+    const anim1=`
+      <svg viewBox="0 0 320 240" role="img" aria-label="un dessin se décompose en 3 triangles côte à côte">
+        ${base}
+        <g opacity="0">
+          ${op('0;0;0;1;1;0;0')}
+          <g>${mv('-70,-60;-70,-60;-70,-60;0,0;0,0;0,0;-70,-60')}
+            <polygon points="${D} ${E} ${G}" fill="#ea580c" fill-opacity=".85"/>
+          </g>
+          <g>${mv('70,-60;70,-60;70,-60;0,0;0,0;0,0;70,-60')}
+            <polygon points="${G} ${F} ${C}" fill="#64748b" fill-opacity=".85"/>
+          </g>
+          <g>${mv('0,55;0,55;0,55;0,0;0,0;0,0;0,55')}
+            <polygon points="${D} ${G} ${C}" fill="${VIOLET}" fill-opacity=".8"/>
+          </g>
+        </g>
+      </svg>`;
+
+    /* ---- animation 2 : 2 triangles qui se superposent (DFC, CED) ---- */
+    const anim2=`
+      <svg viewBox="0 0 320 240" role="img" aria-label="un dessin se décompose en 2 triangles qui se superposent">
+        ${base}
+        <g opacity="0" style="mix-blend-mode:multiply">
+          ${op('0;0;0;1;1;0;0')}
+          <g>${mv('90,-60;90,-60;90,-60;0,0;0,0;0,0;90,-60')}
+            <polygon points="${D} ${F} ${C}" fill="#eab308" fill-opacity=".78"/>
+          </g>
+          <g>${mv('-90,-60;-90,-60;-90,-60;0,0;0,0;0,0;-90,-60')}
+            <polygon points="${C} ${E} ${D}" fill="#16a34a" fill-opacity=".78"/>
+          </g>
+        </g>
+      </svg>`;
+
+    return `
+  <p class="step-text fade-in" style="margin-bottom:16px">Un dessin géométrique est constitué de formes géométriques : triangles,
+  carrés, cercles…</p>
+  <div class="duo-anim fade-in">
+    <div class="col-anim">
+      <p class="step-text">Par exemple, dans ce dessin on peut voir <span class="cle">3 triangles</span>
+      à côté les uns des autres :</p>
+      <figure>${anim1}</figure>
+    </div>
+    <div class="col-anim">
+      <p class="step-text">Mais on peut voir aussi <span class="cle">deux triangles qui se
+      superposent</span> :</p>
+      <figure>${anim2}</figure>
+    </div>
+  </div>`;
+  }
+},
+
+/* ---------- 2. G2b — identifier les objets mathématiques ---------- */
+{ titre:"💡 Identifier les objets mathématiques d'un dessin",
+  html:()=>`
+  <p class="step-text fade-in">Dans un dessin géométrique, il peut y avoir :</p>
+  <ul class="liste-simple fade-in">
+    <li>des <span class="cle">lignes</span> (segments, droites…)</li>
+    <li>des <span class="cle">cercles</span> (ou arcs de cercle)</li>
+  </ul>
+  <p class="step-text fade-in" style="margin-top:16px">Pour reproduire un dessin, il faut tracer ces lignes et ces cercles.</p>
+  <ul class="liste-simple fade-in">
+    <li>Pour tracer une <span class="cle">ligne</span>, il faut trouver le point du début et le point de la
+    fin de la ligne.</li>
+    <li>Pour tracer un <span class="cle">cercle</span>, il faut trouver son centre et son rayon (l'écartement
+    du compas).</li>
+  </ul>
+  <div class="definition fade-in"><span class="def-lead">📘 Définition</span> Les lignes qui ont un début et
+  une fin s'appellent des <span class="cle">segments</span>.</div>`
+},
+
+/* ---------- 3. G2c — identifier les points non accessibles ---------- */
+{ titre:"✏️ Identifier les points qui ne sont pas accessibles",
+  html:()=>{
+    /* un quadrilatère ABCD (aucune lettre affichée) et E, l'intersection de ses
+       diagonales. Le quadrilatère et les segments BE, CE restent tracés en noir
+       tout du long (base fixe) ; l'animation, en boucle automatique, fait
+       apparaître : le point E (croix rouge, effet pop) puis, progressivement,
+       les diagonales complètes (AC, BD) en pointillés bleu clair — puis tout
+       s'efface en fondu avant de reprendre au début. */
+    const A=[20,20], B=[180,12], C=[185,135], D=[15,130];
+    const E=inter(A,C,B,D);
+    const DUR='10.7s';
+    const f1=(2/10.7), f2=(2.4/10.7), fOv=(2.28/10.7),
+          f3=(3.4/10.7), f4=(4.7/10.7), f5=(5.2/10.7),
+          f6=(6.5/10.7), f7=(9.5/10.7);
+
+    function diagPointillee(id,p1,p2,col,ktA,ktB,ktFade){
+      const [x1,y1]=p1, [x2,y2]=p2;
+      const L=Math.hypot(x2-x1,y2-y1).toFixed(1);
+      const ang=(Math.atan2(y2-y1,x2-x1)*180/Math.PI).toFixed(2);
+      return `
+        <clipPath id="${id}">
+          <rect x="0" y="-4" width="0" height="8" transform="translate(${x1},${y1}) rotate(${ang})">
+            <animate attributeName="width" values="0;0;${L};${L}" keyTimes="0;${ktA};${ktB};1" dur="${DUR}" repeatCount="indefinite"/>
+          </rect>
+        </clipPath>
+        <g clip-path="url(#${id})">
+          <animate attributeName="opacity" values="1;1;0" keyTimes="0;${ktFade};1" dur="${DUR}" repeatCount="indefinite"/>
+          <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="2" stroke-dasharray="6 5" stroke-linecap="round"/>
+        </g>`;
+    }
+
+    const acPart = diagPointillee('clipAC', A, C, '#93c5fd', f3, f4, f7);
+    const bdPart = diagPointillee('clipBD', B, D, '#93c5fd', f5, f6, f7);
+    const Ex=E[0].toFixed(1), Ey=E[1].toFixed(1);
+    const pointE = `
+      <g transform="translate(${Ex},${Ey})">
+        <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;${f1};${f2};${f7};1" dur="${DUR}" repeatCount="indefinite"/>
+        <g>
+          <animateTransform attributeName="transform" type="scale" values="0;0;1.15;1;1;0" keyTimes="0;${f1};${fOv};${f2};${f7};1" dur="${DUR}" repeatCount="indefinite"/>
+          ${croix(0,0,'#dc2626',6,2.2)}
+        </g>
+      </g>`;
+
+    return `
+  <p class="step-text fade-in">Parfois, on ne sait pas bien où sont placés certains points. Pour pouvoir
+  reproduire le dessin, il faut savoir les placer précisément. Pour cela, on utilise souvent des
+  <span class="cle">alignements</span>.</p>
+  <div class="definition fade-in"><span class="def-lead">📘 Définition</span> On dit que des points sont
+  <span class="cle">alignés</span> s'ils sont sur une même ligne.</div>
+  <p class="step-text fade-in">On trouve les points qui nous manquent grâce aux
+  <span class="cle">intersections</span> de lignes.</p>
+  <div class="definition fade-in"><span class="def-lead">📘 Définition</span> L'intersection de deux lignes,
+  c'est l'endroit où elles se croisent.</div>
+  <p class="step-text fade-in">Par exemple, pour trouver le point rouge de ce modèle, il suffit de voir
+  qu'il est à l'intersection des deux lignes bleues (les diagonales) :</p>
+  <figure class="fade-in">
+    <svg viewBox="0 0 200 150" width="230" role="img" aria-label="un quadrilatère, ses diagonales et leur point d'intersection">
+      <polygon points="${A} ${B} ${C} ${D}" fill="none" stroke="#000" stroke-width="2"/>
+      <line x1="${B[0]}" y1="${B[1]}" x2="${Ex}" y2="${Ey}" stroke="#000" stroke-width="1.8"/>
+      <line x1="${C[0]}" y1="${C[1]}" x2="${Ex}" y2="${Ey}" stroke="#000" stroke-width="1.8"/>
+      ${acPart}
+      ${bdPart}
+      ${pointE}
+    </svg>
+  </figure>`;
+  }
+},
+
+/* ---------- 4. un exemple résolu ---------- */
+{ titre:"✏️ Un exemple résolu",
+  html:()=>{
+    /* Modèle : une étoile à 4 pointes obtenue à partir des diagonales d'un
+       octogone régulier ABCDEFGH (lettres internes, jamais montrées aux
+       élèves). J=BG∩AE, K=AD∩CH, L=BE∩CF, M=EH∩DG. Le polygone AKCLEMGJ
+       (donc les segments AJ,JG,GM,ME,EL,LC,CK,KA) est déjà tracé/colorié
+       sur le modèle dès le départ. L'animation trace en pointillés
+       oranges les 8 diagonales — d'abord sur le modèle, puis à l'identique
+       sur la reproduction — puis fait apparaître J,K,L,M en rouge sur la
+       reproduction et y trace enfin le polygone bleu. */
+    const cx=110, cy=132, R=68;
+    const {A,B,C,D,E,F,G,H} = octogone(cx,cy,R);
+    const J=inter(B,G,A,E), K=inter(A,D,C,H),
+          L=inter(B,E,C,F), M=inter(E,H,D,G);
+
+    const DURn=18.2, DUR=DURn+'s';
+    const f1=3/DURn, f2=6/DURn, f3=9/DURn, f4=10/DURn,
+          fOv=10.28/DURn, f5=10.7/DURn, f6=13.2/DURn, f7=17.7/DURn;
+
+    const DIAGS=[[A,E],[B,G],[A,D],[C,H],[B,E],[C,F],[E,H],[D,G]];
+
+    function diago(id,p1,p2,ktA,ktB,ktFade){
+      const [x1,y1]=p1, [x2,y2]=p2;
+      const Lg=Math.hypot(x2-x1,y2-y1).toFixed(1);
+      const ang=(Math.atan2(y2-y1,x2-x1)*180/Math.PI).toFixed(2);
+      return `
+        <clipPath id="${id}">
+          <rect x="0" y="-3.5" width="0" height="7" transform="translate(${x1.toFixed(1)},${y1.toFixed(1)}) rotate(${ang})">
+            <animate attributeName="width" values="0;0;${Lg};${Lg}" keyTimes="0;${ktA};${ktB};1" dur="${DUR}" repeatCount="indefinite"/>
+          </rect>
+        </clipPath>
+        <g clip-path="url(#${id})">
+          <animate attributeName="opacity" values="1;1;0" keyTimes="0;${ktFade};1" dur="${DUR}" repeatCount="indefinite"/>
+          <line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${OR}" stroke-width="1.8" stroke-dasharray="5 4" stroke-linecap="round"/>
+        </g>`;
+    }
+    const diagsModele  = ()=>DIAGS.map((d,i)=>diago('mDg'+i,d[0],d[1],f1,f2,f7)).join('');
+    const diagsReponse = ()=>DIAGS.map((d,i)=>diago('rDg'+i,d[0],d[1],f2,f3,f7)).join('');
+
+    function popCroix(id,p,ktIn,ktOv,ktSettle,ktFade){
+      const [x,y]=p;
+      return `
+        <g transform="translate(${x.toFixed(1)},${y.toFixed(1)})">
+          <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;${ktIn};${ktSettle};${ktFade};1" dur="${DUR}" repeatCount="indefinite"/>
+          <g>
+            <animateTransform attributeName="transform" type="scale" values="0;0;1.15;1;1;0" keyTimes="0;${ktIn};${ktOv};${ktSettle};${ktFade};1" dur="${DUR}" repeatCount="indefinite"/>
+            ${croix(0,0,'#dc2626',6,2.2)}
+          </g>
+        </g>`;
+    }
+
+    function polygonTrace(pts,col,ktStart,ktEnd,ktFade){
+      const d='M'+pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' L')+' Z';
+      let tot=0;
+      for(let i=0;i<pts.length;i++){
+        const a=pts[i], b=pts[(i+1)%pts.length];
+        tot+=Math.hypot(b[0]-a[0], b[1]-a[1]);
+      }
+      tot=tot.toFixed(1);
+      return `
+        <path d="${d}" fill="none" stroke="${col}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"
+              stroke-dasharray="${tot}" stroke-dashoffset="${tot}">
+          <animate attributeName="stroke-dashoffset" values="${tot};${tot};0;0" keyTimes="0;${ktStart};${ktEnd};1" dur="${DUR}" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="1;1;0" keyTimes="0;${ktFade};1" dur="${DUR}" repeatCount="indefinite"/>
+        </path>`;
+    }
+
+    const etoile=[A,K,C,L,E,M,G,J];
+    const etoileD='M'+etoile.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' L')+' Z';
+    const sommets=[A,B,C,D,E,F,G,H].map(p=>croix(p[0],p[1],GRIS,4.5,1.6)).join('');
+
+    const modele=`
+      <svg viewBox="0 0 220 232" role="img" aria-label="le modèle : une étoile à quatre pointes">
+        <text x="110" y="20" text-anchor="middle" font-family="'Baloo 2',cursive" font-weight="800" font-size="17" fill="#7f1d1d">modèle</text>
+        <circle cx="${cx}" cy="${cy}" r="80" fill="#fecaca"/>
+        <path d="${etoileD}" fill="#fca5a5" stroke="#b91c1c" stroke-width="2.2"/>
+        ${sommets}
+        ${diagsModele()}
+      </svg>`;
+
+    const reponse=`
+      <svg viewBox="0 0 220 232" role="img" aria-label="la reproduction, en cours de construction">
+        <text x="110" y="20" text-anchor="middle" font-family="'Baloo 2',cursive" font-weight="800" font-size="17" fill="#374151">Réponse</text>
+        <circle cx="${cx}" cy="${cy}" r="80" fill="#e5e7eb"/>
+        ${sommets}
+        ${diagsReponse()}
+        ${popCroix('pJ',J,f4,fOv,f5,f7)}
+        ${popCroix('pK',K,f4,fOv,f5,f7)}
+        ${popCroix('pL',L,f4,fOv,f5,f7)}
+        ${popCroix('pM',M,f4,fOv,f5,f7)}
+        ${polygonTrace(etoile,BLEU,f5,f6,f7)}
+      </svg>`;
+
+    return `
+  <p class="step-text fade-in">Voici un exemple de dessin résolu du début à la fin : le modèle à
+  gauche, sa reproduction à droite.</p>
+  <div class="duo-anim fade-in">
+    <div class="col-anim"><figure>${modele}</figure></div>
+    <div class="col-anim"><figure>${reponse}</figure></div>
+  </div>`;
+  }
+},
+
+/* ---------- 5. bilan ---------- */
+{ titre:"🏆 Ce qu'il faut retenir",
+  html:()=>`
+  <div class="recap-list">
+    ${[
+      ['var(--primary)', `Pour reproduire un dessin :
+        <ol class="liste-simple" type="a" style="margin-top:8px">
+          <li>on observe les <span class="cle">formes</span> du dessin ;</li>
+          <li>on observe les <span class="cle">objets mathématiques</span> du dessin (segments, cercles, points) ;</li>
+          <li>on observe les points pour lesquels il va falloir trouver leur <span class="cle">position précise</span>.</li>
+        </ol>`],
+      ['var(--bleu)','Pour tracer une <span class="cle">ligne</span>, on cherche quel doit être le point du début et le point de la fin.'],
+      ['var(--orange)','Pour tracer un <span class="cle">cercle</span>, on cherche où est son centre et quel est son rayon.'],
+      ['var(--violet)','Pour trouver la position d\'un point qui n\'est pas connu, on peut utiliser des <span class="cle">alignements</span>, des <span class="cle">perpendiculaires</span>…'],
+      ['var(--gris)','Quand on trace, on est le plus <span class="cle">précis</span> possible (voir les conseils de la capsule G1).'],
+    ].map(([c,t],idx)=>`
+    <div class="recap-item fade-in" style="animation-delay:${idx*.08}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${idx+1}</div>
+      <span>${t}</span>
+    </div>`).join('')}
+  </div>`
+}
+];
+
+/* ========================== MOTEUR ===================================== */
+let i=0, revealed=false; const N=STEPS.length;
+const card=document.getElementById('card'),
+      progressBar=document.getElementById('progressBar'),
+      stepsIndicator=document.getElementById('stepsIndicator'),
+      btnPrev=document.getElementById('btnPrev'),
+      btnNext=document.getElementById('btnNext'),
+      counter=document.getElementById('counter');
+
+function goTo(k){ i=k; revealed=false; render(); }
+
+function render(){
+  const s=STEPS[i];
+  card.innerHTML =
+    '<div class="step-title pop">'+s.titre+'</div>'+
+    s.html(revealed)+
+    (s.comp  ? '<button class="btn-complete fade-in" id="btnc"'+(revealed?' disabled':'')+'>✏️ Compléter</button>' : '')+
+    (s.trace ? '<button class="btn-anim fade-in" id="btnt">▶ Tracer</button>' : '');
+  const b=document.getElementById('btnc');
+  if(b) b.addEventListener('click',()=>{revealed=true;render();});
+  const t=document.getElementById('btnt');
+  if(t) t.addEventListener('click',()=>{
+    /* une page "Tracer" peut porter plusieurs animations indépendantes :
+       on déclenche toutes les animations maîtresses trouvées dans la page. */
+    card.querySelectorAll('.master').forEach(a=>{ if(a.beginElement) a.beginElement(); });
+  });
+
+  progressBar.style.width=(i/(N-1)*100)+'%';
+  stepsIndicator.innerHTML='';
+  for(let k=0;k<N;k++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(k===i?' active':k<i?' done':'');
+    d.textContent=k<i?'✓':k+1;
+    d.addEventListener('click',()=>goTo(k));
+    stepsIndicator.appendChild(d);
+  }
+  counter.textContent=`Page ${i+1} / ${N}`;
+  btnPrev.disabled = (i===0);
+  btnNext.textContent = i===N-1 ? '🔁 Recommencer' : 'Suivant →';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+btnPrev.addEventListener('click',()=>{ if(i>0) goTo(i-1); });
+btnNext.addEventListener('click',()=>{ goTo(i===N-1?0:i+1); });
+render();
+</script>
+</body>
+</html>

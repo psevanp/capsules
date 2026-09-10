@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>GM12 — Calculer des durées</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --primary:#e11d48;--primary2:#fb7185;--primary-clair:#ffe4e6;
+  --bg:#fff1f2;
+  --bleu:#1a73e8;--bleu-clair:#e8f0fe;
+  --orange:#ea580c;--orange-clair:#ffedd5;
+  --vert:#16a34a;--vert-clair:#f0fdf4;
+  --violet:#7c3aed;--violet-clair:#f5f3ff;
+  --teal:#0d9488;--teal-clair:#f0fdfa;
+  --card:#fff;--texte:#1e293b;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+header{display:flex;justify-content:center;margin-bottom:22px;}
+.header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+.badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--primary);background:var(--primary-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--primary);flex-shrink:0;}
+.tache-label{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--primary);line-height:1.3;}
+.progress-bar-wrap{width:100%;max-width:680px;background:var(--primary-clair);border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .5s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+.step-dot{width:34px;height:34px;border-radius:50%;background:var(--primary-clair);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--primary2);transition:all .4s;border:2px solid transparent;}
+.step-dot.active{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+.card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:360px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(0,0,0,.07);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .45s ease both;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;color:var(--primary);text-align:center;line-height:1.3;}
+.step-text{font-size:.97rem;line-height:1.7;text-align:center;max-width:580px;color:#475569;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:580px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 16px;font-weight:600;font-size:.92rem;line-height:1.7;max-width:580px;width:100%;}
+.info.bleu{background:var(--bleu-clair);border-left:4px solid var(--bleu);color:#1e3a5f;}
+.info.vert{background:var(--vert-clair);border-left:4px solid var(--vert);color:#14532d;}
+.info.orange{background:var(--orange-clair);border-left:4px solid var(--orange);color:#7c2d12;}
+.info.violet{background:var(--violet-clair);border-left:4px solid var(--violet);color:#4c1d95;}
+.btn-anim{border:2px solid var(--bleu);background:var(--bleu-clair);color:var(--bleu);font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;transition:all .2s;}
+.btn-anim:hover{background:var(--bleu);color:#fff;}
+.recap-list{display:flex;flex-direction:column;gap:12px;width:100%;max-width:580px;}
+.recap-item{display:flex;gap:12px;align-items:flex-start;background:#f8faff;border-radius:12px;padding:11px 16px;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;}
+.nav{display:flex;align-items:center;justify-content:space-between;max-width:680px;width:100%;margin-top:20px;gap:12px;}
+.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;border-radius:12px;padding:11px 22px;cursor:pointer;transition:all .25s;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-prev:disabled{opacity:.35;cursor:default;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;}
+.btn-next:hover{opacity:.9;}
+.step-counter{font-family:'Baloo 2',cursive;font-weight:700;color:var(--primary);font-size:.95rem;white-space:nowrap;}
+.add-table{border-collapse:collapse;font-family:'Baloo 2',cursive;font-weight:800;font-size:1.05rem;margin:0 auto;}
+.add-table td{padding:8px 18px;text-align:center;border-bottom:2px solid #e2e8f0;}
+.add-table .total-row td{border-top:3px solid var(--bleu);border-bottom:none;color:var(--bleu);}
+.add-table .label-col{color:#64748b;font-size:.85rem;text-align:left;padding-right:10px;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">GM12</div>
+    <div class="tache-label">Calculer des durées</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+function showEl(id,delay){setTimeout(()=>{const el=document.getElementById(id);if(el){el.style.transition='opacity 0.4s';el.style.opacity='1';}},delay||0);}
+
+// ── Typewriter avec pause sur = et couleurs ───────────────────────────────────
+function typewriter(id, text, color, btnId){
+  const el=document.getElementById(id);
+  if(!el) return;
+  if(btnId){const btn=document.getElementById(btnId);if(btn)btn.style.display='none';}
+  el.style.color=color||'var(--vert)';
+  el.textContent='';
+  let i=0;
+  function next(){
+    if(i>=text.length) return;
+    const ch=text[i++];
+    el.textContent+=ch;
+    const delay=ch==='='?500:80;
+    setTimeout(next,delay);
+  }
+  next();
+}
+
+// ── Typewriter multi-segments (flex-wrap, saut de ligne avant = noir) ─────────
+const NOIR='#1e293b', BLEU_C='#3b82f6', BLEU_F='#1e40af', ORA_C='#f97316', ORA_F='#9a3412';
+
+function typewriterSegs(spanId, hintId, btnId, segs){
+  const container=document.getElementById(spanId);
+  const hint=document.getElementById(hintId);
+  const btn=document.getElementById(btnId);
+  if(!container) return;
+  if(btn) btn.style.display='none';
+  container.innerHTML='';
+  container.style.display='flex';
+  container.style.flexWrap='wrap';
+  container.style.alignItems='baseline';
+  function showHint(){if(hint){hint.style.opacity='1';}}
+  function writeSegs(si){
+    if(si>=segs.length){showHint();return;}
+    const seg=segs[si];
+    setTimeout(()=>{
+      const span=document.createElement('span');
+      span.style.color=seg.c;
+      span.style.whiteSpace='nowrap';
+      if(seg.bold) span.style.fontWeight='800';
+      container.appendChild(span);
+      let i=0;
+      function next(){
+        if(i>=seg.t.length){
+          if(seg.bold && si+1<segs.length && segs[si+1].c===NOIR){
+            const br=document.createElement('span');
+            br.style.flexBasis='100%';
+            br.style.height='0';
+            container.appendChild(br);
+          }
+          writeSegs(si+1);return;
+        }
+        const ch=seg.t[i++];
+        span.textContent+=ch;
+        const delay=(ch==='=')?400:80;
+        setTimeout(next,delay);
+      }
+      next();
+    },seg.pause||0);
+  }
+  writeSegs(0);
+}
+
+// ── Page 2 : animations ────────────────────────────────────────────────────────
+function twSimple(el, text, speed, cb){
+  el.textContent='';let i=0;
+  function next(){
+    if(i>=text.length){if(cb)cb();return;}
+    const ch=text[i++];
+    el.textContent+=ch;
+    setTimeout(next,ch==='='?500:speed||80);
+  }
+  next();
+}
+function fadeSwap(el, newContent, cb){
+  el.style.transition='opacity 0.3s';el.style.opacity='0';
+  setTimeout(()=>{
+    if(typeof newContent==='function') newContent(el);
+    else el.innerHTML=newContent;
+    el.style.opacity='1';if(cb) setTimeout(cb,300);
+  },320);
+}
+function showFin(){
+  // Afficher le résultat final dans le cadre
+  const resEl=document.getElementById('p2-result');
+  if(resEl){resEl.style.transition='opacity 0.5s';resEl.style.opacity='1';}
+  // Remettre les boutons actifs
+  ['p2-btn1','p2-btn2'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.style.display='';
+  });
+}
+
+function animerP2Methode1(){
+  const btn=document.getElementById('p2-btn1');
+  if(btn) btn.style.display='none';
+  const btn2=document.getElementById('p2-btn2');
+  if(btn2) btn2.style.display='none';
+  const calcEl=document.getElementById('p2-calc');
+  const commentEl=document.getElementById('p2-comment');
+  const resEl=document.getElementById('p2-result');
+  if(commentEl){commentEl.style.opacity='0';}
+  if(resEl){resEl.style.opacity='0';}
+
+  // Écrire "30 min + 45 min = " puis typewriter "75 min"
+  calcEl.innerHTML='<span style="color:#1e293b">30 min + 45 min = </span>';
+  const r=document.createElement('span');r.style.color='#1e293b';
+  calcEl.appendChild(r);
+  twSimple(r,'75 min',80,()=>{
+    // Pause 1s après "75 min"
+    setTimeout(()=>{
+      // Continuer : "= 60 min + 15 min"
+      const r2=document.createElement('span');r2.style.color='#1e293b';
+      calcEl.appendChild(r2);
+      twSimple(r2,' = 60 min + 15 min',80,()=>{
+        // Pause 0.5s, puis mettre "60 min" en valeur
+        setTimeout(()=>{
+          calcEl.innerHTML='<span style="color:#1e293b">30 min + 45 min = 75 min = </span>'
+            +'<span id="p2-60" style="color:var(--bleu);font-weight:800;font-size:1.1em;transition:font-size .3s">60 min</span>'
+            +'<span style="color:#1e293b"> + 15 min</span>';
+          // Pause 0.5s supplémentaire sur la mise en valeur
+          setTimeout(()=>{
+            const s60=document.getElementById('p2-60');
+            if(s60) fadeSwap(s60,el=>{el.textContent='1 h';},()=>{
+              // Afficher commentaire puis boutons rejouer/méthode2
+              setTimeout(()=>{
+                if(commentEl){commentEl.style.transition='opacity .4s';commentEl.style.opacity='1';}
+                setTimeout(showFin,600);
+              },400);
+            });
+          },500);
+        },500);
+      });
+    },1000);
+  });
+}
+
+function animerP2Methode2(){
+  const btn=document.getElementById('p2-btn2');
+  if(btn) btn.style.display='none';
+  const btn1=document.getElementById('p2-btn1');
+  if(btn1) btn1.style.display='none';
+  const finEl=document.getElementById('p2-fin');
+  if(finEl){finEl.style.opacity='0';}
+  const calcEl=document.getElementById('p2-calc');
+  const commentEl=document.getElementById('p2-comment');
+  const resEl=document.getElementById('p2-result');
+  if(commentEl){commentEl.style.opacity='0';}
+  if(resEl){resEl.style.opacity='0';}
+
+  // Revenir à "30 min + 45 min = …"
+  calcEl.innerHTML='<span style="color:#1e293b">30 min + </span>'
+    +'<span id="p2-45" style="color:#1e293b">45 min</span>'
+    +'<span style="color:#94a3b8"> = …</span>';
+
+  setTimeout(()=>{
+    // Mettre en valeur "45 min" en orange
+    const s45=document.getElementById('p2-45');
+    if(s45){s45.style.color='var(--orange)';s45.style.fontWeight='800';s45.style.fontSize='1.1em';}
+    setTimeout(()=>{
+      // Fondu → "30 min + 15 min" (orange)
+      if(s45) fadeSwap(s45,el=>{
+        el.style.fontSize='';
+        el.innerHTML='<span style="color:var(--orange)">30 min</span> + <span style="color:var(--orange)">15 min</span>';
+      },()=>{
+        // Pause 1s
+        setTimeout(()=>{
+          // Tout passer en noir : "30 min + 30 min + 15 min"
+          calcEl.innerHTML='<span style="color:#1e293b">30 min + 30 min + 15 min</span>';
+          setTimeout(()=>{
+            // Pause 1s, puis mettre en valeur "30 min + 30 min" en bleu
+            setTimeout(()=>{
+              calcEl.innerHTML='<span id="p2-30ab" style="color:var(--bleu);font-weight:800;font-size:1.05em">30 min + 30 min</span>'
+                +'<span style="color:#1e293b"> + 15 min</span>';
+              // Pause 1s
+              setTimeout(()=>{
+                const s30=document.getElementById('p2-30ab');
+                if(s30) fadeSwap(s30,el=>{
+                  el.style.fontSize='';
+                  el.innerHTML='<span style="color:var(--bleu);font-weight:800">1 h</span>';
+                },()=>{
+                  // Commentaire + boutons fin
+                  setTimeout(()=>{
+                    if(commentEl){commentEl.innerHTML='On a décomposé 45 min en 30 min + 15 min pour faire apparaître 60 min.';commentEl.style.transition='opacity .4s';commentEl.style.opacity='1';}
+                    setTimeout(showFin,600);
+                  },400);
+                });
+              },1000);
+            },1000);
+          },100);
+        },1000);
+      });
+    },700);
+  },1000);
+}
+
+
+
+
+// ── P3 : animation longue en chaîne ──────────────────────────────────────────
+function hl(id, color, bold){
+  const el=document.getElementById(id);
+  if(!el) return;
+  if(color) el.style.color=color;
+  if(bold) el.style.fontWeight='800';
+  el.style.fontSize='1.1em';
+}
+function twAppend(containerId, text, speed, cb){
+  const el=document.getElementById(containerId);
+  if(!el) return;
+  let i=0;
+  function next(){
+    if(i>=text.length){if(cb)cb();return;}
+    const ch=text[i++];
+    el.textContent+=ch;
+    setTimeout(next,ch==='='?500:speed||90);
+  }
+  next();
+}
+function fadeText(id, newHtml, cb){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.style.transition='opacity 0.3s';el.style.opacity='0';
+  setTimeout(()=>{
+    el.innerHTML=newHtml;
+    el.style.opacity='1';
+    if(cb) setTimeout(cb,300);
+  },330);
+}
+function p(ms,cb){setTimeout(cb,ms);}  // pause helper
+
+function animerP3seq(){
+  const btn=document.getElementById('p3-btn');
+  if(btn) btn.style.display='none';
+  const res=document.getElementById('q3-res');
+  const rejouer=document.getElementById('p3-rejouer');
+  if(res) res.style.opacity='0';
+  if(rejouer) rejouer.style.opacity='0';
+
+  // Reset
+  ['q25','q40','q30','q50'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.style.color='#1e293b';el.style.fontWeight='';el.style.fontSize='';}
+  });
+  const qmin=document.getElementById('q-min');
+  const qsec=document.getElementById('q-sec');
+  if(qmin){qmin.textContent='…';qmin.style.color='#94a3b8';qmin.style.fontSize='';}
+  if(qsec){qsec.textContent='';qsec.style.fontSize='';}
+
+  const ORA='#f97316', BLU='#1a73e8', VIO='#7c3aed', RED='#e11d48', TEA='#0d9488';
+
+  // 1. 25min et 40min → orange
+  p(400,()=>{
+    hl('q25',ORA,true); hl('q40',ORA,true);
+    // typewriter "65 min" en orange
+    p(600,()=>{
+      if(qmin){qmin.style.color=ORA;qmin.textContent='';}
+      twAppend('q-min','65 min',90,()=>{
+        // 2. pause 1s, puis 30sec et 50sec → bleu
+        p(1000,()=>{
+          // Remettre q25/q40 en noir mais garder qmin (65 min) en orange
+          ['q25','q40'].forEach(id=>{const el=document.getElementById(id);if(el){el.style.color='#1e293b';el.style.fontWeight='';el.style.fontSize='';}}); // qmin reste orange
+          // Colorier 30sec et 50sec en bleu
+          hl('q30',BLU,true); hl('q50',BLU,true);
+          // typewriter " + 80 sec" en bleu
+          p(600,()=>{
+            if(qsec){qsec.style.color=BLU;}
+            let i=0; const t=' + 80 sec';
+            function tw2(){
+              if(!qsec||i>=t.length){
+                // 80 sec reste bleu, q30/q50 redeviennent noirs
+                ['q30','q50'].forEach(id=>{const el=document.getElementById(id);if(el){el.style.color='#1e293b';el.style.fontWeight='';el.style.fontSize='';}});
+                return p(1000,phase3);
+              }
+              qsec.textContent+=t[i++]; setTimeout(tw2,90);
+            }
+            tw2();
+          });
+        });
+      });
+    });
+  });
+
+  function phase3(){
+    // 3. 65 min grossit
+    if(qmin){qmin.style.fontSize='1.2em';}
+    p(600,()=>{
+      // fondu → "60 min (orange) + 5 min (orange)"
+      fadeText('q-min',
+        '<span id="q60" style="color:'+ORA+';font-weight:800">60 min</span>'
+        +' + <span id="q5" style="color:'+ORA+';font-weight:800">5 min</span>',
+      ()=>{
+        p(1000,()=>{
+          // 4. 60 min → rouge foncé
+          const q60=document.getElementById('q60');
+          if(q60){q60.style.color=RED;}
+          p(600,()=>{
+            if(q60){q60.style.fontSize='1.15em';}
+            p(400,()=>{
+              // fondu → "1 h"
+              if(q60){
+                q60.style.transition='opacity .3s';q60.style.opacity='0';
+                setTimeout(()=>{q60.textContent='1 h';q60.style.color=RED;q60.style.opacity='1';},330);
+              }
+              p(1000+330,phase4);
+            });
+          });
+        });
+      });
+    });
+  }
+
+  function phase4(){
+    // 5. 80 sec grossit
+    if(qsec){qsec.style.fontSize='1.2em';}
+    p(600,()=>{
+      if(qsec){
+        qsec.style.transition='opacity .3s';qsec.style.opacity='0';
+        setTimeout(()=>{
+          // fondu → "60 sec (bleu) + 20 sec (bleu)"
+          qsec.innerHTML=' + <span id="q60s" style="color:'+BLU+';font-weight:800">60 sec</span>'
+            +' + <span id="q20" style="color:'+BLU+';font-weight:800">20 sec</span>';
+          qsec.style.opacity='1';qsec.style.fontSize='';
+        },330);
+      }
+      p(1000+330,()=>{
+        // 6. 60 sec → couleur teale (entre orange et bleu)
+        const q60s=document.getElementById('q60s');
+        if(q60s){q60s.style.color=TEA;}
+        p(600,()=>{
+          if(q60s){q60s.style.fontSize='1.15em';}
+          p(400,()=>{
+            // fondu → "1 min" (teale)
+            if(q60s){
+              q60s.style.transition='opacity .3s';q60s.style.opacity='0';
+              setTimeout(()=>{
+                q60s.textContent='1 min';q60s.style.color=TEA;q60s.style.opacity='1';
+              },330);
+            }
+            p(1000+330,()=>{
+              // 7. "1 min" passe en orange
+              if(q60s){q60s.style.color=ORA;}
+              p(1000,phase5);
+            });
+          });
+        });
+      });
+    });
+  }
+
+  function phase5(){
+    // 8. "5 min" et "1 min" grossissent ensemble
+    const q5=document.getElementById('q5');
+    const q60s=document.getElementById('q60s');
+    if(q5){q5.style.fontSize='1.15em';}
+    if(q60s){q60s.style.fontSize='1.15em';}
+    p(1000,()=>{
+      // "5 min" → "6 min"
+      if(q5){
+        q5.style.transition='opacity .3s';q5.style.opacity='0';
+        setTimeout(()=>{q5.textContent='6 min';q5.style.opacity='1';q5.style.fontSize='';},330);
+      }
+      // "1 min" disparaît, qsec → " + 20 sec"
+      if(qsec){
+        setTimeout(()=>{
+          qsec.innerHTML=' + <span style="color:'+BLU+';font-weight:800">20 sec</span>';
+        },400);
+      }
+      p(1200,()=>{
+        if(res){res.style.transition='opacity .5s';res.style.opacity='1';}
+        if(rejouer){rejouer.style.transition='opacity .4s';rejouer.style.opacity='1';}
+      });
+    });
+  }
+}
+
+// ── Page 4 : couleurs et utilitaires globaux ─────────────────────────────────
+const C1='#f97316', C2='#c026d3', C3='#1a73e8'; // orange, violet, bleu
+
+function twEl(el, text, speed, cb){
+  if(!el) return;
+  el.textContent=''; let i=0;
+  function nx(){
+    if(i>=text.length){if(cb)cb();return;}
+    el.textContent+=text[i++];
+    setTimeout(nx,speed||70);
+  }
+  nx();
+}
+
+// ── Page 4 : méthode 1 ───────────────────────────────────────────────────────
+function animerP4M1(){
+  ['p4-btn1','p4-btn2'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  const zone=document.getElementById('p4-zone');if(!zone)return;
+
+  // Géométrie M1 : 4 points, 3 flèches
+  // x des points : 10, 155, 305, 440  (alignés pour les deux SVG)
+  // Traits : 10+lbl → 155-gap, etc. On utilise des paths séparés pour les pointes
+  // Pointe : triangle de 10px
+  const PX=10; // taille pointe
+  function arrowSVG(x1,x2,y,col,idL,idPt,idLb,lbTxt){
+    const xe=x2-PX; // le trait s'arrête avant la pointe
+    return `<line id="${idL}" x1="${x1}" y1="${y}" x2="${xe}" y2="${y}" stroke="${col}" stroke-width="3.5"
+      stroke-dasharray="${xe-x1}" stroke-dashoffset="${xe-x1}" stroke-linecap="round"/>
+    <path id="${idPt}" d="M${x2-PX} ${y-6} L${x2} ${y} L${x2-PX} ${y+6}" fill="none" stroke="${col}" stroke-width="3" stroke-linejoin="round" opacity="0"/>
+    <text id="${idLb}" x="${(x1+x2)/2}" y="${y-14}" text-anchor="middle" dominant-baseline="auto"
+      font-family="Baloo 2,cursive" font-size="15" font-weight="800" fill="${col}" opacity="0">${lbTxt}</text>`;
+  }
+  function labelSVG(id,x,y,txt,col){
+    return `<text id="${id}" x="${x}" y="${y}" text-anchor="start" dominant-baseline="middle"
+      font-family="Baloo 2,cursive" font-size="15" font-weight="800" fill="${col||'#1e293b'}" opacity="0">${txt}</text>`;
+  }
+
+  // Points x : 14=début "19h40", 155=début "20h", 300=début "21h", 435=début "21h15"
+  // Traits : de fin du texte gauche à début du texte droit
+  // "19h40" ≈ 46px wide → fin à ~68;  "20h"≈30px → de 72→145(gap5)→150
+  // Pour simplifier : x fixes
+  // Géométrie M1 : flèches de longueur égale (90px), compacte
+  const FLEN=70; // longueur de chaque flèche
+  const GAP=6;   // espace entre label et flèche
+  const x0=14;   // début "19h40"
+  const w0=52,w1=28,w2=22,w3=40; // largeurs approx des labels
+  // Débuts des flèches
+  const s0=x0+w0+GAP, s1=s0+FLEN+GAP+w1+GAP, s2=s1+FLEN+GAP+w2+GAP;
+  // Débuts des labels intermédiaires
+  const p1=s0+FLEN+GAP, p2=s1+FLEN+GAP, p3=s2+FLEN+GAP;
+  const starts=[s0,s1,s2];
+  const endArrow=[s0+FLEN, s1+FLEN, s2+FLEN];
+  const pts=[x0,p1,p2,p3];
+
+  const W1=p3+w3+10; // largeur totale SVG
+  zone.innerHTML=`
+  <div style="overflow-x:auto;padding-bottom:4px">
+  <svg id="svg-m1" width="${W1}" height="100" viewBox="0 0 ${W1} 100" style="display:block">
+    <text x="${pts[0]}" y="62" text-anchor="start" dominant-baseline="middle" font-family="Baloo 2,cursive" font-size="15" font-weight="800" fill="#1e293b">19h40</text>
+    ${labelSVG('h2',pts[1],62,'20h')}
+    ${labelSVG('h3',pts[2],62,'21h')}
+    ${labelSVG('h4',pts[3],62,'21h15')}
+    ${arrowSVG(starts[0],endArrow[0],62,C1,'fl1','pt1','lb1','+20 min')}
+    ${arrowSVG(starts[1],endArrow[1],62,C2,'fl2','pt2','lb2','+1 h')}
+    ${arrowSVG(starts[2],endArrow[2],62,C3,'fl3','pt3','lb3','+15 min')}
+  </svg>
+  </div>
+  <div id="m1-sum" style="opacity:0;transition:opacity .4s;font-size:1rem;margin-top:6px;font-family:'Baloo 2',cursive;font-weight:800">
+    <span id="m1-sum-txt"></span>
+  </div>
+  <!-- Grande flèche animée : même géométrie -->
+  <div id="m1-big" style="opacity:0;transition:opacity .4s;margin-top:4px;overflow-x:auto">
+  <svg width="${W1}" height="80" viewBox="0 0 ${W1} 80" style="display:block">
+    <text x="${pts[0]}" y="52" text-anchor="start" dominant-baseline="middle" font-family="Baloo 2,cursive" font-size="15" font-weight="800" fill="#1e293b">19h40</text>
+    <line id="fl-big" x1="${starts[0]}" y1="52" x2="${starts[0]}" y2="52" stroke="var(--vert)" stroke-width="3.5" stroke-linecap="round"/>
+    <path id="pt-big" d="M${endArrow[2]-PX} ${52-6} L${endArrow[2]} 52 L${endArrow[2]-PX} ${52+6}" fill="none" stroke="var(--vert)" stroke-width="3" stroke-linejoin="round" opacity="0"/>
+    <text x="${pts[3]}" y="52" text-anchor="start" dominant-baseline="middle" font-family="Baloo 2,cursive" font-size="15" font-weight="800" fill="#1e293b">21h15</text>
+    <text id="lb-big" x="${(starts[0]+endArrow[2])/2}" y="30" text-anchor="middle" dominant-baseline="middle"
+      font-family="Baloo 2,cursive" font-size="15" font-weight="800" fill="var(--vert)" opacity="0"></text>
+  </svg>
+  </div>
+  <div id="m1-phrase" style="opacity:0;transition:opacity .4s;font-size:.9rem;color:#475569;margin-top:4px;font-style:italic"></div>
+  <div id="m1-fin" style="opacity:0;transition:opacity .4s;display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;justify-content:center">
+    <button class="btn-anim" style="padding:5px 12px;font-size:.8rem;border-color:var(--orange);color:var(--orange);background:var(--orange-clair)" onclick="animerP4M1()">🔁 Méthode 1</button>
+    <button class="btn-anim" style="padding:5px 12px;font-size:.8rem;border-color:var(--bleu);color:var(--bleu);background:var(--bleu-clair)" onclick="animerP4M2()">▶ Méthode 2</button>
+  </div>`;
+
+  function animFl(idL,idPt,len,dur,cb){
+    const el=document.getElementById(idL);const pt=document.getElementById(idPt);
+    if(!el)return;
+    const s=performance.now();
+    requestAnimationFrame(function tick(n){
+      const t=Math.min((n-s)/dur,1);
+      el.style.strokeDashoffset=len*(1-t);
+      if(t<1) requestAnimationFrame(tick);
+      else{
+        if(pt){pt.style.transition='opacity .15s';pt.style.opacity='1';}
+        if(cb) cb();
+      }
+    });
+  }
+  function sh(id,delay){setTimeout(()=>{const el=document.getElementById(id);if(el){el.style.transition='opacity .4s';el.style.opacity='1';}},delay);}
+
+  function twLb(id,txt,cb){const el=document.getElementById(id);if(!el)return;el.style.opacity='1';el.textContent='';let i=0;function nx(){if(i>=txt.length){if(cb)cb();return;}el.textContent+=txt[i++];setTimeout(nx,65);}nx();}
+  function animLine(el, x1, x2, dur, cb){
+    // Anime x2 de x1 à x2 via requestAnimationFrame
+    const s=performance.now();
+    requestAnimationFrame(function tick(n){
+      const t=Math.min((n-s)/dur,1);
+      el.setAttribute('x2', x1+(x2-x1)*t);
+      if(t<1) requestAnimationFrame(tick); else if(cb) cb();
+    });
+  }
+  setTimeout(()=>animFl('fl1','pt1',FLEN,700,()=>{
+    sh('h2',0);setTimeout(()=>twLb('lb1','+20 min'),600);
+    setTimeout(()=>animFl('fl2','pt2',FLEN,700,()=>{
+      sh('h3',0);setTimeout(()=>twLb('lb2','+1 h'),600);
+      setTimeout(()=>animFl('fl3','pt3',FLEN,700,()=>{
+        sh('h4',0);setTimeout(()=>twLb('lb3','+15 min'),600);
+        setTimeout(()=>{
+          // Typewriter sur la ligne de somme
+          const sumEl=document.getElementById('m1-sum');
+          const sumTxt=document.getElementById('m1-sum-txt');
+          if(sumEl){sumEl.style.opacity='1';}
+          if(sumTxt){
+            sumTxt.innerHTML='';
+            const sumSegs=[
+              {t:'20 min',c:C1},{t:' + ',c:'#1e293b'},{t:'1 h',c:C2},{t:' + ',c:'#1e293b'},
+              {t:'15 min',c:C3},{t:' = ',c:'#1e293b'},{t:'1 h 35 min',c:'var(--vert)'}
+            ];
+            let si=0;
+            function nextSeg(){
+              if(si>=sumSegs.length){
+                setTimeout(()=>{
+                  const bigEl=document.getElementById('m1-big');
+                  if(bigEl){bigEl.style.opacity='1';}
+                  const flBig=document.getElementById('fl-big');
+                  if(flBig) animLine(flBig,starts[0],endArrow[2]-PX,900,()=>{
+                    const ptBig=document.getElementById('pt-big');
+                    if(ptBig){ptBig.style.transition='opacity .15s';ptBig.style.opacity='1';}
+                    setTimeout(()=>twLb('lb-big','+1 h 35 min',()=>{
+                      const ph=document.getElementById('m1-phrase');
+                      if(ph){ph.style.opacity='1';}
+                      setTimeout(()=>twEl(ph,"Entre 19h40 et 21h15, il s'est passé 1 h 35 min.",65,()=>sh('m1-fin',600)),400);
+                    }),400);
+                  });
+                },800);
+                return;
+              }
+              const seg=sumSegs[si++];
+              const sp=document.createElement('span');
+              sp.style.color=seg.c; sp.style.fontWeight='800';
+              sumTxt.appendChild(sp);
+              let ci=0;
+              function twc(){if(ci>=seg.t.length){setTimeout(nextSeg,seg.t.trim()===''?0:80);return;}sp.textContent+=seg.t[ci++];setTimeout(twc,65);}
+              twc();
+            }
+            nextSeg();
+          }
+        },1000);
+      }),1200);
+    }),1200);
+  }),400);
+}
+function animerP4M2(){
+  ['p4-btn1','p4-btn2'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  const zone=document.getElementById('p4-zone');if(!zone)return;
+
+  // Mêmes pts que M1 pour alignement
+  // Même géométrie que M1
+  const FLEN2=70, GAP2=6;
+  const x0b=14, w0b=52, w1b=22, w2b=42, w3b=28;
+  const s0b=x0b+w0b+GAP2, s1b=s0b+FLEN2+GAP2+w1b+GAP2, s2b=s1b+FLEN2+GAP2+w2b+GAP2;
+  const p1b=s0b+FLEN2+GAP2, p2b=s1b+FLEN2+GAP2, p3b=s2b+FLEN2+GAP2;
+  const starts2=[s0b,s1b,s2b];
+  const endAr2=[s0b+FLEN2,s1b+FLEN2,s2b+FLEN2];
+  const pts2=[x0b,p1b,p2b,p3b];
+  const PX2=10;
+
+  function arrowSVG2(x1,x2,y,col,idL,idPt,idLb){
+    const xe=x2-PX2;
+    return `<line id="${idL}" x1="${x1}" y1="${y}" x2="${xe}" y2="${y}" stroke="${col}" stroke-width="3.5"
+      stroke-dasharray="${xe-x1}" stroke-dashoffset="${xe-x1}" stroke-linecap="round"/>
+    <path id="${idPt}" d="M${xe} ${y-6} L${x2} ${y} L${xe} ${y+6}" fill="none" stroke="${col}" stroke-width="3" stroke-linejoin="round" opacity="0"/>
+    <text id="${idLb}" x="${(x1+x2)/2}" y="${y-14}" text-anchor="middle" dominant-baseline="auto"
+      font-family="Baloo 2,cursive" font-size="15" font-weight="800" fill="${col}" opacity="0"></text>`;
+  }
+  function lbl2svg(id,x,y,txt,col){
+    return `<text id="${id}" x="${x}" y="${y}" text-anchor="start" dominant-baseline="middle"
+      font-family="Baloo 2,cursive" font-size="15" font-weight="800" fill="${col||'#1e293b'}" opacity="0">${txt}</text>`;
+  }
+
+  const W2=p3b+w3b+10;
+  zone.innerHTML=`
+  <div style="font-size:1rem;font-family:'Baloo 2',cursive;font-weight:800;color:#475569;margin-bottom:6px">On calcule 21h15 − 19h40</div>
+  <div style="overflow-x:auto;padding-bottom:4px">
+  <svg id="svg-m2" width="${W2}" height="100" viewBox="0 0 ${W2} 100" style="display:block">
+    <text x="${pts2[0]}" y="62" text-anchor="start" dominant-baseline="middle" font-family="Baloo 2,cursive" font-size="15" font-weight="800" fill="#1e293b">21h15</text>
+    ${lbl2svg('m2-h2',pts2[1],62,'21h')}
+    ${lbl2svg('m2-h3',pts2[2],62,'20h35')}
+    ${lbl2svg('m2-h4',pts2[3],62,'1h35','#1e293b')}
+    ${arrowSVG2(starts2[0],endAr2[0],62,C3,'m2-fl1','m2-pt1','m2-lb1')}
+    ${arrowSVG2(starts2[1],endAr2[1],62,C2,'m2-fl2','m2-pt2','m2-lb2')}
+    ${arrowSVG2(starts2[2],endAr2[2],62,C1,'m2-fl3','m2-pt3','m2-lb3')}
+  </svg>
+  </div>
+  <!-- "Comme..." typewriter entre les deux SVG -->
+  <div id="m2-note" style="opacity:0;transition:opacity .4s;font-size:1rem;font-family:'Baloo 2',cursive;font-weight:700;margin:6px 0">
+    <span id="m2-note-txt"></span>
+  </div>
+  <!-- Grande flèche animée, même géométrie -->
+  <div id="m2-big" style="opacity:0;transition:opacity .4s;overflow-x:auto">
+  <svg width="${W2}" height="80" viewBox="0 0 ${W2} 80" style="display:block">
+    <text x="${pts2[0]}" y="52" text-anchor="start" dominant-baseline="middle" font-family="Baloo 2,cursive" font-size="15" font-weight="800" fill="#1e293b">21h15</text>
+    <line id="m2-fl-big" x1="${starts2[0]}" y1="52" x2="${starts2[0]}" y2="52" stroke="var(--vert)" stroke-width="3.5" stroke-linecap="round"/>
+    <path id="m2-pt-big" d="M${endAr2[2]-PX2} ${52-6} L${endAr2[2]} 52 L${endAr2[2]-PX2} ${52+6}" fill="none" stroke="var(--vert)" stroke-width="3" stroke-linejoin="round" opacity="0"/>
+    <text x="${pts2[3]}" y="52" text-anchor="start" dominant-baseline="middle" font-family="Baloo 2,cursive" font-size="15" font-weight="800" fill="#1e293b">1h35</text>
+    <text id="m2-lbbig" x="${(starts2[0]+endAr2[2])/2}" y="30" text-anchor="middle" dominant-baseline="middle"
+      font-family="Baloo 2,cursive" font-size="15" font-weight="800" fill="var(--vert)" opacity="0"></text>
+  </svg>
+  </div>
+  <div id="m2-phrase" style="opacity:0;transition:opacity .4s;font-size:.9rem;color:#475569;margin-top:6px;font-style:italic"></div>
+  <div id="m2-fin" style="opacity:0;transition:opacity .4s;display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;justify-content:center">
+    <button class="btn-anim" style="padding:5px 12px;font-size:.8rem;border-color:var(--orange);color:var(--orange);background:var(--orange-clair)" onclick="animerP4M1()">▶ Méthode 1</button>
+    <button class="btn-anim" style="padding:5px 12px;font-size:.8rem;border-color:var(--bleu);color:var(--bleu);background:var(--bleu-clair)" onclick="animerP4M2()">🔁 Méthode 2</button>
+  </div>`;
+
+  function animFl2(idL,idPt,len,dur,cb){
+    const el=document.getElementById(idL);const pt=document.getElementById(idPt);
+    if(!el)return;
+    const s=performance.now();
+    requestAnimationFrame(function tick(n){
+      const t=Math.min((n-s)/dur,1);
+      el.style.strokeDashoffset=len*(1-t);
+      if(t<1) requestAnimationFrame(tick);
+      else{if(pt){pt.style.transition='opacity .15s';pt.style.opacity='1';}if(cb)cb();}
+    });
+  }
+  function sh2(id,delay){setTimeout(()=>{const el=document.getElementById(id);if(el){el.style.transition='opacity .4s';el.style.opacity='1';}},delay);}
+
+  function twLb2(id,txt,cb){const el=document.getElementById(id);if(!el)return;el.style.opacity='1';el.textContent='';let i=0;function nx(){if(i>=txt.length){if(cb)cb();return;}el.textContent+=txt[i++];setTimeout(nx,65);}nx();}
+  function animLine2(el,x1,x2,dur,cb){const s=performance.now();requestAnimationFrame(function tick(n){const t=Math.min((n-s)/dur,1);el.setAttribute('x2',x1+(x2-x1)*t);if(t<1)requestAnimationFrame(tick);else if(cb)cb();});}
+  setTimeout(()=>animFl2('m2-fl1','m2-pt1',FLEN2,700,()=>{
+    sh2('m2-h2',0);setTimeout(()=>twLb2('m2-lb1','−15 min'),600);
+    setTimeout(()=>animFl2('m2-fl2','m2-pt2',FLEN2,700,()=>{
+      setTimeout(()=>twLb2('m2-lb2','−25 min'),0);setTimeout(()=>sh2('m2-h3'),700);
+      setTimeout(()=>animFl2('m2-fl3','m2-pt3',FLEN2,700,()=>{
+        setTimeout(()=>twLb2('m2-lb3','−19h'),0);setTimeout(()=>sh2('m2-h4'),700);
+        setTimeout(()=>{
+          // Typewriter sur "Comme 15 min + 25 min = 40 min"
+          const noteEl=document.getElementById('m2-note');
+          const noteTxt=document.getElementById('m2-note-txt');
+          if(noteEl){noteEl.style.opacity='1';}
+          if(noteEl){noteEl.style.opacity='1';}
+          if(noteTxt){
+            noteTxt.innerHTML='';
+            const noteSegs=[
+              {t:'Car ',c:'#1e293b'},{t:'15 min',c:C3},{t:' + ',c:'#1e293b'},
+              {t:'25 min',c:C2},{t:' = ',c:'#1e293b'},{t:'40 min',c:'var(--vert)'}
+            ];
+            let ni=0;
+            function nextNote(){
+              if(ni>=noteSegs.length){
+                setTimeout(()=>{
+                  const bigEl=document.getElementById('m2-big');
+                  if(bigEl){bigEl.style.opacity='1';}
+                  const flBig=document.getElementById('m2-fl-big');
+                  if(flBig) animLine2(flBig,starts2[0],endAr2[2]-PX2,900,()=>{
+                    const ptBig=document.getElementById('m2-pt-big');
+                    if(ptBig){ptBig.style.transition='opacity .15s';ptBig.style.opacity='1';}
+                    setTimeout(()=>twLb2('m2-lbbig','−19h40',()=>{
+                      const ph=document.getElementById('m2-phrase');
+                      if(ph){ph.style.opacity='1';}
+                      setTimeout(()=>twEl(ph,"Entre 19h40 et 21h15, il s'est passé 1 h 35 min.",65,()=>sh2('m2-fin',600)),400);
+                    }),400);
+                  });
+                },800);
+                return;
+              }
+              const seg=noteSegs[ni++];
+              const sp=document.createElement('span');
+              sp.style.color=seg.c; sp.style.fontWeight='800';
+              noteTxt.appendChild(sp);
+              let ci=0;
+              function twc(){if(ci>=seg.t.length){setTimeout(nextNote,80);return;}sp.textContent+=seg.t[ci++];setTimeout(twc,65);}
+              twc();
+            }
+            nextNote();
+          }
+        },1000);
+      }),1200);
+    }),1200);
+  }),400);
+}
+
+// ── Page 5 : multiplier des durées ─────────────────────────────────────────
+function animerP5mult(){
+  const btn=document.getElementById('m5-btn');
+  if(btn) btn.style.display='none';
+  const VIO='#7c3aed', ORA='#f97316', RED='#e11d48', VERT='#16a34a', NOIR='#1e293b';
+
+  function setStyle(id, color, bold, big){
+    const el=document.getElementById(id);
+    if(!el) return;
+    if(color) el.style.color=color;
+    el.style.fontWeight=bold?'900':'800';
+    el.style.fontSize=big?'1.2em':'1em';
+    el.style.transition='color .3s, font-size .3s';
+  }
+  function reset(id){ setStyle(id, NOIR, false, false); }
+  function p(ms,cb){setTimeout(cb,ms);}
+
+  // Phase 1 : 3 × 2h → 6h (violet)
+  p(300,()=>{
+    setStyle('m5-3a',VIO,true,true);
+    p(400,()=>{
+      setStyle('m5-xa',VIO,true,true);
+      p(400,()=>{
+        setStyle('m5-2h',VIO,true,true);
+        p(600,()=>{
+          // "6h" apparaît en violet
+          const res=document.getElementById('m5-res');
+          if(res){res.style.color=VIO;res.textContent='';}
+          const det=document.getElementById('m5-detail');
+          if(det){det.innerHTML='';}
+          // Typewriter "6 h"
+          let t1='6 h', i=0;
+          function tw1(){if(!res||i>=t1.length)return p(1000,phase2);res.textContent+=t1[i++];setTimeout(tw1,80);}
+          tw1();
+        });
+      });
+    });
+  });
+
+  function phase2(){
+    // 3 × 2h → noir
+    reset('m5-3a'); reset('m5-xa'); reset('m5-2h');
+    p(500,()=>{
+      // 3 × 45 → orange
+      setStyle('m5-3a',ORA,true,true);
+      p(400,()=>{
+        setStyle('m5-xb',ORA,true,true); // le " " devient " × "
+        const xb=document.getElementById('m5-xb');
+        if(xb) xb.textContent=' × ';
+        p(400,()=>{
+          setStyle('m5-45',ORA,true,true);
+          p(600,()=>{
+            // Ajouter " + 135 min" après "6 h"
+            const res=document.getElementById('m5-res');
+            let t2=' + 135 min', i=0;
+            const span=document.createElement('span');
+            span.style.color=NOIR;
+            res.appendChild(span); // pour le "+"
+            span.textContent=' + ';
+            const span2=document.createElement('span');
+            span2.id='m5-135';
+            span2.style.color=ORA;
+            span2.style.fontWeight='800';
+            res.appendChild(span2);
+            let t3='135 min', j=0;
+            function tw3(){if(j>=t3.length)return p(1000,phase3);span2.textContent+=t3[j++];setTimeout(tw3,80);}
+            tw3();
+          });
+        });
+      });
+    });
+  }
+
+  function phase3(){
+    // 3 × 45 → noir
+    reset('m5-3a');
+    const xb=document.getElementById('m5-xb');
+    if(xb){xb.textContent=' ';xb.style.color=NOIR;xb.style.fontWeight='800';}
+    reset('m5-45');
+    p(500,()=>{
+      // "135 min" grossit
+      const s135=document.getElementById('m5-135');
+      if(s135){s135.style.fontSize='1.2em';}
+      p(600,()=>{
+        // Se transforme en "60 min + 60 min + 15 min"
+        if(s135){
+          s135.style.transition='opacity .3s';s135.style.opacity='0';
+          setTimeout(()=>{
+            s135.innerHTML='<span id="m5-60a" style="color:'+ORA+';font-weight:800">60 min</span>'
+              +' + <span id="m5-60b" style="color:'+ORA+';font-weight:800">60 min</span>'
+              +' + <span id="m5-15" style="color:'+ORA+';font-weight:800">15 min</span>';
+            s135.style.opacity='1';s135.style.fontSize='';
+          },330);
+        }
+        p(1000+330,phase4);
+      });
+    });
+  }
+
+  function phase4(){
+    // Les deux "60 min" passent en rouge foncé + mis en valeur
+    ['m5-60a','m5-60b'].forEach(id=>{setStyle(id,RED,true,true);});
+    p(700,()=>{
+      // Chacun se transforme en "1 h"
+      ['m5-60a','m5-60b'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el){
+          el.style.transition='opacity .3s';el.style.opacity='0';
+          setTimeout(()=>{el.textContent='1 h';el.style.opacity='1';el.style.fontSize='';},330);
+        }
+      });
+      p(500+330,()=>{
+        // Les deux "1 h" passent en violet
+        ['m5-60a','m5-60b'].forEach(id=>{setStyle(id,VIO,true,false);});
+        p(1000,phase5);
+      });
+    });
+  }
+
+  function phase5(){
+    // "6 h + 1 h + 1 h" → "8 h", le "+ 15 min" orange reste
+    const res=document.getElementById('m5-res');
+    // Sauvegarder le span "+ 15 min" (m5-15) avant de réécrire res
+    const s15=document.getElementById('m5-15');
+    const saved15=s15?s15.cloneNode(true):null;
+    if(res){
+      res.style.transition='opacity .3s';res.style.opacity='0';
+      setTimeout(()=>{
+        res.innerHTML='<span id="m5-8h" style="color:'+VIO+';font-weight:800">8 h</span>';
+        // Réinjecter " + 15 min" orange
+        if(saved15){
+          const plus=document.createElement('span');
+          plus.textContent=' + ';plus.style.color='#1e293b';
+          res.appendChild(plus);
+          saved15.id='m5-15b';
+          res.appendChild(saved15);
+        }
+        res.style.opacity='1';
+      },330);
+    }
+    p(1000+330,()=>{
+      const fin=document.getElementById('m5-final');
+      if(fin){fin.style.opacity='1';}
+      twEl(fin,'3 × 2 h 45 min = 8 h 15 min',70,()=>{
+        const info=document.getElementById('m5-info');
+        if(info){info.style.transition='opacity .5s';info.style.opacity='1';}
+      });
+    });
+  }
+}
+
+const STEPS=[
+
+// PAGE 1
+()=>`
+<div class="step-title pop">💡 Calculer des durées</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> On peut avoir besoin d'additionner ou soustraire des durées : combien de temps dure un trajet, une activité, une journée de travail…</div>
+<p class="step-text fade-in">Pour pouvoir ajouter des durées, il faut que les unités soient les mêmes.<br>
+Par exemple on ajoute des secondes avec des secondes,<br>
+ou on ajoute des minutes avec des minutes.</p>
+<div class="info bleu fade-in">
+  Comme pour les euros et centimes : on n'additionne pas directement des euros avec des centimes, on les transforme d'abord.
+</div>
+`,
+
+// PAGE 2 — additionner
+()=>`
+<div class="step-title pop">✏️ Additionner des durées</div>
+<p class="step-text fade-in" style="font-size:.95rem">On veut calculer 30 minutes + 45 minutes.</p>
+<div style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;max-width:520px">
+
+  <div style="background:#f8faff;border-radius:12px;padding:14px 18px;width:100%">
+    <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:1.15rem;min-height:2em">
+      <span id="p2-calc" style="color:#1e293b">30 min + 45 min = <span style="color:#94a3b8">…</span></span>
+    </div>
+    <div id="p2-comment" style="opacity:0;transition:opacity .4s;font-size:.78rem;color:#64748b;margin-top:8px">
+      On transforme 60 minutes en une heure.
+    </div>
+    <div id="p2-result" style="opacity:0;transition:opacity .5s;margin-top:12px;font-family:'Baloo 2',cursive;font-weight:800;font-size:1.1rem;color:var(--vert);text-align:center;border-top:2px solid #d1fae5;padding-top:10px">
+      30 min + 45 min = <strong>1 h 15 min</strong>
+    </div>
+  </div>
+
+  <!-- Boutons méthode 1 et 2 visibles dès le départ -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;width:100%">
+    <button id="p2-btn1" class="btn-anim" style="padding:7px 16px;font-size:.88rem;border-color:var(--vert);color:var(--vert);background:var(--vert-clair)" onclick="animerP2Methode1()">▶ Méthode 1</button>
+    <button id="p2-btn2" class="btn-anim" style="padding:7px 16px;font-size:.88rem;border-color:var(--orange);color:var(--orange);background:var(--orange-clair)" onclick="animerP2Methode2()">▶ Méthode 2</button>
+  </div>
+
+</div>
+`,
+
+// PAGE 3 — addition avec dépassement min et sec
+()=>`
+<div class="step-title pop">✏️ Additionner des durées</div>
+<p class="step-text fade-in" style="font-size:.95rem">On veut calculer 25 min 30 sec + 40 min 50 sec.</p>
+<div style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;max-width:560px">
+
+  <div style="background:#f8faff;border-radius:12px;padding:14px 18px;width:100%">
+    <!-- Ligne de calcul principale -->
+    <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:1rem;min-height:2.4em;line-height:1.9">
+      <span style="color:#1e293b">
+        <span id="q25">25 min</span> <span id="q30" style="color:#1e293b">30 sec</span>
+        + <span id="q40">40 min</span> <span id="q50" style="color:#1e293b">50 sec</span>
+        = <span id="q-min" style="color:#94a3b8">…</span><span id="q-sec"></span>
+      </span>
+    </div>
+    <!-- Zone résultat intermédiaire (réécrite au fil de l'animation) -->
+    <div id="q3-mid" style="font-family:'Baloo 2',cursive;font-weight:800;font-size:.95rem;min-height:1.4em;color:#1e293b;margin-top:4px"></div>
+    <!-- Résultat final -->
+    <div id="q3-res" style="opacity:0;transition:opacity .5s;margin-top:12px;font-family:'Baloo 2',cursive;font-weight:800;font-size:1.05rem;color:var(--vert);text-align:center;border-top:2px solid #d1fae5;padding-top:10px">
+      25 min 30 sec + 40 min 50 sec = <strong>1 h 6 min 20 sec</strong>
+    </div>
+  </div>
+
+  <div style="width:100%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+    <div id="p3-rejouer" style="opacity:0;transition:opacity .4s">
+      <button class="btn-anim" style="padding:5px 14px;font-size:.82rem;border-color:var(--vert);color:var(--vert);background:var(--vert-clair)" onclick="animerP3seq()">🔁 Rejouer</button>
+    </div>
+    <button id="p3-btn" class="btn-anim" style="padding:7px 16px;font-size:.88rem" onclick="animerP3seq()">▶ Compléter</button>
+  </div>
+
+</div>
+`,
+
+// PAGE 4 — soustraire
+()=>`
+<div class="step-title pop">✏️ Soustraire des durées</div>
+<p class="step-text fade-in" style="font-size:.95rem">Combien de temps entre 19h40 et 21h15 ?</p>
+<div style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;max-width:580px">
+
+  <!-- Choix méthode -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;width:100%">
+    <button id="p4-btn1" class="btn-anim" style="padding:7px 16px;font-size:.88rem;border-color:var(--orange);color:var(--orange);background:var(--orange-clair)" onclick="animerP4M1()">▶ Méthode 1</button>
+    <button id="p4-btn2" class="btn-anim" style="padding:7px 16px;font-size:.88rem;border-color:var(--bleu);color:var(--bleu);background:var(--bleu-clair)" onclick="animerP4M2()">▶ Méthode 2</button>
+  </div>
+
+  <!-- Zone animation -->
+  <div id="p4-zone" style="width:100%;font-family:'Baloo 2',cursive;font-weight:800"></div>
+
+</div>
+`,
+
+// PAGE 5 — multiplier (intercalée)
+()=>`
+<div class="step-title pop">✏️ Multiplier des durées</div>
+<p class="step-text fade-in" style="font-size:.95rem">On veut calculer 3 × 2 h 45 min.</p>
+<div style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;max-width:560px">
+  <div style="background:#f8faff;border-radius:12px;padding:14px 18px;width:100%">
+    <div id="m5-calc" style="font-family:'Baloo 2',cursive;font-weight:800;font-size:1.05rem;min-height:2.2em;line-height:1.9">
+      <span id="m5-3a" style="color:#1e293b">3</span><span id="m5-xa" style="color:#1e293b"> × </span><span id="m5-2h" style="color:#1e293b">2 h</span><span id="m5-xb" style="color:#1e293b"> </span><span id="m5-45" style="color:#1e293b">45 min</span><span id="m5-eq" style="color:#1e293b"> = </span><span id="m5-res" style="color:#94a3b8">…</span>
+    </div>
+    <div id="m5-final" style="opacity:0;transition:opacity .5s;font-family:'Baloo 2',cursive;font-weight:800;font-size:1.1rem;color:var(--vert);margin-top:8px;border-top:2px solid #d1fae5;padding-top:8px"></div>
+  </div>
+  <div style="width:100%;display:flex;justify-content:flex-end">
+    <button id="m5-btn" class="btn-anim" style="padding:7px 16px;font-size:.88rem" onclick="animerP5mult()">▶ Calculer</button>
+  </div>
+  <div id="m5-info" style="opacity:0;transition:opacity .4s;background:var(--bleu-clair);border-left:4px solid var(--bleu);border-radius:10px;padding:12px 16px;font-size:.88rem;font-weight:600;color:#1e3a5f;width:100%">
+    On multiplie chaque unité par 3 :<br>
+    – les heures sont multipliées par 3<br>
+    – les minutes sont multipliées par 3<br>
+    Puis on transforme les minutes en heures.
+  </div>
+</div>
+`,
+
+// PAGE 6 — bilan
+()=>`
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  <div class="recap-item fade-in" style="border-left-color:var(--bleu)">
+    <div class="recap-num" style="background:var(--bleu)">1</div>
+    <span>Pour additionner ou soustraire des durées, on calcule les mêmes unités ensemble : les secondes avec les secondes, les minutes avec les minutes…</span>
+  </div>
+  <div class="recap-item fade-in" style="animation-delay:.08s;border-left-color:var(--violet)">
+    <div class="recap-num" style="background:var(--violet)">2</div>
+    <span>Pour multiplier une durée par un nombre, on <strong>multiplie chaque unité</strong> par ce nombre.</span>
+  </div>
+  <div class="recap-item fade-in" style="animation-delay:.16s;border-left-color:var(--primary)">
+    <div class="recap-num" style="background:var(--primary)">3</div>
+    <span>Si les secondes dépassent 60, on peut fabriquer une minute supplémentaire.<br>
+    Si les minutes dépassent 60, on peut fabriquer une heure supplémentaire.<br>
+    Si les heures dépassent 24, on peut fabriquer un jour supplémentaire.</span>
+  </div>
+</div>
+`,
+];
+
+let cur=0;
+const NSTEPS=STEPS.length;
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur]();card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(NSTEPS-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator');ind.innerHTML='';
+  for(let i=0;i<NSTEPS;i++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(i===cur?' active':i<cur?' done':'');
+    d.textContent=i<cur?'✓':i+1;ind.appendChild(d);
+  }
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${NSTEPS}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===NSTEPS-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===NSTEPS-1?0:cur+1;render();}
+function prev(){if(cur>0){cur--;render();}}
+render();
+</script>
+</body>
+</html>

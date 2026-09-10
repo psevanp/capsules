@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>GM8 — Convertir des unités d'aires</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --primary:#e11d48;--primary2:#fb7185;--primary-clair:#ffe4e6;
+  --bg:#fff1f2;
+  --bleu:#1a73e8;--bleu-clair:#e8f0fe;
+  --orange:#ea580c;
+  --vert:#16a34a;--vert-clair:#f0fdf4;
+  --violet:#7c3aed;--violet-clair:#f5f3ff;
+  --teal:#0d9488;--teal-clair:#f0fdfa;
+  --card:#fff;--texte:#1e293b;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+header{display:flex;justify-content:center;margin-bottom:22px;}
+.header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+.badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--primary);background:var(--primary-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--primary);flex-shrink:0;}
+.tache-label{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--primary);line-height:1.3;}
+.progress-bar-wrap{width:100%;max-width:680px;background:var(--primary-clair);border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .5s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+.step-dot{width:34px;height:34px;border-radius:50%;background:var(--primary-clair);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--primary2);transition:all .4s;border:2px solid transparent;}
+.step-dot.active{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+.card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:360px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(0,0,0,.07);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .45s ease both;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;color:var(--primary);text-align:center;line-height:1.3;}
+.step-text{font-size:.97rem;line-height:1.7;text-align:center;max-width:580px;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:580px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 16px;font-weight:600;font-size:.92rem;line-height:1.6;max-width:580px;width:100%;}
+.info.vert{background:var(--vert-clair);border-left:4px solid var(--vert);color:#14532d;}
+.info.bleu{background:var(--bleu-clair);border-left:4px solid var(--bleu);color:#1e3a5f;}
+.info.violet{background:var(--violet-clair);border-left:4px solid var(--violet);color:#4c1d95;}
+.info.primary{background:var(--primary-clair);border-left:4px solid var(--primary);color:#9f1239;}
+.btn-anim{border:2px solid var(--bleu);background:var(--bleu-clair);color:var(--bleu);font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;transition:all .2s;}
+.btn-anim:hover{background:var(--bleu);color:#fff;}
+.recap-list{display:flex;flex-direction:column;gap:12px;width:100%;max-width:580px;}
+.recap-item{display:flex;gap:12px;align-items:flex-start;background:#f8faff;border-radius:12px;padding:11px 16px;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;}
+.nav{display:flex;align-items:center;justify-content:space-between;max-width:680px;width:100%;margin-top:20px;gap:12px;}
+.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;border-radius:12px;padding:11px 22px;cursor:pointer;transition:all .25s;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-prev:disabled{opacity:.35;cursor:default;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;}
+.btn-next:hover{opacity:.9;}
+.step-counter{font-family:'Baloo 2',cursive;font-weight:700;color:var(--primary);font-size:.95rem;white-space:nowrap;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">GM8</div>
+    <div class="tache-label">Convertir des unités d'aires</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+
+<script>
+function showEl(id, delay){
+  setTimeout(()=>{
+    const el=document.getElementById(id);
+    if(el){el.style.transition='opacity 0.4s';el.style.opacity='1';}
+  }, delay||0);
+}
+function hideEl(id){
+  const el=document.getElementById(id);
+  if(el){el.style.transition='none';el.style.opacity='0';}
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PAGE 2 — 1 cm² = 100 mm²
+// Carré de SZ px de côté, divisé en NDIV×NDIV = 10×10 petits carrés
+const SZ = 300;
+const NDIV = 10;
+const MSIZE = SZ/NDIV; // 30px par mm
+const OX2 = 36, OY2 = 48;
+const W2 = SZ + OX2 + 20, H2 = SZ + OY2 + 8;
+
+function svgP2(){
+  let s=`<svg id="svg-p2" width="${W2}" height="${H2}" viewBox="0 0 ${W2} ${H2}" style="display:block;width:100%;max-width:${W2}px;height:auto;overflow:visible">`;
+  s+=`<defs>
+    <marker id="ma1" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--bleu)"/></marker>
+    <marker id="ma2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto-start-reverse"><path d="M0,0 L6,3 L0,6 Z" fill="var(--bleu)"/></marker>
+  </defs>`;
+
+  // Segment visible = côté haut horizontal du carré
+  s+=`<line id="segment-1cm" x1="${OX2}" y1="${OY2}" x2="${OX2+SZ}" y2="${OY2}" stroke="var(--bleu)" stroke-width="3"/>`;
+  s+=`<line x1="${OX2}" y1="${OY2-22}" x2="${OX2+SZ}" y2="${OY2-22}" stroke="var(--bleu)" stroke-width="2" marker-start="url(#ma2)" marker-end="url(#ma1)"/>`;
+  s+=`<text x="${OX2+SZ/2}" y="${OY2-26}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--bleu)">1 cm</text>`;
+
+  // Fond blanc
+  s+=`<rect id="carre-bg" x="${OX2}" y="${OY2}" width="${SZ}" height="${SZ}" fill="white" stroke="#64748b" stroke-width="2" opacity="0"/>`;
+  // Remplissage bleu
+  s+=`<rect id="fill-carre" x="${OX2}" y="${OY2}" width="${SZ}" height="${SZ}" fill="var(--bleu)" opacity="0"/>`;
+
+  // Lignes de subdivision
+  for(let i=1;i<NDIV;i++){
+    s+=`<line id="vl-${i}" x1="${OX2+i*MSIZE}" y1="${OY2}" x2="${OX2+i*MSIZE}" y2="${OY2+SZ}" stroke="#94a3b8" stroke-width="1" opacity="0"/>`;
+    s+=`<line id="hl-${i}" x1="${OX2}" y1="${OY2+i*MSIZE}" x2="${OX2+SZ}" y2="${OY2+i*MSIZE}" stroke="#94a3b8" stroke-width="1" opacity="0"/>`;
+  }
+
+  // Labels "1mm" haut (au-dessus de chaque colonne)
+  for(let i=0;i<NDIV;i++){
+    s+=`<text id="lmm-h-${i}" x="${OX2+i*MSIZE+MSIZE/2}" y="${OY2-2}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="9" font-weight="700" fill="var(--violet)" opacity="0">1mm</text>`;
+  }
+  // Labels "1mm" gauche (rotatés)
+  for(let j=0;j<NDIV;j++){
+    const my=OY2+j*MSIZE+MSIZE/2;
+    s+=`<text id="lmm-v-${j}" x="${OX2-6}" y="${my+4}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="9" font-weight="700" fill="var(--violet)" transform="rotate(-90,${OX2-6},${my})" opacity="0">1mm</text>`;
+  }
+
+  // Petits carrés violets (100) + label "1 mm²" centré dans chacun
+  for(let r=0;r<NDIV;r++){
+    for(let c=0;c<NDIV;c++){
+      const idx=r*NDIV+c;
+      const cx=OX2+c*MSIZE+MSIZE/2, cy=OY2+r*MSIZE+MSIZE/2;
+      s+=`<rect id="mm-${idx}" x="${OX2+c*MSIZE+0.5}" y="${OY2+r*MSIZE+0.5}" width="${MSIZE-1}" height="${MSIZE-1}" fill="#a78bfa" opacity="0"/>`;
+      s+=`<text id="mml1-${idx}" x="${cx}" y="${cy-2}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="#e9d5ff" stroke="var(--violet)" stroke-width="2" paint-order="stroke" opacity="0">1</text>`;
+      s+=`<text id="mml2-${idx}" x="${cx}" y="${cy+8}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="#e9d5ff" stroke="var(--violet)" stroke-width="2" paint-order="stroke" opacity="0">mm²</text>`;
+    }
+  }
+
+  // Label "1 mm²" au centre du grand carré (apparaît quand tous colorés)
+  s+=`<text id="lbl-mm2-center" x="${OX2+SZ/2}" y="${OY2+SZ/2+48}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="28" font-weight="800" fill="#4c1d95" stroke="white" stroke-width="6" paint-order="stroke" opacity="0">100 mm²</text>`;
+
+  // Contour du grand carré par-dessus tout
+  s+=`<rect id="contour-final" x="${OX2}" y="${OY2}" width="${SZ}" height="${SZ}" fill="none" stroke="#64748b" stroke-width="2" opacity="0"/>`;
+
+  // "1 cm²" EN DERNIER (au-dessus de tout, y compris les violets)
+  s+=`<text id="lbl-cm2" x="${OX2+SZ/2}" y="${OY2+SZ/2+6}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="26" font-weight="800" fill="white" stroke="var(--bleu)" stroke-width="5" paint-order="stroke" opacity="0">1 cm²</text>`;
+
+  // Résultat en bas (géré en HTML, pas en SVG)
+  s+=`</svg>`;
+  return `<div style="display:flex;justify-content:center">${s}</div>`;
+}
+
+function animerP2(){
+  ['carre-bg','fill-carre','lbl-cm2','lbl-mm2-first','lbl-mm2-first2','lbl-mm2-center','contour-final'].forEach(hideEl);
+  const explEl=document.getElementById('expl-p2');
+  if(explEl){explEl.style.transition='none';explEl.style.opacity='0';}
+  for(let i=1;i<NDIV;i++){hideEl('vl-'+i);hideEl('hl-'+i);}
+  for(let i=0;i<NDIV;i++){hideEl('lmm-h-'+i);hideEl('lmm-v-'+i);}
+  for(let k=0;k<NDIV*NDIV;k++){hideEl('mm-'+k);hideEl('mml1-'+k);hideEl('mml2-'+k);}
+
+  let t=0;
+
+  // 1. Carré apparaît + remplissage bleu
+  showEl('carre-bg', t);
+  setTimeout(()=>{
+    const el=document.getElementById('fill-carre');
+    if(!el) return;
+    el.style.opacity='0.38';
+    el.style.clipPath='polygon(0% 100%,100% 100%,100% 100%,0% 100%)';
+    const s=performance.now();
+    requestAnimationFrame(function step(n){
+      const tt=Math.min((n-s)/1000,1),e=tt<.5?2*tt*tt:(4-2*tt)*tt-1;
+      el.style.clipPath=`polygon(0% ${(1-e)*100}%,100% ${(1-e)*100}%,100% 100%,0% 100%)`;
+      if(tt<1) requestAnimationFrame(step);
+      else showEl('lbl-cm2');
+    });
+  }, t+100);
+  t+=1400;
+
+  // 2. Pause 1s puis labels "1mm"
+  t+=1000;
+  for(let i=0;i<NDIV;i++){
+    showEl('lmm-h-'+i, t+i*50);
+    showEl('lmm-v-'+i, t+i*50);
+  }
+  t+=NDIV*50+400;
+
+  // 3. Quadrillage
+  for(let i=1;i<NDIV;i++){
+    showEl('vl-'+i, t+(i-1)*60);
+    showEl('hl-'+i, t+(i-1)*60);
+  }
+  t+=(NDIV-1)*60+400;
+
+  // 4. Premier carré violet + ses labels
+  showEl('mm-0', t);
+  showEl('mml1-0', t+150);
+  showEl('mml2-0', t+150);
+  t+=700;
+
+  // 5. Les 99 autres avec leurs labels
+  for(let k=1;k<NDIV*NDIV;k++){
+    showEl('mm-'+k, t+(k-1)*16);
+    showEl('mml1-'+k, t+(k-1)*16+120);
+    showEl('mml2-'+k, t+(k-1)*16+120);
+  }
+  t+=(NDIV*NDIV-1)*16+400;
+
+  // 6. "100 mm²" au centre + "1 cm²" reste par-dessus (déjà visible)
+  showEl('lbl-mm2-center', t);
+  showEl('contour-final', t);
+  setTimeout(()=>{
+    const explEl=document.getElementById('expl-p2');
+    if(explEl){explEl.style.transition='opacity 0.5s';explEl.style.opacity='1';}
+  }, t+400);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PAGE 3 — 1 m² = 10 000 cm²
+// Grand carré = 1 m = 300px
+// Divisé en 10×10 blocs de 10cm×10cm (chaque bloc = 100 cm²)
+// Chaque bloc de 10cm contient 10×10 = 100 petits cm²
+// Représentation : le premier bloc s'anime cm² par cm², les autres apparaissent bloc par bloc
+// Damier : blocs pairs en orange clair, blocs impairs en orange foncé
+
+const SZ3=300, N3=10, MS3=SZ3/N3; // MS3=30px = 10cm en miniature
+const CM3=MS3/10; // 3px = 1 cm en miniature
+const OX3=36, OY3=48;
+const W3=SZ3+OX3+60, H3=SZ3+OY3+10;
+const COL_CLAIR='#fed7aa'; // orange clair
+const COL_FONCE='#ea580c'; // orange foncé
+
+function svgP3(){
+  let s=`<svg id="svg-p3" width="${W3}" height="${H3}" viewBox="0 0 ${W3} ${H3}" style="display:block;width:100%;max-width:${W3}px;height:auto;overflow:visible">`;
+  s+=`<defs>
+    <marker id="mb1" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--bleu)"/></marker>
+    <marker id="mb2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto-start-reverse"><path d="M0,0 L6,3 L0,6 Z" fill="var(--bleu)"/></marker>
+    <marker id="mo1" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--orange)"/></marker>
+  </defs>`;
+  const mkB=`marker-start="url(#mb2)" marker-end="url(#mb1)"`;
+
+  // Côté haut visible dès le départ (représente 1 m)
+  s+=`<line x1="${OX3}" y1="${OY3}" x2="${OX3+SZ3}" y2="${OY3}" stroke="var(--bleu)" stroke-width="3"/>`;
+  // Double flèche "1 m" au-dessus
+  s+=`<line x1="${OX3}" y1="${OY3-16}" x2="${OX3+SZ3}" y2="${OY3-16}" stroke="var(--bleu)" stroke-width="2" ${mkB}/>`;
+  s+=`<text x="${OX3+SZ3/2}" y="${OY3-20}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--bleu)">1 m</text>`;
+  // "100 cm" en orange sous la double flèche (visible au départ, masqué quand les 10cm apparaissent)
+  s+=`<text id="lbl-100cm" x="${OX3+SZ3/2}" y="${OY3-6}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="10" font-weight="700" fill="var(--orange)">100 cm</text>`;
+
+  // Carré externe "1 cm²" : affiché à gauche du grand carré avant l'homothétie
+  // Taille initiale grande (SBig=50px), centré verticalement sur SZ3/2
+  const SBig=50, SBigX=OX3-SBig-16, SBigY=OY3+SZ3/2-SBig/2;
+  // Le carré animé (position et taille contrôlées par JS via transform)
+  s+=`<g id="homothetie-g" opacity="0">
+    <rect id="homo-rect" x="${SBigX}" y="${SBigY}" width="${SBig}" height="${SBig}" fill="${COL_CLAIR}" stroke="var(--orange)" stroke-width="1.5" rx="1"/>
+    <line id="homo-top" x1="${SBigX}" y1="${SBigY-10}" x2="${SBigX+SBig}" y2="${SBigY-10}" stroke="var(--orange)" stroke-width="1.5" marker-start="url(#mb2)" marker-end="url(#mb1)"/>
+    <text id="homo-top-lbl" x="${SBigX+SBig/2}" y="${SBigY-13}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="10" font-weight="800" fill="var(--orange)">1 cm</text>
+    <line id="homo-left" x1="${SBigX-10}" y1="${SBigY}" x2="${SBigX-10}" y2="${SBigY+SBig}" stroke="var(--orange)" stroke-width="1.5" marker-start="url(#mb2)" marker-end="url(#mb1)"/>
+    <text id="homo-left-lbl" x="${SBigX-13}" y="${SBigY+SBig/2+4}" text-anchor="end" font-family="Baloo 2,cursive" font-size="10" font-weight="800" fill="var(--orange)">1 cm</text>
+    <text id="homo-inner" x="${SBigX+SBig/2}" y="${SBigY+SBig/2+4}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="#c2410c" stroke="white" stroke-width="2" paint-order="stroke" opacity="0">1 cm²</text>
+  </g>`;
+
+  // Grand carré fond blanc
+  s+=`<rect id="carre-p3" x="${OX3}" y="${OY3}" width="${SZ3}" height="${SZ3}" fill="white" stroke="#64748b" stroke-width="2" opacity="0"/>`;
+
+  // 100 blocs de 10cm×10cm (10×10), chaque bloc = rectangle plein + label "100 cm²"
+  // (le bloc 0 a son label déclaré séparément après les cm², pour être au-dessus)
+  for(let br=0;br<N3;br++){
+    for(let bc=0;bc<N3;bc++){
+      const bidx=br*N3+bc;
+      const bx=OX3+bc*MS3, by=OY3+br*MS3;
+      const col=(br+bc)%2===0?COL_CLAIR:COL_FONCE;
+      const strokeCol=(br+bc)%2===0?'#c2410c':'#7c2d12';
+      s+=`<rect id="bloc-${bidx}" x="${bx+0.5}" y="${by+0.5}" width="${MS3-1}" height="${MS3-1}" fill="${col}" opacity="0"/>`;
+      if(bidx>0){
+        s+=`<text id="bloc-lbl1-${bidx}" x="${bx+MS3/2}" y="${by+MS3/2-3}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="9" font-weight="800" fill="white" stroke="${strokeCol}" stroke-width="2" paint-order="stroke" opacity="0">100</text>`;
+        s+=`<text id="bloc-lbl2-${bidx}" x="${bx+MS3/2}" y="${by+MS3/2+6}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="9" font-weight="800" fill="white" stroke="${strokeCol}" stroke-width="2" paint-order="stroke" opacity="0">cm²</text>`;
+      }
+    }
+  }
+
+  // Les 100 petits cm² du premier bloc en damier
+  for(let cr=0;cr<10;cr++){
+    for(let cc=0;cc<10;cc++){
+      const cidx=cr*10+cc;
+      const cx=OX3+cc*CM3, cy=OY3+cr*CM3;
+      const col3=(cr+cc)%2===0?COL_CLAIR:'#fb923c'; // damier cohérent avec le bloc clair
+      s+=`<rect id="cm2-${cidx}" x="${cx+0.3}" y="${cy+0.3}" width="${CM3-0.6}" height="${CM3-0.6}" fill="${col3}" opacity="0"/>`;
+    }
+  }
+
+  // Label "100 cm²" sur le premier bloc (affiché en fin de remplissage des 100 cm²)
+  const b0cx=OX3+MS3/2, b0cy=OY3+MS3/2;
+  s+=`<text id="bloc-lbl1-0" x="${b0cx}" y="${b0cy-4}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="9.5" font-weight="800" fill="white" stroke="#c2410c" stroke-width="2" paint-order="stroke" opacity="0">100</text>`;
+  s+=`<text id="bloc-lbl2-0" x="${b0cx}" y="${b0cy+8}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="9.5" font-weight="800" fill="white" stroke="#c2410c" stroke-width="2" paint-order="stroke" opacity="0">cm²</text>`;
+
+  // Lignes de subdivision (10×10 blocs)
+  for(let i=1;i<N3;i++){
+    s+=`<line id="vl3-${i}" x1="${OX3+i*MS3}" y1="${OY3}" x2="${OX3+i*MS3}" y2="${OY3+SZ3}" stroke="#94a3b8" stroke-width="1" opacity="0"/>`;
+    s+=`<line id="hl3-${i}" x1="${OX3}" y1="${OY3+i*MS3}" x2="${OX3+SZ3}" y2="${OY3+i*MS3}" stroke="#94a3b8" stroke-width="1" opacity="0"/>`;
+  }
+
+  // Labels "10 cm" en haut et à gauche de chaque subdivision
+  for(let i=0;i<N3;i++){
+    s+=`<text id="lcm-h-${i}" x="${OX3+i*MS3+MS3/2}" y="${OY3-2}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="8" font-weight="700" fill="var(--orange)" opacity="0">10cm</text>`;
+    s+=`<text id="lcm-v-${i}" x="${OX3-4}" y="${OY3+i*MS3+MS3/2}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="8" font-weight="700" fill="var(--orange)" transform="rotate(-90,${OX3-4},${OY3+i*MS3+MS3/2})" opacity="0">10cm</text>`;
+  }
+
+  // Label "1 m²" au centre
+  s+=`<text id="lbl-m2" x="${OX3+SZ3/2}" y="${OY3+SZ3/2+8}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="26" font-weight="800" fill="white" stroke="var(--bleu)" stroke-width="5" paint-order="stroke" opacity="0">1 m²</text>`;
+
+  // Label "10 000 cm²" au centre (en fin)
+  s+=`<text id="lbl-10000" x="${OX3+SZ3/2}" y="${OY3+SZ3/2+32}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="26" font-weight="800" fill="white" stroke="#92400e" stroke-width="5" paint-order="stroke" opacity="0">10 000 cm²</text>`;
+
+  // Contour final
+  s+=`<rect id="contour-p3" x="${OX3}" y="${OY3}" width="${SZ3}" height="${SZ3}" fill="none" stroke="#64748b" stroke-width="2" opacity="0"/>`;
+
+  s+=`</svg>`;
+  return `<div style="display:flex;justify-content:center">${s}</div>`;
+}
+
+function animerP3(){
+  // Reset
+  ['carre-p3','lbl-m2','lbl-10000','contour-p3'].forEach(hideEl);
+  const hg0=document.getElementById('homothetie-g');
+  if(hg0){hg0.style.transition='none';hg0.style.opacity='0';hg0.style.transform='none';}
+  const hi=document.getElementById('homo-inner'); if(hi){hi.style.transition='none';hi.style.opacity='0';}
+  const lbl100=document.getElementById('lbl-100cm'); if(lbl100){lbl100.style.transition='none';lbl100.style.opacity='1';}
+  for(let i=1;i<N3;i++){hideEl('vl3-'+i);hideEl('hl3-'+i);}
+  for(let i=0;i<N3;i++){hideEl('lcm-h-'+i);hideEl('lcm-v-'+i);}
+  for(let k=0;k<N3*N3;k++){hideEl('bloc-'+k);hideEl('bloc-lbl1-'+k);hideEl('bloc-lbl2-'+k);}
+  // Reset label du premier bloc (déclaré séparément)
+  hideEl('bloc-lbl1-0'); hideEl('bloc-lbl2-0');
+  for(let k=0;k<100;k++) hideEl('cm2-'+k);
+  const explEl=document.getElementById('expl-p3');
+  if(explEl){explEl.style.transition='none';explEl.style.opacity='0';}
+
+  let t=0;
+
+  // 1. Grand carré apparaît
+  showEl('carre-p3', t);
+  showEl('lbl-m2', t+200);
+  t+=800;
+
+  // 2. Carré externe "1 cm²" apparaît à gauche avec ses mesures
+  const hg=document.getElementById('homothetie-g');
+  if(hg){hg.style.transition='none';hg.style.opacity='0';}
+  setTimeout(()=>{if(hg){hg.style.transition='opacity 0.4s';hg.style.opacity='1';}}, t);
+  t+=800;
+  // "1 cm²" apparaît à l'intérieur
+  showEl('homo-inner', t);
+  t+=900;
+
+  // 3. Mesures disparaissent, puis homothétie vers cm2-0
+  // Position finale : OX3, OY3 (coin haut-gauche du grand carré), taille CM3×CM3
+  // Position initiale : SBigX, SBigY, taille SBig
+  // On anime via JS : translate + scale
+  setTimeout(()=>{
+    // Masquer mesures
+    ['homo-top','homo-top-lbl','homo-left','homo-left-lbl'].forEach(id=>{
+      const e=document.getElementById(id); if(e){e.style.transition='opacity 0.3s';e.style.opacity='0';}
+    });
+    setTimeout(()=>{
+      // Homothétie : le groupe se déplace et rétrécit
+      const SBig=50, SBigX=OX3-SBig-16, SBigY=OY3+SZ3/2-SBig/2;
+      const destX=OX3, destY=OY3, destS=CM3;
+      const scale=destS/SBig;
+      const rect=document.getElementById('homo-rect');
+      const inner=document.getElementById('homo-inner');
+      if(hg){
+        hg.style.transition='transform 1.2s ease-in-out';
+        // translate du coin haut-gauche du carré vers cm2-0, scale depuis le coin haut-gauche
+        const tx=destX-SBigX, ty=destY-SBigY;
+        hg.style.transformOrigin=`${SBigX}px ${SBigY}px`;
+        hg.style.transform=`translate(${tx}px,${ty}px) scale(${scale})`;
+      }
+      setTimeout(()=>{
+        // Une fois arrivé, cacher le groupe externe et allumer cm2-0
+        if(hg){hg.style.transition='none';hg.style.opacity='0';hg.style.transform='none';}
+        showEl('cm2-0');
+        // Reprendre l'animation normale
+        let t2=400;
+        for(let k=1;k<100;k++) showEl('cm2-'+k, t2+(k-1)*25);
+        t2+=99*25+400;
+        showEl('bloc-lbl1-0', t2);
+        showEl('bloc-lbl2-0', t2);
+        t2+=600;
+        // Labels 10cm + quadrillage
+        setTimeout(()=>{ const e2=document.getElementById('lbl-100cm'); if(e2){e2.style.transition='opacity 0.3s';e2.style.opacity='0';} }, t2);
+        for(let i=0;i<N3;i++){showEl('lcm-h-'+i,t2+i*40);showEl('lcm-v-'+i,t2+i*40);}
+        t2+=N3*40+200;
+        for(let i=1;i<N3;i++){showEl('vl3-'+i,t2+(i-1)*50);showEl('hl3-'+i,t2+(i-1)*50);}
+        t2+=(N3-1)*50+400;
+        // Blocs damier
+        for(let k=1;k<N3*N3;k++){
+          showEl('bloc-'+k,t2+(k-1)*30);
+          showEl('bloc-lbl1-'+k,t2+(k-1)*30+150);
+          showEl('bloc-lbl2-'+k,t2+(k-1)*30+150);
+        }
+        t2+=(N3*N3-1)*30+500;
+        showEl('lbl-10000',t2);
+        showEl('contour-p3',t2);
+        setTimeout(()=>{if(explEl){explEl.style.transition='opacity 0.5s';explEl.style.opacity='1';}},t2+400);
+      },1400);
+    },400);
+  }, t);
+  t+=99999; // le reste est géré dans le callback
+
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+const STEPS=[
+
+// PAGE 1
+()=>`
+<div class="step-title pop">💡 Convertir des unités d'aires</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> Les aires peuvent être données dans des unités différentes. Il est important de pouvoir les convertir d'une unité vers une autre.</div>
+<p class="step-text fade-in">Les unités les plus utilisées sont les <strong>m²</strong>, les <strong>cm²</strong>, les <strong>mm²</strong>, les <strong>km²</strong>…</p>
+<div class="info bleu fade-in">
+  <div style="margin-bottom:6px">💡 Le lien entre les unités d'aires dépend du lien entre les unités de longueur correspondantes :</div>
+  <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:.93rem;display:flex;gap:28px;flex-wrap:wrap;justify-content:center;margin:6px 0 10px">
+    <span>1 cm = 10 mm</span>
+    <span>1 m = 100 cm</span>
+    <span>1 km = 1 000 m</span>
+  </div>
+  <div style="margin-bottom:6px">Ordre des unités de longueur :</div>
+  <div style="overflow-x:auto">
+  <table style="border-collapse:separate;border-spacing:0;margin:0 auto;text-align:center;font-size:.9rem">
+    <tr>
+      <td style="border:2px solid var(--bleu);padding:4px 8px;border-radius:6px;font-family:'Baloo 2',cursive;font-weight:800">km</td><td style="padding:0 2px;text-align:center;vertical-align:middle"><svg width="30" height="20" viewBox="0 0 30 20"><defs><marker id="arl" markerWidth="5" markerHeight="5" refX="0" refY="2.5" orient="auto-start-reverse"><path d="M0,0 L5,2.5 L0,5 Z" fill="var(--bleu)"/></marker></defs><text x="15" y="9" text-anchor="middle" font-family="Baloo 2,cursive" font-size="7" font-weight="800" fill="var(--bleu)">×10</text><line x1="4" y1="14" x2="26" y2="14" stroke="var(--bleu)" stroke-width="1.5" marker-start="url(#arl)"/></svg></td><td style="border:2px solid var(--bleu);padding:4px 8px;border-radius:6px;font-family:'Baloo 2',cursive;font-weight:800">hm</td><td style="padding:0 2px;text-align:center;vertical-align:middle"><svg width="30" height="20" viewBox="0 0 30 20"><defs><marker id="arl" markerWidth="5" markerHeight="5" refX="0" refY="2.5" orient="auto-start-reverse"><path d="M0,0 L5,2.5 L0,5 Z" fill="var(--bleu)"/></marker></defs><text x="15" y="9" text-anchor="middle" font-family="Baloo 2,cursive" font-size="7" font-weight="800" fill="var(--bleu)">×10</text><line x1="4" y1="14" x2="26" y2="14" stroke="var(--bleu)" stroke-width="1.5" marker-start="url(#arl)"/></svg></td><td style="border:2px solid var(--bleu);padding:4px 8px;border-radius:6px;font-family:'Baloo 2',cursive;font-weight:800">dam</td><td style="padding:0 2px;text-align:center;vertical-align:middle"><svg width="30" height="20" viewBox="0 0 30 20"><defs><marker id="arl" markerWidth="5" markerHeight="5" refX="0" refY="2.5" orient="auto-start-reverse"><path d="M0,0 L5,2.5 L0,5 Z" fill="var(--bleu)"/></marker></defs><text x="15" y="9" text-anchor="middle" font-family="Baloo 2,cursive" font-size="7" font-weight="800" fill="var(--bleu)">×10</text><line x1="4" y1="14" x2="26" y2="14" stroke="var(--bleu)" stroke-width="1.5" marker-start="url(#arl)"/></svg></td><td style="border:2px solid var(--bleu);padding:4px 8px;border-radius:6px;font-family:'Baloo 2',cursive;font-weight:800">m</td><td style="padding:0 2px;text-align:center;vertical-align:middle"><svg width="30" height="20" viewBox="0 0 30 20"><defs><marker id="arl" markerWidth="5" markerHeight="5" refX="0" refY="2.5" orient="auto-start-reverse"><path d="M0,0 L5,2.5 L0,5 Z" fill="var(--bleu)"/></marker></defs><text x="15" y="9" text-anchor="middle" font-family="Baloo 2,cursive" font-size="7" font-weight="800" fill="var(--bleu)">×10</text><line x1="4" y1="14" x2="26" y2="14" stroke="var(--bleu)" stroke-width="1.5" marker-start="url(#arl)"/></svg></td><td style="border:2px solid var(--bleu);padding:4px 8px;border-radius:6px;font-family:'Baloo 2',cursive;font-weight:800">dm</td><td style="padding:0 2px;text-align:center;vertical-align:middle"><svg width="30" height="20" viewBox="0 0 30 20"><defs><marker id="arl" markerWidth="5" markerHeight="5" refX="0" refY="2.5" orient="auto-start-reverse"><path d="M0,0 L5,2.5 L0,5 Z" fill="var(--bleu)"/></marker></defs><text x="15" y="9" text-anchor="middle" font-family="Baloo 2,cursive" font-size="7" font-weight="800" fill="var(--bleu)">×10</text><line x1="4" y1="14" x2="26" y2="14" stroke="var(--bleu)" stroke-width="1.5" marker-start="url(#arl)"/></svg></td><td style="border:2px solid var(--bleu);padding:4px 8px;border-radius:6px;font-family:'Baloo 2',cursive;font-weight:800">cm</td><td style="padding:0 2px;text-align:center;vertical-align:middle"><svg width="30" height="20" viewBox="0 0 30 20"><defs><marker id="arl" markerWidth="5" markerHeight="5" refX="0" refY="2.5" orient="auto-start-reverse"><path d="M0,0 L5,2.5 L0,5 Z" fill="var(--bleu)"/></marker></defs><text x="15" y="9" text-anchor="middle" font-family="Baloo 2,cursive" font-size="7" font-weight="800" fill="var(--bleu)">×10</text><line x1="4" y1="14" x2="26" y2="14" stroke="var(--bleu)" stroke-width="1.5" marker-start="url(#arl)"/></svg></td><td style="border:2px solid var(--bleu);padding:4px 8px;border-radius:6px;font-family:'Baloo 2',cursive;font-weight:800">mm</td>
+    </tr>
+  </table>
+  </div>
+</div>
+`,
+
+// PAGE 2
+()=>`
+<div class="step-title pop">✏️ Convertir des cm² en mm²</div>
+<p class="step-text fade-in" style="color:#475569">1 centimètre, c'est 10 millimètres.</p>
+${svgP2()}
+<button class="btn-anim fade-in" onclick="animerP2()">▶ Animer</button>
+<div id="expl-p2" style="opacity:0;transition:opacity 0.5s;font-family:'Baloo 2',cursive;font-size:.98rem;font-weight:800;line-height:2.2">
+  <table style="border-collapse:collapse;margin:0 auto">
+    <tr>
+      <td style="color:var(--bleu);text-align:right;padding-right:4px">1 cm²</td>
+      <td style="color:var(--texte);padding:0 4px">=</td>
+      <td style="color:var(--bleu)"><span style="color:var(--bleu)">1 cm</span>&nbsp;&nbsp;×&nbsp;&nbsp;<span style="color:var(--bleu)">1 cm</span></td>
+    </tr>
+    <tr>
+      <td style="color:var(--bleu);text-align:right;padding-right:4px">1 cm²</td>
+      <td style="color:var(--texte);padding:0 4px">=</td>
+      <td><span style="color:#a78bfa">10 mm</span>&nbsp;×&nbsp;<span style="color:#a78bfa">10 mm</span></td>
+    </tr>
+    <tr>
+      <td style="color:var(--bleu);text-align:right;padding-right:4px">1 cm²</td>
+      <td style="color:var(--texte);padding:0 4px">=</td>
+      <td style="color:#4c1d95">100 mm²</td>
+    </tr>
+  </table>
+</div>
+`,
+
+// PAGE 3
+()=>`
+<div class="step-title pop">✏️ Convertir des m² en cm²</div>
+<p class="step-text fade-in" style="color:#475569">1 mètre, c'est 100 centimètres.</p>
+${svgP3()}
+<button class="btn-anim fade-in" onclick="animerP3()" style="margin-top:-4px">▶ Animer</button>
+<div id="expl-p3" style="opacity:0;transition:opacity 0.5s;font-family:'Baloo 2',cursive;font-size:.98rem;font-weight:800;line-height:2.2">
+  <table style="border-collapse:collapse;margin:0 auto">
+    <tr>
+      <td style="color:var(--bleu);text-align:right;padding-right:4px">1 m²</td>
+      <td style="color:var(--texte);padding:0 4px">=</td>
+      <td><span style="color:var(--bleu)">1 m</span>&nbsp;&nbsp;×&nbsp;&nbsp;<span style="color:var(--bleu)">1 m</span></td>
+    </tr>
+    <tr>
+      <td style="color:var(--bleu);text-align:right;padding-right:4px">1 m²</td>
+      <td style="color:var(--texte);padding:0 4px">=</td>
+      <td><span style="color:var(--orange)">100 cm</span>&nbsp;×&nbsp;<span style="color:var(--orange)">100 cm</span></td>
+    </tr>
+    <tr>
+      <td style="color:var(--bleu);text-align:right;padding-right:4px">1 m²</td>
+      <td style="color:var(--texte);padding:0 4px">=</td>
+      <td style="color:var(--orange)">10 000 cm²</td>
+    </tr>
+  </table>
+</div>
+`,
+
+// PAGE 4 — convertir par le calcul
+()=>`
+<div class="step-title pop">✏️ Convertir par le calcul</div>
+<div style="display:flex;flex-direction:column;gap:14px;width:100%;max-width:560px">
+
+  <div class="info bleu fade-in">
+    <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:1rem;color:var(--bleu);margin-bottom:4px">Des km² en m²</div>
+    <div style="line-height:1.9;font-size:.92rem">
+      Comme 1 kilomètre c'est 1 000 mètres :<br>
+      1 km² = 1 km × 1 km<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 1 000 m × 1 000 m<br>
+      <span style="font-family:'Baloo 2',cursive;font-weight:800">Donc 1 km² = 1 000 000 m²</span>
+    </div>
+  </div>
+
+  <div class="info violet fade-in" style="animation-delay:.1s">
+    <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:1rem;color:var(--violet);margin-bottom:4px">Des dm² en mm²</div>
+    <div style="line-height:1.9;font-size:.92rem">
+      Comme 1 décimètre c'est 10 centimètres, c'est aussi 100 millimètres :<br>
+      1 dm² = 1 dm × 1 dm<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 100 mm × 100 mm<br>
+      <span style="font-family:'Baloo 2',cursive;font-weight:800">Donc 1 dm² = 10 000 mm²</span>
+    </div>
+  </div>
+
+  <div class="info primary fade-in" style="animation-delay:.2s">
+    <div style="font-family:'Baloo 2',cursive;font-weight:800;font-size:1rem;color:var(--primary);margin-bottom:4px">Des m² en mm²</div>
+    <div style="line-height:1.9;font-size:.92rem">
+      Comme 1 mètre c'est 100 centimètres, c'est aussi 1 000 millimètres :<br>
+      1 m² = 1 m × 1 m<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 1 000 mm × 1 000 mm<br>
+      <span style="font-family:'Baloo 2',cursive;font-weight:800">Donc 1 m² = 1 000 000 mm²</span>
+    </div>
+  </div>
+
+</div>
+`,
+
+// PAGE 5 — bilan
+()=>`
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  <div class="recap-item fade-in" style="border-left-color:var(--bleu)">
+    <div class="recap-num" style="background:var(--bleu)">1</div>
+    <span>Pour convertir des unités d'aires, il faut savoir convertir des unités de longueurs.<br>
+    <strong>1 cm = 10 mm &nbsp;/&nbsp; 1 m = 100 cm &nbsp;/&nbsp; 1 km = 1 000 m</strong></span>
+  </div>
+  <div class="recap-item fade-in" style="animation-delay:.08s;border-left-color:var(--orange)">
+    <div class="recap-num" style="background:var(--orange)">2</div>
+    <span>Un « mètre carré », c'est la surface d'un carré d'un mètre par un mètre.<br>
+    <strong>1 m² = 1 m × 1 m</strong><br>
+    On peut le convertir en cm² : c'est 100 cm × 100 cm = <strong>10 000 cm²</strong></span>
+  </div>
+  <div class="recap-item fade-in" style="animation-delay:.16s;border-left-color:var(--primary)">
+    <div class="recap-num" style="background:var(--primary)">3</div>
+    <span>Et pour les autres conversions, on peut faire de même.</span>
+  </div>
+</div>
+`,];
+
+let cur=0; const NSTEPS=STEPS.length;
+function render(){
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur](); card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(NSTEPS-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator'); ind.innerHTML='';
+  for(let i=0;i<NSTEPS;i++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(i===cur?' active':i<cur?' done':'');
+    d.textContent=i<cur?'✓':i+1; ind.appendChild(d);
+  }
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${NSTEPS}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===NSTEPS-1?'Suivant →':'Suivant →';
+}
+function next(){cur=cur===NSTEPS-1?cur:cur+1;render();}
+function prev(){if(cur>0){cur--;render();}}
+render();
+</script>
+</body>
+</html>

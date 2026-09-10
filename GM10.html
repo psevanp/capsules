@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>GM10 — Périmètre d'une figure complexe</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --primary:#e11d48;--primary2:#fb7185;--primary-clair:#ffe4e6;
+  --bg:#fff1f2;
+  --bleu:#1a73e8;--bleu-clair:#e8f0fe;
+  --orange:#ea580c;--orange-clair:#ffedd5;
+  --vert:#16a34a;--vert-clair:#f0fdf4;
+  --violet:#7c3aed;--violet-clair:#f5f3ff;
+  --teal:#0d9488;--teal-clair:#f0fdfa;
+  --card:#fff;--texte:#1e293b;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+header{display:flex;justify-content:center;margin-bottom:22px;}
+.header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+.badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--primary);background:var(--primary-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--primary);flex-shrink:0;}
+.tache-label{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--primary);line-height:1.3;}
+.progress-bar-wrap{width:100%;max-width:680px;background:var(--primary-clair);border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .5s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+.step-dot{width:34px;height:34px;border-radius:50%;background:var(--primary-clair);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--primary2);transition:all .4s;border:2px solid transparent;}
+.step-dot.active{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+.card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:360px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(0,0,0,.07);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .45s ease both;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;color:var(--primary);text-align:center;line-height:1.3;}
+.step-text{font-size:.97rem;line-height:1.7;text-align:center;max-width:580px;color:#475569;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:580px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 16px;font-weight:600;font-size:.92rem;line-height:1.7;max-width:580px;width:100%;}
+.info.bleu{background:var(--bleu-clair);border-left:4px solid var(--bleu);color:#1e3a5f;}
+.info.vert{background:var(--vert-clair);border-left:4px solid var(--vert);color:#14532d;}
+.info.orange{background:var(--orange-clair);border-left:4px solid var(--orange);color:#7c2d12;}
+.info.primary{background:var(--primary-clair);border-left:4px solid var(--primary);}
+.info.violet{background:var(--violet-clair);border-left:4px solid var(--violet);color:#4c1d95;}
+.btn-anim{border:2px solid var(--bleu);background:var(--bleu-clair);color:var(--bleu);font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;transition:all .2s;}
+.btn-anim:hover{background:var(--bleu);color:#fff;}
+.btn-primary{border:2px solid var(--primary);background:var(--primary-clair);color:var(--primary);font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;transition:all .2s;}
+.btn-primary:hover{background:var(--primary);color:#fff;}
+.recap-list{display:flex;flex-direction:column;gap:12px;width:100%;max-width:580px;}
+.recap-item{display:flex;gap:12px;align-items:flex-start;background:#f8faff;border-radius:12px;padding:11px 16px;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;}
+.nav{display:flex;align-items:center;justify-content:space-between;max-width:680px;width:100%;margin-top:20px;gap:12px;}
+.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;border-radius:12px;padding:11px 22px;cursor:pointer;transition:all .25s;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-prev:disabled{opacity:.35;cursor:default;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;}
+.btn-next:hover{opacity:.9;}
+.step-counter{font-family:'Baloo 2',cursive;font-weight:700;color:var(--primary);font-size:.95rem;white-space:nowrap;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">GM10</div>
+    <div class="tache-label">Périmètre d'une figure complexe</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</div>
+<script>
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function showEl(id,delay){setTimeout(()=>{const el=document.getElementById(id);if(el){el.style.transition='opacity 0.4s';el.style.opacity='1';}},delay||0);}
+function ease(t){return t<.5?2*t*t:(4-2*t)*t-1;}
+function animLine(el,len,dur,cb){
+  if(!el)return;
+  el.style.strokeDasharray=len;el.style.strokeDashoffset=len;el.style.opacity='1';
+  const s=performance.now();
+  requestAnimationFrame(function tick(n){
+    const t=Math.min((n-s)/dur,1),e=ease(t);
+    el.style.strokeDashoffset=len*(1-e);
+    if(t<1)requestAnimationFrame(tick);else if(cb)cb();
+  });
+}
+function animArc(el,len,dur,cb){animLine(el,len,dur,cb);}
+let loopId=null;
+
+// ══ PAGE 1 — stade, contour animé segments rouge / arcs violet ════════════════
+function svgP1Loop(){
+  const R=38,W=250,H=135,cy=65,x1=75,x2=175;
+  const seg=x2-x1,arc=Math.PI*R;
+  return `<svg id="svg-p1" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block">
+    <rect x="${x1}" y="${cy-R}" width="${seg}" height="${R*2}" fill="#f1f5f9"/>
+    <path d="M ${x2} ${cy-R} A ${R} ${R} 0 0 1 ${x2} ${cy+R}" fill="#f1f5f9"/>
+    <path d="M ${x1} ${cy+R} A ${R} ${R} 0 0 1 ${x1} ${cy-R}" fill="#f1f5f9"/>
+    <path d="M ${x1} ${cy-R} L ${x2} ${cy-R} A ${R} ${R} 0 0 1 ${x2} ${cy+R} L ${x1} ${cy+R} A ${R} ${R} 0 0 1 ${x1} ${cy-R}" fill="none" stroke="#e2e8f0" stroke-width="4"/>
+    <line id="p1-sh" x1="${x1}" y1="${cy-R}" x2="${x2}" y2="${cy-R}" stroke="var(--primary)" stroke-width="5" stroke-linecap="round" stroke-dasharray="${seg}" stroke-dashoffset="${seg}" opacity="0"/>
+    <path id="p1-ad" d="M ${x2} ${cy-R} A ${R} ${R} 0 0 1 ${x2} ${cy+R}" fill="none" stroke="var(--violet)" stroke-width="5" stroke-linecap="round" stroke-dasharray="${arc}" stroke-dashoffset="${arc}" opacity="0"/>
+    <line id="p1-sb" x1="${x2}" y1="${cy+R}" x2="${x1}" y2="${cy+R}" stroke="var(--primary)" stroke-width="5" stroke-linecap="round" stroke-dasharray="${seg}" stroke-dashoffset="${seg}" opacity="0"/>
+    <path id="p1-ag" d="M ${x1} ${cy+R} A ${R} ${R} 0 0 1 ${x1} ${cy-R}" fill="none" stroke="var(--violet)" stroke-width="5" stroke-linecap="round" stroke-dasharray="${arc}" stroke-dashoffset="${arc}" opacity="0"/>
+    <rect x="4" y="${H-20}" width="14" height="5" rx="2" fill="var(--primary)"/>
+    <text x="22" y="${H-13}" font-family="Baloo 2,cursive" font-size="10" font-weight="800" fill="var(--primary)">segment droit</text>
+    <rect x="116" y="${H-20}" width="14" height="5" rx="2" fill="var(--violet)"/>
+    <text x="134" y="${H-13}" font-family="Baloo 2,cursive" font-size="10" font-weight="800" fill="var(--violet)">arc de cercle</text>
+  </svg>`;
+}
+function lancerP1Loop(){
+  const R=38,cy=65,x1=75,x2=175;
+  const seg=x2-x1,arc=Math.PI*R;
+  const parts=[['p1-sh',seg,700],['p1-ad',arc,650],['p1-sb',seg,700],['p1-ag',arc,650]];
+  function reset(){parts.forEach(([id,len])=>{const el=document.getElementById(id);if(el){el.style.transition='none';el.style.opacity='0';el.style.strokeDashoffset=len;}});}
+  function run(idx){
+    if(!document.getElementById(parts[0][0]))return;
+    if(idx>=parts.length){loopId=setTimeout(()=>{reset();setTimeout(()=>run(0),400);},900);return;}
+    const[id,len,dur]=parts[idx];
+    const el=document.getElementById(id);if(!el)return;
+    el.style.opacity='1';
+    animLine(el,len,dur,()=>setTimeout(()=>run(idx+1),120));
+  }
+  reset();setTimeout(()=>run(0),400);
+}
+
+// ══ PAGE 2 — demi-cercle ══════════════════════════════════════════════════════
+function svgP2(){
+  const R=72,cx=110,cy=88,circ=2*Math.PI*R,half=Math.PI*R;
+  const svgH=cy+R+14;
+  return `<svg id="svg-p2" width="220" height="${svgH}" viewBox="0 0 220 ${svgH}" style="display:block">
+    <circle cx="${cx}" cy="${cy}" r="${R}" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+    <!-- Demi sup qui se fonce -->
+    <path id="demi-fond" d="M ${cx-R} ${cy} A ${R} ${R} 0 0 1 ${cx+R} ${cy} Z" fill="#ddd6fe" opacity="0"/>
+    <!-- Contour animé -->
+    <circle id="arc-full" cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--primary)" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${circ}" transform="rotate(180 ${cx} ${cy})"/>
+    <!-- Efface le bas -->
+    <path id="efface-bas" d="M ${cx+R} ${cy} A ${R} ${R} 0 0 1 ${cx-R} ${cy}" fill="none" stroke="white" stroke-width="7" stroke-linecap="round" stroke-dasharray="${half}" stroke-dashoffset="${half}" opacity="0"/>
+    <!-- Diamètre exactement sur y=cy -->
+    <line id="diam-p2" x1="${cx-R}" y1="${cy}" x2="${cx+R}" y2="${cy}" stroke="var(--bleu)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="${2*R}" stroke-dashoffset="${2*R}" opacity="0"/>
+    <!-- "diamètre" juste au-dessus du trait -->
+    <text id="lbl-diam" x="${cx}" y="${cy-5}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="700" fill="var(--bleu)" opacity="0">diamètre</text>
+    <!-- Calculs dans la partie supérieure (entre cy-R et cy) -->
+    <text id="lbl-pi-d" x="${cx}" y="${cy-R/2+4}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--primary)" opacity="0"><tspan>π × diamètre</tspan><tspan id="lbl-div2" opacity="0"> : 2</tspan></text>
+  </svg>`;
+}
+function animerP2(){
+  ['arc-full','demi-fond','efface-bas','diam-p2','lbl-diam','lbl-pi-d','lbl-div2','expl-p2','exemple-p2'].forEach(id=>{const el=document.getElementById(id);if(el){el.style.transition='none';el.style.opacity='0';}});
+  const R=72,circ=2*Math.PI*R,half=Math.PI*R;
+  const arcFull=document.getElementById('arc-full');
+  if(arcFull)arcFull.style.strokeDashoffset=circ;
+  animArc(arcFull,circ,2400,()=>{
+    showEl('lbl-pi-d');
+    setTimeout(()=>{
+      const fond=document.getElementById('demi-fond');
+      if(fond){fond.style.transition='opacity 0.6s';fond.style.opacity='1';}
+      animLine(document.getElementById('diam-p2'),2*R,600);
+      showEl('lbl-diam',500);
+      setTimeout(()=>{
+        const eff=document.getElementById('efface-bas');
+        if(eff){eff.style.opacity='1';eff.style.strokeDashoffset=half;const s=performance.now();
+          requestAnimationFrame(function tick(n){const t=Math.min((n-s)/1100,1),e2=ease(t);eff.style.strokeDashoffset=half*(1-e2);if(t<1)requestAnimationFrame(tick);else{showEl('lbl-div2');setTimeout(()=>{showEl('expl-p2');setTimeout(()=>showEl('exemple-p2'),400);},600);}});
+        }
+      },900);
+    },1000);
+  });
+}
+
+// ══ PAGE 3 — quart de cercle ══════════════════════════════════════════════════
+function svgP3(){
+  const R=80, cx=100, cy=90;
+  const W=290, H=280;
+  const qLen=Math.PI*R/2, diam=2*R;
+  function cod(x1,y1,x2,y2){
+    const mx=(x1+x2)/2,my=(y1+y2)/2,len=Math.sqrt((x2-x1)**2+(y2-y1)**2);
+    const nx=-(y2-y1)/len*6,ny=(x2-x1)/len*6,s=5,ux=(x2-x1)/len*s,uy=(y2-y1)/len*s;
+    let r='';[-1,0,1].forEach(i=>{r+=`<line x1="${mx+ux*i-nx}" y1="${my+uy*i-ny}" x2="${mx+ux*i+nx}" y2="${my+uy*i+ny}" stroke="#64748b" stroke-width="2"/>`;});
+    return r;
+  }
+  let s=`<svg id="svg-p3" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;overflow:visible">`;
+  s+=`<path d="M ${cx} ${cy+R} L ${cx} ${cy} L ${cx+R} ${cy} A ${R} ${R} 0 0 1 ${cx} ${cy+R} Z" fill="#bfdbfe" stroke="none"/>`;
+  s+=`<path d="M ${cx+R} ${cy} A ${R} ${R} 0 0 0 ${cx} ${cy+R} L ${cx+R} ${cy+R} Z" fill="white" stroke="none"/>`;
+  s+=`<line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy+R}" stroke="#1a73e8" stroke-width="2"/>`;
+  s+=`<line x1="${cx}" y1="${cy}" x2="${cx+R}" y2="${cy}" stroke="#1a73e8" stroke-width="2"/>`;
+  s+=cod(cx,cy,cx,cy+R);
+  s+=cod(cx,cy,cx+R,cy);
+  s+=`<text x="${cx+R/2}" y="${cy-10}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="#1a73e8">5 cm</text>`;
+  // arc centre A supprimé
+  // arc centre A supprimé
+  s+=`<line id="p3-sv" x1="${cx}" y1="${cy+R}" x2="${cx}" y2="${cy}" stroke="var(--primary)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${R}" stroke-dashoffset="${R}" opacity="0"/>`;
+  s+=`<text id="p3-lsv-bg" x="${cx-14}" y="${cy+R/2+4}" text-anchor="end" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="#1a73e8">5 cm</text>`;
+  s+=`<text id="p3-lsv" x="${cx-14}" y="${cy+R/2+4}" text-anchor="end" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="var(--primary)" opacity="0">5 cm</text>`;
+  s+=`<line id="p3-sh" x1="${cx}" y1="${cy}" x2="${cx+R}" y2="${cy}" stroke="var(--primary)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${R}" stroke-dashoffset="${R}" opacity="0"/>`;
+  s+=`<text id="p3-lsh" x="${cx+R/2}" y="${cy-10}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--primary)" opacity="0">5 cm</text>`;
+  // Quart de cercle fin statique (visible dès le départ)
+  s+=`<path d="M ${cx+R} ${cy} A ${R} ${R} 0 0 0 ${cx} ${cy+R}" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round"/>`;  // p3-arc : quart épais animé par-dessus
+  s+=`<path id="p3-arc" d="M ${cx+R} ${cy} A ${R} ${R} 0 0 0 ${cx} ${cy+R}" fill="none" stroke="var(--violet)" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="${qLen}" stroke-dashoffset="${qLen}" opacity="0"/>`;
+  // p3-3q : 3 quarts centre D=(cx+R,cy+R), de C→G→B (large-arc=1, sweep=0)
+  s+=`<path id="p3-3q" d="M ${cx} ${cy+R} A ${R} ${R} 0 1 0 ${cx+R} ${cy}" fill="none" stroke="var(--violet)" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="${3*qLen}" stroke-dashoffset="${3*qLen}" opacity="0"/>`;
+  // Diamètre C→G horizontal, passant par D
+  s+=`<line id="p3-diam" x1="${cx}" y1="${cy+R}" x2="${cx+diam}" y2="${cy+R}" stroke="var(--bleu)" stroke-width="2" stroke-dasharray="${diam}" stroke-dashoffset="${diam}" opacity="0"/>`;
+  s+=`<text id="p3-ldiam" x="${cx+R}" y="${cy+R+14}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="10" font-weight="700" fill="var(--bleu)" opacity="0">diamètre</text>`;
+  s+=`<text id="p3-l10" x="${cx+R}" y="${cy+R+27}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="10" font-weight="700" fill="var(--bleu)" opacity="0">10 cm</text>`;
+  // Calculs centrés entre B et D (x=cx+R, y entre cy et cy+R)
+  const calcX=cx+R, calcY=cy+R/2-21;
+  s+=`<text id="p3-c1" x="${calcX}" y="${calcY}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--violet)" opacity="0"><tspan id="p3-c1a">π × 10 cm</tspan><tspan id="p3-c1b" opacity="0"> ÷ 4</tspan></text>`;
+  s+=`<text id="p3-c3" x="${calcX}" y="${calcY+18}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--violet)" opacity="0">= π × 2,5 cm</text>`;
+  s+=`<text id="p3-c4" x="${calcX}" y="${calcY+36}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="var(--violet)" opacity="0">≈ 3,14 × 2,5</text>`;
+  s+=`<text id="p3-c5" x="${calcX}" y="${calcY+54}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--violet)" opacity="0">≈ 7,9 cm</text>`;
+  s+=`</svg>`;
+  return `<div style="display:flex;justify-content:center">${s}</div>`;
+}
+
+function animerP3(){
+  const ids=['p3-sv','p3-lsv','p3-sh','p3-lsh','p3-arc','p3-3q','p3-diam','p3-ldiam','p3-l10','p3-c1','p3-c1b','p3-c3','p3-c4','p3-c5'];
+  ids.forEach(id=>{const el=document.getElementById(id);if(el){el.style.transition='none';el.style.opacity='0';}});
+  const R=80, qLen=Math.PI*R/2, diam=2*R;
+
+  // 1. Segment vertical (rouge, bas→haut)
+  animLine(document.getElementById('p3-sv'),R,700,()=>{
+    showEl('p3-lsv');
+    setTimeout(()=>{
+      // 2. Segment horizontal (rouge, gauche→droite)
+      animLine(document.getElementById('p3-sh'),R,700,()=>{
+        showEl('p3-lsh');
+        setTimeout(()=>{
+          // 3. Arc quart de cercle (violet, sens anti-horaire)
+          animArc(document.getElementById('p3-arc'),qLen,1000,()=>{
+            setTimeout(()=>{
+              // 4. Les 3 autres quarts anti-horaire complètent le cercle
+              animArc(document.getElementById('p3-3q'),3*qLen,1800,()=>{
+                // 5. Diamètre + labels
+                animLine(document.getElementById('p3-diam'),diam,600,()=>{
+                  showEl('p3-ldiam'); showEl('p3-l10');
+                  // 6. "π × 10 cm" au-dessus du diamètre
+                  setTimeout(()=>{
+                    showEl('p3-c1');
+                    // 7. Pause 1s, puis cercle+diamètre s'effacent et ":4" s'ajoute
+                    setTimeout(()=>{
+                      // ÷4 apparaît, puis les 3 quarts s'effacent progressivement (le contour fin bleu reste)
+                      showEl('p3-c1b');
+                      setTimeout(()=>{
+                        ['p3-3q','p3-ldiam','p3-l10','p3-diam'].forEach(id=>{
+                          const el=document.getElementById(id);
+                          if(el){el.style.transition='opacity 1.2s';el.style.opacity='0';}
+                        });
+                        // Le quart violet devient fin
+                        const arcEl=document.getElementById('p3-arc');
+                        if(arcEl){arcEl.style.transition='stroke-width 1s';arcEl.setAttribute('stroke-width','2');}
+                      },300);
+                      // 8. Suite du calcul toutes les 500ms
+                      setTimeout(()=>showEl('p3-c3'),500);
+                      setTimeout(()=>showEl('p3-c4'),1000);
+                      setTimeout(()=>showEl('p3-c5'),1700);
+                      setTimeout(()=>showEl('expl-p3'),2200);
+                    },1000);
+                  },400);
+                });
+              });
+            },400);
+          });
+        },400);
+      });
+    },400);
+  });
+}
+
+// ══ PAGE 4 — rectangle 3m×5m : gauche bombé, droite creusé, bas bombé
+// PX=24 px par m. Rect : L=5m (largeur), H=3m (hauteur)
+// RG=RL=1.5m (rayon demi-cercles verticaux), RB=2.5m (rayon demi-cercle bas)
+// Gauche bombé : arc vers gauche (extérieur)
+// Droite creusé : arc vers gauche (intérieur)
+// Bas bombé : arc vers bas (extérieur)
+// Haut : segment 5m
+// Périmètre = 5 + π×3÷2 (droite creusé) + π×5÷2 (bas bombé) + π×3÷2 (gauche bombé)
+//           = 5 + π×(1.5+2.5+1.5) = 5 + 5.5π ≈ 5 + 17.3 ≈ 22 m
+function svgP4(){
+  const PX=36,L=5*PX,H=3*PX,RG=PX*1.5,RB=PX*2.5;
+  // ox,oy = coin haut-gauche du rectangle de référence
+  const ox=RG+20,oy=30;
+  const W=L+2*RG+60,SVH=H+RB+110;
+  const arcG=Math.PI*RG,arcD=Math.PI*RG,arcB=Math.PI*RB;
+  // La figure :
+  // - haut : de (ox,oy) à (ox+L,oy) → segment 5m
+  // - droite creusée : de (ox+L,oy) l'arc rentre vers la gauche, demi-cercle de rayon RG
+  //   centre=(ox+L, oy+H/2), arc de (ox+L,oy) à (ox+L,oy+H) passant par (ox+L-RG, oy+H/2)
+  //   A RG RG 0 0 0 = arc à gauche (creusé)
+  // - bas bombé : de (ox+L,oy+H) à (ox,oy+H) via arc vers le bas
+  //   centre=(ox+L/2, oy+H), rayon=L/2=RB
+  //   A RB RB 0 0 1 = arc vers le bas (bombé)
+  // - gauche bombée : de (ox,oy+H) à (ox,oy) via arc vers la gauche
+  //   centre=(ox, oy+H/2), rayon=RG
+  //   A RG RG 0 0 0 = arc vers la gauche (bombé)
+  return `<svg id="svg-p4" width="${W}" height="${SVH}" viewBox="0 0 ${W} ${SVH}" style="display:block">
+    <defs>
+      <marker id="mka" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="var(--bleu)"/></marker>
+      <marker id="mkb" markerWidth="5" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse"><path d="M0,0 L5,2.5 L0,5 Z" fill="var(--bleu)"/></marker>
+    </defs>
+    <!-- Fond de la figure -->
+    <path d="M ${ox} ${oy} L ${ox+L} ${oy}
+             A ${RG} ${RG} 0 0 0 ${ox+L} ${oy+H}
+             A ${RB} ${RB} 0 0 1 ${ox} ${oy+H}
+             A ${RG} ${RG} 0 0 0 ${ox} ${oy} Z"
+      fill="#e8f0fe" stroke="none"/>
+    <!-- Rectangle de référence en pointillés -->
+    <rect x="${ox}" y="${oy}" width="${L}" height="${H}" fill="none" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4,3"/>
+    <!-- Cotes -->
+    <!-- Flèche horizontale 5m au-dessus -->
+    <line x1="${ox}" y1="${oy-14}" x2="${ox+L}" y2="${oy-14}" stroke="var(--bleu)" stroke-width="1.5" marker-start="url(#mkb)" marker-end="url(#mka)"/>
+    <rect x="${ox+L/2-14}" y="${oy-26}" width="28" height="14" rx="3" fill="white"/>
+    <text x="${ox+L/2}" y="${oy-15}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="var(--bleu)">5 m</text>
+    <!-- Flèche verticale 3m (à droite du rectangle) -->
+    <line x1="${ox+L+6}" y1="${oy}" x2="${ox+L+6}" y2="${oy+H}" stroke="var(--bleu)" stroke-width="1.5" marker-start="url(#mkb)" marker-end="url(#mka)"/>
+    <rect x="${ox+L+8}" y="${oy+H/2-8}" width="28" height="14" rx="3" fill="white"/>
+    <text x="${ox+L+10}" y="${oy+H/2+4}" text-anchor="start" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="var(--bleu)">3 m</text>
+    <!-- Contour animé -->
+    <line id="seg-haut" x1="${ox}" y1="${oy}" x2="${ox+L}" y2="${oy}" stroke="var(--primary)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${L}" stroke-dashoffset="${L}" opacity="0"/>
+    <path id="arc-droit" d="M ${ox+L} ${oy} A ${RG} ${RG} 0 0 0 ${ox+L} ${oy+H}" fill="none" stroke="var(--violet)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${arcD}" stroke-dashoffset="${arcD}" opacity="0"/>
+    <path id="arc-bas" d="M ${ox+L} ${oy+H} A ${RB} ${RB} 0 0 1 ${ox} ${oy+H}" fill="none" stroke="var(--violet)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${arcB}" stroke-dashoffset="${arcB}" opacity="0"/>
+    <path id="arc-gauche" d="M ${ox} ${oy+H} A ${RG} ${RG} 0 0 0 ${ox} ${oy}" fill="none" stroke="var(--violet)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${arcG}" stroke-dashoffset="${arcG}" opacity="0"/>
+    <!-- Labels -->
+    <text id="lbl-sh" x="${ox+L/2}" y="${oy-4}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--primary)" opacity="0">5 m</text>
+    <text id="lbl-ad" x="${ox+L-4}" y="${oy+H/2}" text-anchor="end" font-family="Baloo 2,cursive" font-size="10" font-weight="800" fill="var(--violet)" opacity="0">π×3÷2</text>
+    <text id="lbl-ad2" x="${ox+L-4}" y="${oy+H/2+14}" text-anchor="end" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--violet)" opacity="0">≈ 4,7 m</text>
+    <text id="lbl-ab" x="${ox+L/2}" y="${oy+H+RB+12}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="10" font-weight="800" fill="var(--violet)" opacity="0">π×5÷2</text>
+    <text id="lbl-ab2" x="${ox+L/2}" y="${oy+H+RB+28}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--violet)" opacity="0">≈ 7,9 m</text>
+    <text id="lbl-ag" x="${ox+4}" y="${oy+H/2}" text-anchor="start" font-family="Baloo 2,cursive" font-size="10" font-weight="800" fill="var(--violet)" opacity="0">π×3÷2</text>
+    <text id="lbl-ag2" x="${ox+4}" y="${oy+H/2+14}" text-anchor="start" font-family="Baloo 2,cursive" font-size="13" font-weight="800" fill="var(--violet)" opacity="0">≈ 4,7 m</text>
+    <!-- Calcul -->
+    <!-- Résumé coloré final -->
+    <text id="calc-p4a" x="${W/2}" y="${oy+H+RB+52}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="var(--bleu)" opacity="0"><tspan fill="var(--bleu)">Périmètre ≈ </tspan><tspan fill="var(--primary)">5 m</tspan><tspan fill="var(--bleu)"> + </tspan><tspan fill="var(--violet)">4,7 m</tspan><tspan fill="var(--bleu)"> + </tspan><tspan fill="var(--violet)">7,9 m</tspan><tspan fill="var(--bleu)"> + </tspan><tspan fill="var(--violet)">4,7 m</tspan></text>
+    <text id="calc-p4b" x="${W/2}" y="${oy+H+RB+70}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--bleu)" opacity="0">≈ <tspan fill="var(--bleu)">22 m</tspan></text>
+  </svg>`;
+}
+function animerP4(){
+  ['seg-haut','arc-droit','arc-bas','arc-gauche','lbl-sh','lbl-ad','lbl-ad2','lbl-ab','lbl-ab2','lbl-ag','lbl-ag2','calc-p4a','calc-p4b'].forEach(id=>{const el=document.getElementById(id);if(el){el.style.transition='none';el.style.opacity='0';}});
+  const PX=36,L=5*PX,H=3*PX,RG=PX*1.5,RB=PX*2.5;
+  const arcG=Math.PI*RG,arcD=Math.PI*RG,arcB=Math.PI*RB;
+  animLine(document.getElementById('seg-haut'),L,900,()=>{showEl('lbl-sh');setTimeout(()=>{
+    animArc(document.getElementById('arc-droit'),arcD,700,()=>{showEl('lbl-ad');setTimeout(()=>{showEl('lbl-ad2');},300);setTimeout(()=>{
+      animArc(document.getElementById('arc-bas'),arcB,1000,()=>{showEl('lbl-ab');setTimeout(()=>{showEl('lbl-ab2');},300);setTimeout(()=>{
+        animArc(document.getElementById('arc-gauche'),arcG,700,()=>{showEl('lbl-ag');setTimeout(()=>{showEl('lbl-ag2');},300);
+          setTimeout(()=>showEl('calc-p4a'),700);setTimeout(()=>showEl('calc-p4b'),1300);
+          setTimeout(()=>showEl('expl-p4'),1900);
+        });
+      },400);});
+    },400);});
+  },400);});
+}
+
+// ══ PAGE 5 — demi-disque de diamètre 6 cm ════════════════════════════════════
+// Périmètre = diamètre + demi-cercle = 6 + π×6÷2 = 6 + 3π ≈ 6 + 9,4 = 15,4 cm
+// ══ PAGE 5 — demi-disque de diamètre 6 cm, plat en haut, arrondi en bas
+// Périmètre = diamètre (haut) + demi-cercle (bas) = 6 + π×6÷2 ≈ 6 + 9,4 = 15,4 cm
+function svgP5(){
+  const R=70, cx=110, cy=20; // plat en haut (y=cy), arrondi vers le bas
+  const W=260, H=R+130;
+  const diam=2*R, halfLen=Math.PI*R;
+  let s=`<svg id="svg-p5" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;overflow:visible">`;
+  // Fond demi-disque (plat en haut, arrondi en bas)
+  s+=`<path d="M ${cx-R} ${cy} L ${cx+R} ${cy} A ${R} ${R} 0 0 1 ${cx-R} ${cy} Z" fill="#e8f0fe"/>`;
+  // Contours statiques (bleus fins)
+  s+=`<line x1="${cx-R}" y1="${cy}" x2="${cx+R}" y2="${cy}" stroke="#1a73e8" stroke-width="2"/>`;
+  s+=`<path d="M ${cx+R} ${cy} A ${R} ${R} 0 0 1 ${cx-R} ${cy}" fill="none" stroke="#1a73e8" stroke-width="2"/>`;
+  // Mesure visible dès le départ
+  s+=`<text x="${cx}" y="${cy-8}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="#1a73e8">6 cm</text>`;
+  // Segment animé (rouge, de gauche à droite = le diamètre en haut)
+  s+=`<line id="p5-seg" x1="${cx-R}" y1="${cy}" x2="${cx+R}" y2="${cy}" stroke="var(--primary)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${diam}" stroke-dashoffset="${diam}" opacity="0"/>`;
+  s+=`<text id="p5-lseg" x="${cx}" y="${cy-8}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--primary)" opacity="0">6 cm</text>`;
+  // Arc animé (violet, demi-cercle bas)
+  s+=`<path id="p5-arc" d="M ${cx+R} ${cy} A ${R} ${R} 0 0 1 ${cx-R} ${cy}" fill="none" stroke="var(--violet)" stroke-width="4" stroke-linecap="round" stroke-dasharray="${halfLen}" stroke-dashoffset="${halfLen}" opacity="0"/>`;
+  // Autre demi (violet clair, demi-cercle haut) pour compléter le cercle
+  s+=`<path id="p5-other" d="M ${cx-R} ${cy} A ${R} ${R} 0 0 1 ${cx+R} ${cy}" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-dasharray="${halfLen}" stroke-dashoffset="${halfLen}" opacity="0"/>`;
+  // Le diamètre : on utilise le segment rouge déjà tracé — on affiche juste le label "diamètre"
+  s+=`<text id="p5-ldiam" x="${cx}" y="${cy+16}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="10" font-weight="700" fill="var(--bleu)" opacity="0">diamètre = 6 cm</text>`;
+  // Calculs sous le demi-disque
+  const ty=cy+R+24;
+  s+=`<text id="p5-c1" x="${cx}" y="${ty}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--violet)" opacity="0"><tspan id="p5-c1a">π × 6 cm</tspan><tspan id="p5-c1b" opacity="0"> ÷ 2</tspan></text>`;
+  s+=`<text id="p5-c3" x="${cx}" y="${ty+18}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--violet)" opacity="0">= π × 3 cm</text>`;
+  s+=`<text id="p5-c4" x="${cx}" y="${ty+36}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" fill="var(--violet)" opacity="0">≈ 3,14 × 3</text>`;
+  s+=`<text id="p5-c5" x="${cx}" y="${ty+54}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="12" font-weight="800" fill="var(--violet)" opacity="0">≈ 9,4 cm</text>`;
+  s+=`<text id="p5-final" x="${cx}" y="${ty+76}" text-anchor="middle" font-family="Baloo 2,cursive" font-size="11" font-weight="800" opacity="0"><tspan fill="var(--bleu)">Périmètre ≈ </tspan><tspan fill="var(--primary)">6 cm</tspan><tspan fill="var(--bleu)"> + </tspan><tspan fill="var(--violet)">9,4 cm</tspan><tspan fill="var(--bleu)"> = 15,4 cm</tspan></text>`;
+  s+=`</svg>`;
+  return `<div style="display:flex;justify-content:center">${s}</div>`;
+}
+
+function animerP5(){
+  const ids=['p5-seg','p5-lseg','p5-arc','p5-other','p5-ldiam','p5-c1','p5-c1b','p5-c3','p5-c4','p5-c5','p5-final'];
+  ids.forEach(id=>{const el=document.getElementById(id);if(el){el.style.transition='none';el.style.opacity='0';}});
+  const R=70, diam=2*R, halfLen=Math.PI*R;
+
+  // 1. Segment rouge (diamètre en haut)
+  animLine(document.getElementById('p5-seg'),diam,800,()=>{
+    showEl('p5-lseg');
+    setTimeout(()=>{
+      // 2. Arc demi-cercle bas (violet)
+      animArc(document.getElementById('p5-arc'),halfLen,1400,()=>{
+        setTimeout(()=>{
+          // 3. Autre demi haut (violet clair) complète le cercle
+          animArc(document.getElementById('p5-other'),halfLen,1000,()=>{
+            // 4. Label "diamètre = 6 cm" sur le segment rouge
+            showEl('p5-ldiam');
+            // 5. "π × 6 cm" apparaît
+            setTimeout(()=>{
+              showEl('p5-c1');
+              // 6. Pause 1s, autre demi s'efface, "÷ 2" s'ajoute
+              setTimeout(()=>{
+                const oth=document.getElementById('p5-other');
+                if(oth){oth.style.transition='opacity 0.5s';oth.style.opacity='0';}
+                showEl('p5-c1b');
+                setTimeout(()=>showEl('p5-c3'),500);
+                setTimeout(()=>showEl('p5-c4'),1000);
+                setTimeout(()=>showEl('p5-c5'),1700);
+                setTimeout(()=>showEl('p5-final'),2300);
+                setTimeout(()=>showEl('expl-p5'),2800);
+              },1000);
+            },400);
+          });
+        },400);
+      });
+    },400);
+  });
+}
+
+// ══ STEPS ═════════════════════════════════════════════════════════════════════
+const STEPS=[
+
+()=>{
+  setTimeout(()=>lancerP1Loop(),200);
+  return `
+<div class="step-title pop">💡 Des figures avec des arcs de cercle</div>
+<div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> Certaines figures ont un contour formé de segments et d'arcs de cercles. Il est utile de pouvoir trouver leur périmètre.</div>
+<p class="step-text fade-in">Le contour de cette figure alterne des <strong style="color:var(--primary)">segments droits</strong> (en rouge) et des <strong style="color:var(--violet)">arcs de cercle</strong> (en violet).</p>
+${svgP1Loop()}
+`;},
+
+()=>`
+<div class="step-title pop">✏️ Le demi-cercle</div>
+<p class="step-text fade-in">La longueur d'un demi-cercle est la moitié du périmètre du cercle entier.</p>
+${svgP2()}
+<button class="btn-anim fade-in" onclick="animerP2()">▶ Voir</button>
+<div id="expl-p2" class="info bleu" style="opacity:0;transition:opacity 0.5s">
+  Le contour d'un demi-cercle vaut <strong>π × diamètre : 2</strong>
+</div>
+<div id="exemple-p2" class="info vert" style="opacity:0;transition:opacity 0.5s">
+  <strong>Exemple :</strong> Si le diamètre mesure 9 m,<br>
+  Le contour du cercle mesure :<br>
+  → π × 9 m ≈ 3,1 × 9 ≈ 28 m<br>
+  Le contour du demi-cercle mesure :<br>
+  → 28 m : 2 = <strong>14 m</strong>
+</div>
+`,
+
+()=>`
+<div class="step-title pop">✏️ Le quart de cercle</div>
+<p class="step-text fade-in">Un quart de cercle, c'est le quart du contour d'un cercle.<br>Son arc vaut donc π × d ÷ 4.</p>
+${svgP3()}
+<button class="btn-anim fade-in" onclick="animerP3()">▶ Périmètre</button>
+<div id="expl-p3" class="info violet" style="opacity:0;transition:opacity 0.5s">
+  Périmètre = 5 cm + 5 cm + arc ≈ 10 + 7,9 ≈ <strong>17,9 cm</strong>
+</div>
+`,
+
+()=>`
+<div class="step-title pop">✏️ Exemple 1 : figure en stade</div>
+<p class="step-text fade-in">Un rectangle de 5 m × 3 m : le côté gauche est bombé vers l'extérieur, le côté droit est creusé vers l'intérieur, et le côté bas est bombé vers le bas. Chaque demi-cercle a pour diamètre le côté qu'il remplace.</p>
+${svgP4()}
+<button class="btn-anim fade-in" onclick="animerP4()">▶ Calculer le périmètre</button>
+<div id="expl-p4" class="info vert" style="opacity:0;transition:opacity 0.5s">
+  <strong style="color:var(--primary)">5 m</strong> + <strong style="color:var(--violet)">4,7 m</strong> + <strong style="color:var(--violet)">7,9 m</strong> + <strong style="color:var(--violet)">4,7 m</strong> ≈ <strong>22 m</strong>
+</div>
+`,
+
+()=>`
+<div class="step-title pop">✏️ Exemple 2 : demi-disque</div>
+<p class="step-text fade-in">Un demi-disque de diamètre 6 cm. Son contour est formé d'un segment (le diamètre) et d'un demi-cercle.</p>
+${svgP5()}
+<button class="btn-anim fade-in" onclick="animerP5()">▶ Calculer le périmètre</button>
+<div id="expl-p5" class="info vert" style="opacity:0;transition:opacity 0.5s">
+  Périmètre ≈ <strong style="color:var(--primary)">6 cm</strong> + <strong style="color:var(--violet)">9,4 cm</strong> ≈ <strong>15,4 cm</strong>
+</div>
+`,
+
+()=>`
+<div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+<div class="recap-list">
+  <div class="recap-item fade-in" style="border-left-color:var(--primary)">
+    <div class="recap-num" style="background:var(--primary)">1</div>
+    <span>Une figure complexe est une forme dont le contour est fait de <strong>segments</strong> et d'<strong>arcs de cercles</strong>.</span>
+  </div>
+  <div class="recap-item fade-in" style="animation-delay:.08s;border-left-color:var(--bleu)">
+    <div class="recap-num" style="background:var(--bleu)">2</div>
+    <span>Pour calculer son périmètre :<br>
+    — on cherche la mesure de chaque segment,<br>
+    — on cherche la mesure de chaque arc de cercle,<br>
+    — puis on ajoute tout ensemble.</span>
+  </div>
+  <div class="recap-item fade-in" style="animation-delay:.16s;border-left-color:var(--violet)">
+    <div class="recap-num" style="background:var(--violet)">3</div>
+    <span>Pour calculer la longueur d'un arc :<br>
+    — demi-cercle : <strong>diamètre × π ÷ 2</strong><br>
+    — quart de cercle : <strong>diamètre × π ÷ 4</strong></span>
+  </div>
+  <div class="recap-item fade-in" style="animation-delay:.24s;border-left-color:var(--vert)">
+    <div class="recap-num" style="background:var(--vert)">4</div>
+    <span>Pour les calculs, on peut remplacer π par <strong>3</strong> (ou 3,1 ou 3,14 pour plus de précision).</span>
+  </div>
+</div>
+`,
+];
+
+let cur=0;
+const NSTEPS=STEPS.length;
+function render(){
+  if(loopId){clearTimeout(loopId);cancelAnimationFrame(loopId);loopId=null;}
+  const card=document.getElementById('card');
+  card.innerHTML=STEPS[cur]();card.className='card fade-in';
+  document.getElementById('progressBar').style.width=(cur/(NSTEPS-1)*100)+'%';
+  const ind=document.getElementById('stepsIndicator');ind.innerHTML='';
+  for(let i=0;i<NSTEPS;i++){const d=document.createElement('div');d.className='step-dot'+(i===cur?' active':i<cur?' done':'');d.textContent=i<cur?'✓':i+1;ind.appendChild(d);}
+  document.getElementById('counter').textContent=`Page ${cur+1} / ${NSTEPS}`;
+  document.getElementById('btnPrev').disabled=cur===0;
+  document.getElementById('btnNext').textContent=cur===NSTEPS-1?'🔁 Recommencer':'Suivant →';
+}
+function next(){cur=cur===NSTEPS-1?0:cur+1;render();}
+function prev(){if(cur>0){cur--;render();}}
+render();
+</script>
+</body>
+</html>
