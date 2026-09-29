@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>GM15 – Estimer la mesure d'un angle</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+  --primary:#e11d48; --primary2:#fb7185; --primary-clair:#ffe4e6;
+  --bg:#fff1f2; --cote:#9f1239;
+  --bleu:#1a73e8; --bleu-clair:#e8f0fe;
+  --orange:#ea580c; --orange-clair:#ffedd5;
+  --vert:#16a34a; --vert-clair:#f0fdf4;
+  --violet:#7c3aed; --violet-clair:#f5f3ff;
+  --teal:#0d9488; --teal-clair:#f0fdfa;
+  --gris:#94a3b8;
+  --card:#fff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px;}
+header{width:100%;max-width:680px;display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px;}
+.badge-code{font-family:'Baloo 2',cursive;font-weight:800;font-size:1.3rem;background:var(--primary-clair);border:2px solid var(--primary);border-radius:10px;padding:4px 14px;color:var(--primary);white-space:nowrap;}
+.tache-label{font-family:'Baloo 2',cursive;font-weight:800;font-size:1.05rem;color:var(--primary);}
+.progress-bar{width:100%;max-width:680px;height:10px;background:var(--primary-clair);border-radius:99px;margin-bottom:10px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .4s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:14px;}
+.step-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.95rem;cursor:default;transition:all .3s;background:var(--primary-clair);color:var(--primary2);}
+.step-dot.active{background:var(--primary);color:#fff;transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;}
+.card{width:100%;max-width:680px;background:var(--card);border-radius:20px;padding:26px 24px;box-shadow:0 4px 24px rgba(0,0,0,.07);min-height:350px;display:flex;flex-direction:column;align-items:center;gap:14px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;color:var(--primary);text-align:center;}
+.step-title.pop{animation:pop .45s ease both;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:620px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 18px;font-weight:600;font-size:.9rem;line-height:1.6;max-width:620px;width:100%;}
+.info.bleu{background:var(--bleu-clair);border-left:4px solid var(--bleu);color:#1e3a5f;}
+.info.orange{background:var(--orange-clair);border-left:4px solid var(--orange);color:#7c2d12;}
+.info.vert{background:var(--vert-clair);border-left:4px solid var(--vert);color:#14532d;}
+.info.primary{background:var(--primary-clair);border-left:4px solid var(--primary);color:#9f1239;}
+.info.violet{background:var(--violet-clair);border-left:4px solid var(--violet);color:#4c1d95;}
+.bloc{border-radius:12px;padding:13px 16px;font-size:.92rem;font-weight:600;line-height:1.6;max-width:620px;width:100%;}
+.bloc.def{background:#f5f3ff;border-left:4px solid #7c3aed;color:#3b0764;}
+.bloc-label{font-family:'Baloo 2',cursive;font-weight:800;font-size:1rem;}
+.recap-list{display:flex;flex-direction:column;gap:10px;max-width:620px;width:100%;}
+.recap-item{display:flex;gap:12px;background:#f8faff;border-radius:12px;padding:11px 16px;border-left:4px solid var(--primary);align-items:flex-start;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;}
+.btn-complete{border:2px solid var(--vert);background:var(--vert-clair);color:var(--vert);font-family:'Baloo 2',cursive;font-weight:700;border-radius:10px;padding:10px 22px;font-size:1rem;cursor:pointer;transition:all .2s;}
+.btn-complete:hover{background:var(--vert);color:#fff;}
+nav{width:100%;max-width:680px;display:flex;justify-content:space-between;align-items:center;margin-top:14px;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);border:none;border-radius:10px;padding:10px 20px;font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;cursor:pointer;transition:all .2s;}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;border:none;border-radius:10px;padding:10px 24px;font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(225,29,72,.3);}
+.btn-next:hover{opacity:.9;}
+.page-info{font-family:'Baloo 2',cursive;font-weight:600;color:var(--gris);font-size:.95rem;}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+@keyframes equerre-arrive{from{transform:translate(-180px,-140px)}to{transform:translate(0,0)}}
+.equerre-mru{animation:equerre-arrive 1.4s linear both;}
+@keyframes equerre-arrive2{from{transform:translate(200px,-140px)}to{transform:translate(0,0)}}
+.equerre-mru2{animation:equerre-arrive2 1.5s linear both;}
+/* P5 : équerre 1 depuis haut-droit, équerre 2 depuis haut-gauche */
+@keyframes eq5a-arrive{from{transform:translate(200px,-130px)}to{transform:translate(0,0)}}
+.eq5a-mru{animation:eq5a-arrive 1.2s linear both;}
+@keyframes eq5b-arrive{from{transform:translate(-220px,-130px)}to{transform:translate(0,0)}}
+.eq5b-mru{animation:eq5b-arrive 1.2s linear both;}
+@keyframes blink-q{0%,100%{opacity:1}50%{opacity:0}}
+.blink{animation:blink-q 0.35s step-end 3;}
+svg{display:block;}
+/* Grille des types d'angle */
+.types-grid{display:grid;gap:14px;width:100%;max-width:620px;}
+.types-grid.cols2{grid-template-columns:1fr 1fr;}
+.angle-cell{background:#f8faff;border-radius:14px;padding:12px 10px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.angle-cell .angle-nom{font-family:'Baloo 2',cursive;font-weight:800;font-size:.92rem;text-align:center;}
+.angle-cell .angle-mesure{font-family:'Baloo 2',cursive;font-weight:700;font-size:.82rem;color:#64748b;text-align:center;min-height:1.1em;}
+</style>
+</head>
+<body>
+<header>
+  <div class="badge-code">GM15</div>
+  <div class="tache-label">Estimer la mesure d'un angle</div>
+</header>
+<div class="progress-bar"><div class="progress-fill" id="pbar"></div></div>
+<div class="steps-indicator" id="steps"></div>
+<div class="card" id="card"></div>
+<nav>
+  <button class="btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="page-info" id="pageInfo"></span>
+  <button class="btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</nav>
+
+<script>
+let cur = 0, revealed = false, animating = false;
+const N = 6;
+
+const STEPS = [
+
+// ── PAGE 1 : Définition + Pourquoi ───────────────────────────────────────────
+() => `
+  <div class="step-title pop">💡 Estimer la mesure d'un angle</div>
+  <div class="bloc def fade-in">
+    <span class="bloc-label" style="color:#7c3aed">Estimer la mesure d'un angle</span><br>
+    C'est essayer de deviner sa mesure sans utiliser de rapporteur.
+  </div>
+  <div class="pourquoi fade-in"><span class="pq-lead">🤔 Pourquoi ?</span> Quand on n'a pas de rapporteur sous la main, on peut quand même avoir besoin de connaître une valeur approchée de la mesure d'un angle. Et quand on a un rapporteur, cela permet de vérifier ses mesures : si on trouve 140° pour un angle qui est proche d'un angle droit, c'est qu'on a fait une erreur !</div>
+  <p class="fade-in" style="font-size:.95rem;line-height:1.7;color:#334155;max-width:620px;width:100%;">
+    On compare mentalement l'angle à des repères : 0°, 45°, 90°, 135°, 180°.<br>
+    Une estimation est correcte si elle est proche de la vraie valeur à moins de 10° d'écart.
+  </p>
+`,
+
+// ── PAGE 2 : Les types d'angles ───────────────────────────────────────────────
+() => `
+  <div class="step-title pop">📐 Les types d'angles</div>
+
+  <!-- Tableau 1 : droit et plat -->
+  <div class="types-grid cols2 fade-in" style="max-width:460px;">
+
+    <!-- Angle droit -->
+    <div class="angle-cell">
+      <span class="angle-nom" style="color:#1a73e8;">Angle droit</span>
+      <svg width="110" height="80" viewBox="0 0 110 80">
+        <line x1="20" y1="65" x2="100" y2="65" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="20" y1="65" x2="20" y2="10" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M 20 65 L 30 65 L 30 55 L 20 55 Z" fill="#bfdbfe" stroke="#1a73e8" stroke-width="2"/>
+        <circle cx="20" cy="65" r="3" fill="#1a73e8"/>
+      </svg>
+      <span class="angle-mesure" style="color:#1a73e8;">90°</span>
+    </div>
+
+    <!-- Angle plat -->
+    <div class="angle-cell">
+      <span class="angle-nom" style="color:var(--primary);">Angle plat</span>
+      <svg width="160" height="75" viewBox="-25 0 160 75">
+        <line x1="-22" y1="60" x2="132" y2="60" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="55" cy="60" r="3.5" fill="var(--primary)"/>
+        <path d="M 88 60 A 33 33 0 0 0 22 60" fill="#fecdd3" fill-opacity="0.5" stroke="var(--primary)" stroke-width="2"/>
+      </svg>
+      <span class="angle-mesure" style="color:var(--primary);">180°</span>
+    </div>
+  </div>
+
+  <!-- Tableau 2 : aigu et obtus (avec animations) -->
+  <div class="types-grid cols2 fade-in" style="max-width:460px;">
+
+    <!-- Angle aigu animé -->
+    <div class="angle-cell">
+      <span class="angle-nom" style="color:#ea580c;">Angle aigu</span>
+      <svg width="110" height="110" viewBox="0 -20 110 110">
+        <!-- Base -->
+        <line x1="10" y1="78" x2="100" y2="78" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Demi-droite animée : -1° → -89° -->
+        <g>
+          <line x1="10" y1="78" x2="100" y2="78" stroke="#222" stroke-width="2.5" stroke-linecap="round">
+            <animateTransform attributeName="transform" attributeType="XML" type="rotate"
+              values="-1 10 78;-89 10 78;-1 10 78" dur="3s" repeatCount="indefinite"/>
+          </line>
+        </g>
+        <!-- Arc fixe dasharray animé -->
+        <path d="M 51 78 A 41 41 0 0 0 10.4 37.1" fill="none" stroke="#ea580c" stroke-width="2.5"
+          stroke-linecap="round" pathLength="89" stroke-dasharray="1 89">
+          <animate attributeName="stroke-dasharray" values="1 89;89 89;1 89" dur="3s" repeatCount="indefinite"/>
+        </path>
+        <circle cx="10" cy="78" r="3" fill="#ea580c"/>
+        <!-- Mesure animée (interpolée 1°→89°→1°) -->
+        <text id="txt-aigu" x="62" y="70" font-family="Baloo 2,cursive" font-weight="800" font-size="12" fill="#ea580c" text-anchor="start">…°</text>
+      </svg>
+      <span class="angle-mesure" style="color:#ea580c;">entre 0° et 90°</span>
+    </div>
+
+    <!-- Angle obtus animé -->
+    <div class="angle-cell">
+      <span class="angle-nom" style="color:#7c3aed;">Angle obtus</span>
+      <svg width="140" height="110" viewBox="-10 -20 140 110">
+        <!-- Base : sommet centré à x=60 -->
+        <line x1="60" y1="78" x2="128" y2="78" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Demi-droite animée : sommet x=60 -->
+        <g>
+          <line x1="60" y1="78" x2="128" y2="78" stroke="#222" stroke-width="2.5" stroke-linecap="round">
+            <animateTransform attributeName="transform" attributeType="XML" type="rotate"
+              values="-91 60 78;-179 60 78;-91 60 78" dur="3s" repeatCount="indefinite"/>
+          </line>
+        </g>
+        <!-- Arc dasharray animé : r=41, de 0° jusqu'à 179°, endpoint à 180° depuis (60,78) = (19,78) -->
+        <path d="M 101 78 A 41 41 0 0 0 19 77.5" fill="none" stroke="#7c3aed" stroke-width="2.5"
+          stroke-linecap="round" pathLength="179" stroke-dasharray="91 179">
+          <animate attributeName="stroke-dasharray" values="91 179;179 179;91 179" dur="3s" repeatCount="indefinite"/>
+        </path>
+        <circle cx="60" cy="78" r="3" fill="#7c3aed"/>
+        <!-- Mesure animée 91°→179°→91° -->
+        <text id="txt-obtus" x="98" y="38" font-family="Baloo 2,cursive" font-weight="800" font-size="12" fill="#7c3aed" text-anchor="middle">…°</text>
+      </svg>
+      <span class="angle-mesure" style="color:#7c3aed;">entre 90° et 180°</span>
+    </div>
+
+  </div>
+`,
+
+// ── PAGE 3 : Angles de référence ─────────────────────────────────────────────
+() => `
+  <div class="step-title pop">📏 Angles de référence</div>
+
+  <!-- Ligne 1 : 45° et 30° -->
+  <div class="types-grid fade-in" style="grid-template-columns:repeat(2,1fr);max-width:380px;">
+
+    <!-- 45° -->
+    <div class="angle-cell">
+      <span class="angle-nom" style="color:#1a73e8;">45°</span>
+      <svg width="100" height="85" viewBox="0 0 100 85">
+        <!-- Carré de référence gris -->
+        <rect x="10" y="10" width="60" height="60" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="4,3"/>
+        <!-- Diagonale bleue -->
+        <line x1="10" y1="70" x2="70" y2="10" stroke="#1a73e8" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Base -->
+        <line x1="10" y1="70" x2="90" y2="70" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Coin angle droit -->
+        <rect x="10" y="62" width="8" height="8" fill="none" stroke="#94a3b8" stroke-width="1.2"/>
+        <!-- Arc 45° bleu -->
+        <path d="M 37 70 A 27 27 0 0 0 29.1 51.0" fill="none" stroke="#1a73e8" stroke-width="2"/>
+        <!-- Label 45° bleu (bisectrice ≈ 22.5°, r=35 : (10+35cos22.5,70-35sin22.5)=(42.3,56.6)) -->
+        <text x="47" y="61" font-family="Baloo 2,cursive" font-size="10" font-weight="800" fill="#1a73e8" text-anchor="middle">45°</text>
+        <!-- Arc adjacent 45° gris : de 45° à 90°, r=17 -->
+        <!-- endpoint à 45° : (10+17cos45,70-17sin45)=(22,58) ; endpoint à 90° : (10,53) -->
+        <path d="M 22 58 A 17 17 0 0 0 10 53" fill="none" stroke="#9ca3af" stroke-width="1.5"/>
+        <!-- Milieu de l'arc gris à 67.5°, r=17 : (10+17cos67.5,70-17sin67.5)=(16.5,54.3) → texte décalé -->
+        <text x="20" y="51" font-family="Baloo 2,cursive" font-size="9" font-weight="700" fill="#9ca3af" text-anchor="middle">45°</text>
+        <circle cx="10" cy="70" r="3" fill="#1a73e8"/>
+      </svg>
+      <span class="angle-mesure" style="color:#1a73e8;">Diagonale d'un carré</span>
+    </div>
+
+    <!-- 30° -->
+    <div class="angle-cell">
+      <span class="angle-nom" style="color:var(--orange);">30°</span>
+      <svg width="100" height="90" viewBox="0 -5 100 90">
+        <!-- Base -->
+        <line x1="10" y1="70" x2="90" y2="70" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Côté 30° orange -->
+        <line x1="10" y1="70" x2="79.4" y2="32.0" stroke="var(--orange)" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Trait vertical pointillé gris (angle droit = 90°) -->
+        <line x1="10" y1="70" x2="10" y2="8" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3" stroke-linecap="round"/>
+        <!-- Côté 60° pointillé gris (même sommet) -->
+        <line x1="10" y1="70" x2="45" y2="9.4" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="5,3"/>
+        <!-- Arc 30° orange -->
+        <path d="M 37 70 A 27 27 0 0 0 33.5 56.5" fill="none" stroke="var(--orange)" stroke-width="2"/>
+        <!-- Label 30° orange : bisectrice à 15°, r=35 : (10+35cos15,70-35sin15)=(43.8,60.9) -->
+        <text x="50" y="64" font-family="Baloo 2,cursive" font-size="10" font-weight="800" fill="var(--orange)" text-anchor="middle">30°</text>
+        <!-- Arc 30° gris entre côté 30° et côté 60°, r=38.88 (32.4×1.2) — 2e arc gris (milieu) -->
+        <!-- endpoint à 30° : (10+38.88×cos30,70-38.88×sin30)=(43.68,50.56) ; endpoint à 60° : (29.44,36.32) -->
+        <path d="M 43.68 50.56 A 38.88 38.88 0 0 0 29.44 36.32" fill="none" stroke="#9ca3af" stroke-width="1.5"/>
+        <!-- étiquette : descendre 1 ligne + 1 char à gauche -->
+        <text x="47" y="33" font-family="Baloo 2,cursive" font-size="9" font-weight="700" fill="#9ca3af" text-anchor="middle">30°</text>
+        <!-- Arc 30° gris entre côté 60° et vertical — 1er arc gris (le plus à gauche), r=29.7 (19.8×1.5) -->
+        <!-- endpoint à 60° : (10+29.7×cos60,70-29.7×sin60)=(24.85,44.29) ; endpoint à 90° : (10,40.3) -->
+        <path d="M 24.85 44.29 A 29.7 29.7 0 0 0 10 40.3" fill="none" stroke="#9ca3af" stroke-width="1.5"/>
+        <!-- étiquette : descendre 1 ligne (y=20→34) -->
+        <text x="21" y="34" font-family="Baloo 2,cursive" font-size="9" font-weight="700" fill="#9ca3af" text-anchor="middle">30°</text>
+        <circle cx="10" cy="70" r="3" fill="var(--orange)"/>
+      </svg>
+      <span class="angle-mesure" style="color:var(--orange);">tiers de l'angle droit</span>
+    </div>
+
+  </div>
+
+  <!-- Ligne 2 : 135° et 150° -->
+  <div class="types-grid fade-in" style="grid-template-columns:repeat(2,1fr);max-width:380px;">
+
+    <!-- 135° -->
+    <div class="angle-cell">
+      <span class="angle-nom" style="color:var(--violet);">135°</span>
+      <svg width="130" height="85" viewBox="-55 0 130 85">
+        <!-- Base -->
+        <line x1="10" y1="70" x2="68" y2="70" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Côté 135° (vers haut-gauche) -->
+        <line x1="10" y1="70" x2="-42.4" y2="17.6" stroke="var(--violet)" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Trait vertical pointillé gris (angle droit) -->
+        <line x1="10" y1="70" x2="10" y2="8" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3" stroke-linecap="round"/>
+        <!-- Arc 135° violet (grand) -->
+        <path d="M 37 70 A 27 27 0 0 0 -9.1 50.9" fill="none" stroke="var(--violet)" stroke-width="2"/>
+        <!-- Label 135° violet : décalé à droite, contour blanc pour lisibilité sur la ligne grise -->
+        <text x="14" y="36" font-family="Baloo 2,cursive" font-size="10" font-weight="800" fill="var(--violet)" text-anchor="middle"
+          stroke="white" stroke-width="3" paint-order="stroke">135°</text>
+        <!-- Codage angle droit gris (de la base au vertical) : petit carré -->
+        <path d="M 18 70 L 18 62 L 10 62" fill="none" stroke="#9ca3af" stroke-width="1.3"/>
+        <!-- Label 90° gris clair -->
+        <text x="19" y="63" font-family="Baloo 2,cursive" font-size="8" font-weight="700" fill="#9ca3af">90°</text>
+        <!-- Arc 45° gris (de vertical jusqu'au côté 135°) : r=15 -->
+        <!-- endpoint vertical r=15 : (10,55) ; endpoint côté 135° : (-0.6,59.4) -->
+        <!-- bisectrice à 112.5° r=15 : (10+15cos112.5,70-15sin112.5)=(4.3,56.1) → texte à (-1,49) -->
+        <path d="M 10 55 A 15 15 0 0 0 -0.6 59.4" fill="none" stroke="#9ca3af" stroke-width="1.5"/>
+        <text x="2" y="55" font-family="Baloo 2,cursive" font-size="9" font-weight="700" fill="#9ca3af" text-anchor="middle">45°</text>
+        <circle cx="10" cy="70" r="3" fill="var(--violet)"/>
+      </svg>
+      <span class="angle-mesure" style="color:var(--violet);">90° + 45°</span>
+    </div>
+
+    <!-- 150° -->
+    <div class="angle-cell">
+      <span class="angle-nom" style="color:var(--teal);">150°</span>
+      <svg width="130" height="85" viewBox="-55 0 130 85">
+        <!-- Base -->
+        <line x1="10" y1="70" x2="68" y2="70" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Côté 150° : endpoint (10+65*cos150, 70-65*sin150) = (-46.3, 37.5) -->
+        <line x1="10" y1="70" x2="-46.3" y2="37.5" stroke="var(--teal)" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Prolongement horizontal pointillé vers la gauche (angle plat = 180°) -->
+        <line x1="10" y1="70" x2="-50" y2="70" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3" stroke-linecap="round"/>
+        <!-- Arc 150° teal : de 0° à 150°, r=27 -->
+        <!-- endpoint à 150° r=27 : (-13.4, 56.5) -->
+        <path d="M 37 70 A 27 27 0 0 0 -13.4 56.5" fill="none" stroke="var(--teal)" stroke-width="2"/>
+        <!-- Label 150° teal : bisectrice à 75°, r=35 -->
+        <text x="6" y="34" font-family="Baloo 2,cursive" font-size="10" font-weight="800" fill="var(--teal)" text-anchor="middle">150°</text>
+        <!-- Arc 30° gris entre côté 150° et horizontale gauche (180°), r=22.5 (15×1.5) -->
+        <!-- départ à 150° r=22.5 : (10+22.5×cos150,70-22.5×sin150)=(-9.49,58.75) ; arrivée à 180° : (-12.5,70) -->
+        <path d="M -9.49 58.75 A 22.5 22.5 0 0 0 -12.5 70" fill="none" stroke="#9ca3af" stroke-width="1.5"/>
+        <!-- Label 30° gris : 1 char à gauche (≈-6px) et 10px plus haut -->
+        <text x="-21" y="68" font-family="Baloo 2,cursive" font-size="9" font-weight="700" fill="#9ca3af" text-anchor="middle">30°</text>
+        <circle cx="10" cy="70" r="3" fill="var(--teal)"/>
+      </svg>
+      <span class="angle-mesure" style="color:var(--teal);">180° − 30°</span>
+    </div>
+
+  </div>
+`,
+
+// ── PAGE 4 : Exemple 40° (équerre + diagonale) ────────────────────────────────
+() => {
+  const rev = revealed;
+  return `
+  <div class="step-title pop">✏️ Exemple : estimer un angle aigu</div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;">
+    <div style="position:relative;width:280px;height:200px;">
+      <svg id="svg4" width="280" height="200" viewBox="0 0 280 200" style="position:absolute;top:0;left:0;">
+
+        <!-- === Équerre gris clair (EN PREMIER = derrière l'angle) === -->
+        <!-- coin bas-gauche à (30,170), 90px de côté -->
+        <g id="equerre4" opacity="0">
+          <rect x="30" y="80" width="90" height="90" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5" rx="2"/>
+          <text x="75" y="76" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" fill="#64748b">équerre (90°)</text>
+        </g>
+
+        <!-- === Arc rouge centré sur le sommet (30,170) — avant les côtés noirs === -->
+        <!-- r=50, de 0° à 40° : endpoint = (30+50*cos40, 170-50*sin40) = (68.3, 137.9) -->
+        <!-- pathLength=40 pour dasharray propre -->
+        <path id="arc40" d="M 80 170 A 50 50 0 0 0 68.3 137.9" fill="none"
+          stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round"
+          pathLength="40" stroke-dasharray="0 40" opacity="0"/>
+
+        <!-- === L'angle à estimer (par-dessus l'arc et l'équerre) === -->
+        <!-- Base horizontale, sommet (30,170) -->
+        <line x1="30" y1="170" x2="255" y2="170" stroke="#222" stroke-width="3" stroke-linecap="round"/>
+        <!-- Côté à 40° : endpoint (30+200*cos40, 170-200*sin40) = (183.2, 41.4) -->
+        <line x1="30" y1="170" x2="183.2" y2="41.4" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
+        <!-- Sommet -->
+        <circle cx="30" cy="170" r="4" fill="var(--primary)"/>
+
+        <!-- === Diagonale 45° de l'équerre (tracée progressivement) === -->
+        <!-- (30,170) → (120,80), longueur = sqrt(90²+90²) ≈ 127.3 -->
+        <path id="diag4" d="M 30 170 L 120 80" stroke="#1a73e8" stroke-width="2"
+          stroke-linecap="round" fill="none"
+          pathLength="127" stroke-dasharray="0 127" opacity="0"/>
+
+        <!-- === Arc bleu 45° centré sur (30,170), r=75 (50×1.5) === -->
+        <!-- endpoint à 45° : (30+75*cos45, 170-75*sin45) = (83.03, 116.97) -->
+        <path id="arc45" d="M 105 170 A 75 75 0 0 0 83.03 116.97" fill="none" stroke="#1a73e8"
+          stroke-width="2" stroke-linecap="round"
+          pathLength="59" stroke-dasharray="0 59" opacity="0"/>
+        <!-- Étiquette "45°" sur l'arc : bisectrice à 22.5°, r=75 → (99.3, 141.4) -->
+        <text id="lbl45" x="99" y="139" font-family="Nunito,sans-serif" font-size="10" fill="#1a73e8"
+          font-weight="700" text-anchor="middle" opacity="0" style="transition:opacity .4s"
+          stroke="#e2e8f0" stroke-width="3" paint-order="stroke">45°</text>
+
+        <!-- === Label résultat sur l'arc rouge : bisectrice 20°, r=50 → (77, 153), décalé vers extérieur → y=145 === -->
+        <text id="lbl40" x="75" y="159" font-family="Baloo 2,cursive" font-weight="800" font-size="13"
+          fill="var(--primary)" text-anchor="middle" opacity="0"
+          stroke="#e2e8f0" stroke-width="3" paint-order="stroke"></text>
+
+        <!-- === AUTRE MÉTHODE : secteur rouge rempli (0°–40°), r=50 === -->
+        <!-- Chemin: M sommet L start_horiz A r r 0 0 0 end40 Z -->
+        <!-- start = (80,170), end40 = (68.3,137.9) -->
+        <path id="am-sect-rouge" d="M 30 170 L 80 170 A 50 50 0 0 0 68.3 137.9 Z"
+          fill="var(--primary)" fill-opacity="0.25" stroke="var(--primary)" stroke-width="2"
+          pathLength="40" stroke-dasharray="0 40" opacity="0"/>
+
+        <!-- === AUTRE MÉTHODE : secteur orange (copie, 0°–40°), r=60, position initiale === -->
+        <!-- start = (90,170), end40 = (75.96,131.4) -->
+        <g id="am-group-orange" opacity="0">
+          <path id="am-sect-orange" d="M 30 170 L 90 170 A 60 60 0 0 0 75.96 131.4 Z"
+            fill="var(--orange)" fill-opacity="0.18" stroke="var(--orange)" stroke-width="2"/>
+        </g>
+
+        <!-- === AUTRE MÉTHODE : trait côté supérieur secteur orange (à 80° après rotation) === -->
+        <!-- sommet (30,170) → endpoint à 80° r=145 : (30+145*cos80, 170-145*sin80) = (55.2, 27.3) -->
+        <path id="am-cote80" d="M 30 170 L 55.2 27.3" fill="none"
+          stroke="var(--orange)" stroke-width="2.5" stroke-linecap="round"
+          pathLength="147" stroke-dasharray="0 147" opacity="0"/>
+
+        <!-- === AUTRE MÉTHODE : arc bleu 0°–80°, r=70 === -->
+        <!-- start = (100,170), end80 = (42.15,100.94) -->
+        <!-- pathLength approximatif : (80/360)*2π*70 ≈ 97.7 -->
+        <path id="am-arc-bleu" d="M 100 170 A 70 70 0 0 0 42.15 100.94" fill="none"
+          stroke="#1a73e8" stroke-width="2.5" stroke-linecap="round"
+          pathLength="98" stroke-dasharray="0 98" opacity="0"/>
+
+        <!-- === AUTRE MÉTHODE : label ≈80° sur arc bleu === -->
+        <!-- bisectrice à 40°, r=82 : (30+82*cos40, 170-82*sin40) = (92.8, 117.3) -->
+        <text id="am-lbl80" x="101" y="123" font-family="Baloo 2,cursive" font-weight="800" font-size="13"
+          fill="#1a73e8" text-anchor="middle" opacity="0"
+          stroke="#e2e8f0" stroke-width="3" paint-order="stroke"></text>
+
+        <!-- === AUTRE MÉTHODE : label ≈40° sur secteur rouge === -->
+        <!-- bisectrice à 20°, r=35 : (30+35*cos20, 170-35*sin20) = (62.9, 158.0) -->
+        <text id="am-lbl40r" x="68" y="160" font-family="Baloo 2,cursive" font-weight="800" font-size="11"
+          fill="var(--primary)" text-anchor="middle" opacity="0"
+          stroke="#fff" stroke-width="2.5" paint-order="stroke"></text>
+
+        <!-- === AUTRE MÉTHODE : label ≈40° sur secteur orange === -->
+        <!-- après rotation, bisectrice à 60°, r=42 : (30+42*cos60, 170-42*sin60) = (51,133.6) -->
+        <text id="am-lbl40o" x="52" y="132" font-family="Baloo 2,cursive" font-weight="800" font-size="11"
+          fill="var(--orange)" text-anchor="middle" opacity="0"
+          stroke="#fff" stroke-width="2.5" paint-order="stroke"></text>
+
+      </svg>
+    </div>
+
+    <p id="expl4" style="font-size:.93rem;line-height:1.65;color:#334155;max-width:560px;width:100%;text-align:center;font-weight:600;">
+      ${rev
+        ? 'Avec l\'équerre placée, qui permet de voir un angle de <b style="color:#64748b">90°</b>, on voit que <b style="color:var(--primary)">l\'angle cherché</b> mesure un peu moins que <b style="color:#1a73e8">45°</b>.'
+        : 'Voici un angle. On veut l\'estimer sans rapporteur. Clique sur le bouton pour placer l\'équerre.'}
+    </p>
+
+    ${!rev
+      ? `<button class="btn-complete" onclick="estimer40()">✏️ Estimer la mesure</button>`
+      : `<button id="btn-autre" class="btn-complete" onclick="autreMethode40()" style="background:var(--orange-clair);border-color:var(--orange);color:var(--orange);${animating?'display:none':''}">🔁 Autre méthode</button>`}
+  </div>
+`;
+},
+
+// ── PAGE 5 : Exemple 140° animé ───────────────────────────────────────────────
+() => {
+  const rev = revealed;
+  return `
+  <div class="step-title pop">✏️ Exemple : estimer un angle obtus</div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;">
+    <div style="position:relative;width:290px;height:180px;">
+      <svg id="svg5" width="290" height="175" viewBox="-10 0 290 175" style="position:absolute;top:0;left:0;overflow:visible;">
+
+        <!-- === ÉQUERRE 2 : 80×80, coin BAS-DROIT accolé côté gauche équerre 1, à (50,155) === -->
+        <!-- couvre x=-30→50, y=75→155 — arrive depuis le haut-gauche — EN DESSOUS du reste -->
+        <g id="eq5b" opacity="0">
+          <rect x="-30" y="75" width="80" height="80" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5" rx="2"/>
+        </g>
+
+        <!-- === ÉQUERRE 1 : 80×80, coin BAS-GAUCHE au sommet (50,155), s'étend vers la droite === -->
+        <!-- couvre x=50→130, y=75→155 — arrive depuis le haut-droit -->
+        <g id="eq5a" opacity="0">
+          <rect x="50" y="75" width="80" height="80" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5" rx="2"/>
+          <text x="90" y="71" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="#64748b">équerre (90°)</text>
+        </g>
+
+        <!-- === TRAIT VERTICAL GRIS : côté commun des deux carrés, reste visible après effacement === -->
+        <line id="vert5a" x1="50" y1="75" x2="50" y2="155" stroke="#94a3b8" stroke-width="1.5" opacity="0"/>
+
+        <!-- === CODAGE ANGLE DROIT : coin bas-gauche = sommet (50,155) → vers (60,155)→(60,145)→(50,145) === -->
+        <path id="cod5a" d="M 60 155 L 60 145 L 50 145" fill="none"
+          stroke="#64748b" stroke-width="2" opacity="0"/>
+
+        <!-- === LABEL 90° : dans le coin du carré 1, à droite du codage === -->
+        <text id="lbl5-90" x="80" y="145" font-family="Baloo 2,cursive" font-weight="800" font-size="11"
+          fill="#64748b" text-anchor="middle" opacity="0"
+          stroke="#e2e8f0" stroke-width="2.5" paint-order="stroke"></text>
+
+        <!-- === DIAGONALE BLEUE du carré 2 : de son coin bas-droit (50,155) vers coin haut-gauche (-30,75) === -->
+        <!-- longueur = sqrt(80²+80²) ≈ 113.1 -->
+        <path id="diag5" d="M 50 155 L -30 75" fill="none" stroke="#1a73e8" stroke-width="2"
+          stroke-linecap="round" pathLength="113" stroke-dasharray="0 113" opacity="0"/>
+
+        <!-- === ARC BLEU 90°→135°, r=35, centre (50,155) === -->
+        <!-- start à 90° : (50, 120)  end à 135° : (50+35*cos135, 155-35*sin135) = (25.3, 130.3) -->
+        <!-- (45/360)*2π*35 ≈ 27.5 -->
+        <path id="arc5b" d="M 50 120 A 35 35 0 0 0 25.3 130.3" fill="none"
+          stroke="#1a73e8" stroke-width="2" stroke-linecap="round"
+          pathLength="28" stroke-dasharray="0 28" opacity="0"/>
+
+        <!-- === LABEL 45° sur arc bleu === -->
+        <!-- milieu à 112.5°, r=25 (légèrement à l'intérieur) : (50+25*cos112.5, 155-25*sin112.5) = (40.5, 131.9) → décalé -->
+        <text id="lbl5-45" x="39" y="132" font-family="Baloo 2,cursive" font-weight="800" font-size="10"
+          fill="#1a73e8" text-anchor="middle" opacity="0"
+          stroke="#fff" stroke-width="2.5" paint-order="stroke">45°</text>
+
+        <!-- === ARC ROUGE 90°→140°, r=50, centre (50,155) — par-dessus la diagonale bleue === -->
+        <!-- start à 90° : (50, 105)  end à 140° : (50+50*cos140, 155-50*sin140) = (11.7, 122.9) -->
+        <!-- (50/360)*2π*50 ≈ 43.6 -->
+        <path id="arc5r" d="M 50 105 A 50 50 0 0 0 11.7 122.9" fill="none"
+          stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round"
+          pathLength="44" stroke-dasharray="0 44" opacity="0"/>
+
+        <!-- === LABEL ? / ≈50° sur arc rouge === -->
+        <!-- milieu arc à 115°, r=57 : (50+57*cos115, 155-57*sin115) = (25.9, 103.3) -->
+        <text id="lbl5-q" x="27" y="113" font-family="Baloo 2,cursive" font-weight="800" font-size="13"
+          fill="var(--primary)" text-anchor="middle" opacity="0"
+          stroke="#fff" stroke-width="2.5" paint-order="stroke">?</text>
+
+        <!-- === ARC FINAL 0°→140°, r=65, centre (50,155) === -->
+        <!-- start à 0° : (115, 155)  end à 140° : (50+65*cos140, 155-65*sin140) = (0.2, 113.2) -->
+        <!-- (140/360)*2π*65 ≈ 158.9 -->
+        <path id="arc5f" d="M 115 155 A 65 65 0 0 0 0.2 113.2" fill="none"
+          stroke="var(--teal)" stroke-width="3" stroke-linecap="round"
+          pathLength="159" stroke-dasharray="0 159" opacity="0"/>
+
+        <!-- === LABEL "90°+50°" puis "≈140°" === -->
+        <!-- à 70°, r=78 : (50+78*cos70, 155-78*sin70) = (76.7, 81.7) -->
+        <text id="lbl5-sum" x="88" y="80" font-family="Baloo 2,cursive" font-weight="800" font-size="12"
+          fill="var(--teal)" text-anchor="middle" opacity="0"
+          stroke="#e2e8f0" stroke-width="2.5" paint-order="stroke"></text>
+
+        <!-- === L'angle à estimer (par-dessus tout le reste) === -->
+        <!-- Base horizontale, sommet (50,155) -->
+        <line x1="50" y1="155" x2="270" y2="155" stroke="#222" stroke-width="3" stroke-linecap="round"/>
+        <!-- Côté 140° : (50+130*cos140, 155-130*sin140) = (-49.6, 71.4) -->
+        <line x1="50" y1="155" x2="-49.6" y2="71.4" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
+        <!-- Sommet -->
+        <circle cx="50" cy="155" r="4" fill="var(--teal)"/>
+
+      </svg>
+    </div>
+
+    <p id="expl5" style="font-size:.93rem;line-height:1.65;color:#334155;max-width:560px;width:100%;text-align:center;font-weight:600;">
+      ${rev
+        ? 'Cet angle obtus mesure <b style="color:var(--teal)">≈ 140°</b> : l\'angle droit (90°) plus un angle aigu de <b style="color:var(--primary)">≈ 50°</b>.'
+        : 'Voici un angle obtus. Clique sur le bouton pour l\'estimer.'}
+    </p>
+
+    ${!rev ? `<button class="btn-complete" onclick="estimer140()">✏️ Estimer la mesure de l'angle</button>` : ''}
+  </div>
+`;
+},
+
+// ── PAGE 6 : Bilan ────────────────────────────────────────────────────────────
+() => `
+  <div class="step-title pop">🏆 Ce qu'il faut retenir</div>
+  <div class="recap-list fade-in">
+
+    <div class="recap-item fade-in" style="border-left-color:var(--primary);">
+      <div class="recap-num" style="background:var(--primary);">1</div>
+      <div>Estimer la mesure d'un angle, c'est essayer d'être le plus proche <b>sans utiliser de rapporteur</b>.</div>
+    </div>
+
+    <div class="recap-item fade-in" style="animation-delay:.07s;border-left-color:var(--teal);">
+      <div class="recap-num" style="background:var(--teal);">2</div>
+      <div>On commence par comparer l'angle par rapport à <b>l'angle droit</b> : est-il <b style="color:var(--orange)">aigu</b> ou <b style="color:var(--violet)">obtus</b> ?</div>
+    </div>
+
+    <div class="recap-item fade-in" style="animation-delay:.14s;flex-direction:column;align-items:flex-start;gap:8px;border-left-color:var(--bleu);">
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div class="recap-num" style="background:var(--bleu);">3</div>
+        <div>On s'entraîne à reconnaître des <b>angles de référence</b> :</div>
+      </div>
+      <div style="display:flex;gap:16px;justify-content:center;width:100%;flex-wrap:wrap;">
+        <!-- Petit SVG 30° -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+          <svg width="60" height="48" viewBox="0 0 60 48">
+            <line x1="4" y1="44" x2="56" y2="44" stroke="#222" stroke-width="2" stroke-linecap="round"/>
+            <line x1="4" y1="44" x2="50.8" y2="20.0" stroke="var(--orange)" stroke-width="2" stroke-linecap="round"/>
+            <path d="M 22 44 A 18 18 0 0 0 19.6 35.5" fill="none" stroke="var(--orange)" stroke-width="1.5"/>
+            <circle cx="4" cy="44" r="2.5" fill="var(--orange)"/>
+            <text x="26" y="42" font-family="Baloo 2,cursive" font-size="9" font-weight="800" fill="var(--orange)">30°</text>
+          </svg>
+        </div>
+        <!-- Petit SVG 45° -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+          <svg width="60" height="48" viewBox="0 0 60 48">
+            <line x1="4" y1="44" x2="56" y2="44" stroke="#222" stroke-width="2" stroke-linecap="round"/>
+            <line x1="4" y1="44" x2="47.5" y2="0.5" stroke="#1a73e8" stroke-width="2" stroke-linecap="round"/>
+            <path d="M 22 44 A 18 18 0 0 0 16.7 31.3" fill="none" stroke="#1a73e8" stroke-width="1.5"/>
+            <circle cx="4" cy="44" r="2.5" fill="#1a73e8"/>
+            <text x="26" y="40" font-family="Baloo 2,cursive" font-size="9" font-weight="800" fill="#1a73e8">45°</text>
+          </svg>
+        </div>
+        <!-- Petit SVG 90° -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+          <svg width="60" height="48" viewBox="0 0 60 48">
+            <line x1="4" y1="44" x2="56" y2="44" stroke="#222" stroke-width="2" stroke-linecap="round"/>
+            <line x1="4" y1="44" x2="4" y2="4" stroke="#1a73e8" stroke-width="2" stroke-linecap="round"/>
+            <path d="M 4 44 L 12 44 L 12 36 L 4 36 Z" fill="#bfdbfe" stroke="#1a73e8" stroke-width="1.3"/>
+            <circle cx="4" cy="44" r="2.5" fill="#1a73e8"/>
+            <text x="16" y="36" font-family="Baloo 2,cursive" font-size="9" font-weight="800" fill="#1a73e8">90°</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="recap-item fade-in" style="animation-delay:.21s;border-left-color:var(--orange);">
+      <div class="recap-num" style="background:var(--orange);">4</div>
+      <div>Quand l'angle est <b style="color:var(--orange)">aigu</b>, on le compare à ces angles de référence.</div>
+    </div>
+
+    <div class="recap-item fade-in" style="animation-delay:.28s;border-left-color:var(--violet);">
+      <div class="recap-num" style="background:var(--violet);">5</div>
+      <div>Quand l'angle est <b style="color:var(--violet)">obtus</b>, on place d'abord un angle droit et on estime <b>l'angle aigu en plus de l'angle droit</b>.</div>
+    </div>
+
+  </div>
+`,
+
+];
+
+// ── Animation P4 : équerre MRU → diagonale progressive → arc45 → arc40 → label machine à écrire ──
+function animDash(el, totalLen, durationMs, onDone) {
+  // Forcer dasharray à "0 L" et rendre visible en une seule frame synchrone
+  // pour éviter le flash du trait complet avant la première frame rAF
+  el.setAttribute('stroke-dasharray', '0 ' + totalLen);
+  el.style.opacity = '1';
+  const start = performance.now();
+  function tick(now) {
+    const p = Math.min((now - start) / durationMs, 1);
+    el.setAttribute('stroke-dasharray', (p * totalLen) + ' ' + totalLen);
+    if (p < 1) requestAnimationFrame(tick);
+    else if (onDone) onDone();
+  }
+  requestAnimationFrame(tick);
+}
+
+function typewrite(el, text, delayPerChar) {
+  let i = 0;
+  el.style.opacity = '1';
+  function next() {
+    if (i <= text.length) {
+      el.textContent = text.slice(0, i);
+      i++;
+      setTimeout(next, delayPerChar);
+    }
+  }
+  next();
+}
+
+function estimer40() {
+  revealed = true;
+  animating = true;
+  render();
+
+  // 1. Équerre arrive en MRU depuis le haut-gauche (600ms délai)
+  setTimeout(() => {
+    const eq = document.getElementById('equerre4');
+    if (!eq) return;
+    eq.classList.add('equerre-mru');
+    eq.style.opacity = '1';
+  }, 600);
+
+  // 2. Après la fin du déplacement de l'équerre (600 + 1400 = 2000ms), tracer la diagonale
+  setTimeout(() => {
+    const d = document.getElementById('diag4');
+    if (!d) return;
+    animDash(d, 127, 1400, () => {
+
+      // 3. Arc bleu 45° se trace quand la diagonale est terminée
+      setTimeout(() => {
+        const a45 = document.getElementById('arc45');
+        if (!a45) return;
+        animDash(a45, 59, 800, () => {
+          // 4. Label 45° apparaît quand l'arc est terminé
+          const l = document.getElementById('lbl45');
+          if (l) l.style.opacity = '1';
+
+          // 5. Arc rouge 40° se trace
+          setTimeout(() => {
+            const a40 = document.getElementById('arc40');
+            if (!a40) return;
+            animDash(a40, 40, 1000, () => {
+
+              // 6. Label "≈ 40°" en machine à écrire
+              setTimeout(() => {
+                const lbl = document.getElementById('lbl40');
+                if (lbl) typewrite(lbl, '≈ 40°', 160);
+                animating = false;
+                // Afficher le bouton "Autre méthode" après la fin de l'animation
+                setTimeout(() => {
+                  const ba = document.getElementById('btn-autre');
+                  if (ba) ba.style.display = '';
+                }, 1500);
+              }, 400);
+            });
+          }, 600);
+        });
+      }, 600);
+    });
+  }, 2000);
+}
+
+function autreMethode40() {
+  // Masquer le bouton immédiatement
+  const btnAutre = document.getElementById('btn-autre');
+  if (btnAutre) btnAutre.style.display = 'none';
+
+  // Cacher tous les éléments de la méthode 1
+  const toHide = ['equerre4','diag4','lbl45','arc45','arc40','lbl40'];
+  toHide.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.opacity = '0'; el.style.transition = 'opacity 0.5s'; }
+  });
+  // Masquer aussi tous les am-* au départ
+  ['am-sect-rouge','am-group-orange','am-cote80','am-arc-bleu','am-lbl80','am-lbl40r','am-lbl40o'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.opacity = '0';
+  });
+  // Réinitialiser le secteur orange à sa position d'origine (0°)
+  const grOrange = document.getElementById('am-group-orange');
+  if (grOrange) grOrange.setAttribute('transform', 'rotate(0 30 170)');
+
+  // Mettre à jour l'explication
+  const expl = document.getElementById('expl4');
+  if (expl) expl.innerHTML = 'Autre méthode : on va <b style="color:var(--primary)">dupliquer l\'angle</b> pour obtenir son double !';
+
+  // Après 1s : tracer progressivement le secteur rouge rempli
+  setTimeout(() => {
+    const sr = document.getElementById('am-sect-rouge');
+    if (!sr) return;
+    animDash(sr, 40, 1200, () => {
+
+      // Pause 1s, puis faire apparaître le secteur orange (copie)
+      setTimeout(() => {
+        const go = document.getElementById('am-group-orange');
+        if (!go) return;
+        go.style.opacity = '1';
+
+        // Pause 500ms, puis faire pivoter l'orange de 0° à -40° CCW autour du sommet
+        setTimeout(() => {
+          const dur = 1000;
+          const start = performance.now();
+          function rotStep(now) {
+            const p = Math.min((now - start) / dur, 1);
+            const deg = -40 * p;
+            if (go) go.setAttribute('transform', 'rotate(' + deg + ' 30 170)');
+            if (p < 1) requestAnimationFrame(rotStep);
+            else {
+              // Orange arrive à 40°–80° — tracer le côté supérieur (à 80°)
+              const c80 = document.getElementById('am-cote80');
+              if (c80) { animDash(c80, 147, 800, null); }
+
+              // Pause 1s après la rotation, puis équerre arrive
+              setTimeout(() => {
+                const eq = document.getElementById('equerre4');
+                if (!eq) return;
+                // Enlever l'ancienne classe si présente
+                eq.classList.remove('equerre-mru');
+                void eq.offsetWidth; // reflow
+                eq.classList.add('equerre-mru2');
+                eq.style.opacity = '1';
+
+                // Après fin équerre (1500ms) + pause 1s → tracer arc bleu 80°
+                setTimeout(() => {
+                  const ab = document.getElementById('am-arc-bleu');
+                  if (!ab) return;
+                  animDash(ab, 98, 1600, () => {
+
+                    // Pause 500ms → label ≈80° en typewriter
+                    setTimeout(() => {
+                      const l80 = document.getElementById('am-lbl80');
+                      if (l80) typewrite(l80, '≈ 80°', 140);
+
+                      // Pause 1s → labels ≈40° en typewriter simultanés
+                      setTimeout(() => {
+                        const l40r = document.getElementById('am-lbl40r');
+                        const l40o = document.getElementById('am-lbl40o');
+                        if (l40r) typewrite(l40r, '≈ 40°', 130);
+                        if (l40o) typewrite(l40o, '≈ 40°', 130);
+                        // Mettre à jour l'explication finale
+                        setTimeout(() => {
+                          const expl2 = document.getElementById('expl4');
+                          if (expl2) expl2.innerHTML = 'En doublant l\'angle, on obtient un angle un peu plus petit que l\'angle droit (<b style="color:#1a73e8">≈ 80°</b>). L\'angle cherché mesure donc environ la moitié de <b style="color:#1a73e8">80°</b>, c\'est-à-dire environ <b style="color:var(--primary)">40°</b>.';
+                        }, 1500);
+                      }, 1000);
+                    }, 500);
+                  });
+                }, 2500); // 1500ms équerre + 1000ms pause
+              }, 1000);
+            }
+          }
+          requestAnimationFrame(rotStep);
+        }, 500);
+      }, 1000);
+    });
+  }, 1000);
+}
+
+function estimer140() {
+  revealed = true;
+  animating = true;
+  render();
+
+  // ── Étape 1 : pause 500ms puis équerre 1 arrive depuis haut-droit ──
+  setTimeout(() => {
+    const ea = document.getElementById('eq5a');
+    if (!ea) return;
+    ea.classList.add('eq5a-mru');
+    ea.style.opacity = '1';
+
+    // ── Étape 2 : après équerre 1 (1200ms) + pause 1s → codage angle droit ──
+    setTimeout(() => {
+      const vt = document.getElementById('vert5a');
+      if (vt) vt.style.opacity = '1';
+      const cod = document.getElementById('cod5a');
+      if (cod) cod.style.opacity = '1';
+
+      // ── Étape 3 : pause 500ms → "90°" en machine à écrire ──
+      setTimeout(() => {
+        const l90 = document.getElementById('lbl5-90');
+        if (l90) typewrite(l90, '90°', 120);
+
+        // ── Étape 4 : pause 1s → arc rouge 90°→140° ──
+        setTimeout(() => {
+          const ar = document.getElementById('arc5r');
+          if (!ar) return;
+          animDash(ar, 44, 1100, () => {
+
+            // ── Étape 5 : pause 500ms → "?" sur arc rouge ──
+            setTimeout(() => {
+              const lq = document.getElementById('lbl5-q');
+              if (lq) lq.style.opacity = '1';
+
+              // ── Étape 6 : pause 1s → équerre 2 arrive depuis haut-gauche ──
+              setTimeout(() => {
+                const eb = document.getElementById('eq5b');
+                if (!eb) return;
+                eb.classList.add('eq5b-mru');
+                eb.style.opacity = '1';
+
+                // ── Étape 7 : après équerre 2 (1200ms) + pause 1s → diagonale bleue ──
+                setTimeout(() => {
+                  const dg = document.getElementById('diag5');
+                  if (!dg) return;
+                  animDash(dg, 113, 1400, () => {
+
+                    // ── Étape 8 : pause 500ms → arc bleu 90°→135° ──
+                    setTimeout(() => {
+                      const ab = document.getElementById('arc5b');
+                      if (!ab) return;
+                      animDash(ab, 28, 700, () => {
+                        const l45 = document.getElementById('lbl5-45');
+                        if (l45) l45.style.opacity = '1';
+
+                        // ── Étape 9 : pause 1s → "?" clignote 1s ──
+                        setTimeout(() => {
+                          const lq2 = document.getElementById('lbl5-q');
+                          if (lq2) {
+                            lq2.classList.add('blink');
+                            // ── Étape 10 : après clignotement → "≈50°" en machine à écrire ──
+                            setTimeout(() => {
+                              lq2.classList.remove('blink');
+                              lq2.style.opacity = '1';
+                              lq2.textContent = '';
+                              typewrite(lq2, '≈ 50°', 130);
+
+                              // ── Étape 11 : pause 1s → les équerres disparaissent ──
+                              setTimeout(() => {
+                                const ea2 = document.getElementById('eq5a');
+                                const eb2 = document.getElementById('eq5b');
+                                if (ea2) { ea2.style.transition = 'opacity 0.6s'; ea2.style.opacity = '0'; }
+                                if (eb2) { eb2.style.transition = 'opacity 0.6s'; eb2.style.opacity = '0'; }
+
+                                // ── Étape 12 : pause 500ms → arc final 0°→140° ──
+                                setTimeout(() => {
+                                  const af = document.getElementById('arc5f');
+                                  if (!af) return;
+                                  animDash(af, 159, 1800, () => {
+
+                                    // ── Étape 13 : "90° + 50°" en machine à écrire (9 car × 100ms = 900ms) ──
+                                    setTimeout(() => {
+                                      const ls = document.getElementById('lbl5-sum');
+                                      if (ls) typewrite(ls, '90° + 50°', 100);
+
+                                      // ── Étape 14 : attendre fin typewriter (900ms) + pause 1s → fondu puis "≈ 140°" ──
+                                      setTimeout(() => {
+                                        const ls2 = document.getElementById('lbl5-sum');
+                                        if (ls2) {
+                                          ls2.style.transition = 'opacity 0.4s';
+                                          ls2.style.opacity = '0';
+                                          setTimeout(() => {
+                                            ls2.style.transition = '';
+                                            ls2.textContent = '';
+                                            typewrite(ls2, '≈ 140°', 140);
+                                            animating = false;
+                                          }, 500);
+                                        }
+                                      }, 1900); // 900ms typewriter + 1000ms pause
+                                    }, 300);
+                                  });
+                                }, 500);
+                              }, 1000);
+                            }, 1100); // durée clignotement ≈ 3×350ms ≈ 1050ms
+                          }
+                        }, 1000);
+                      });
+                    }, 500);
+                  });
+                }, 2200); // 1200ms équerre + 1000ms pause
+              }, 1000);
+            }, 1000);
+          });
+        }, 500);
+      }, 500);
+    }, 2200); // 1200ms équerre + 1000ms pause
+  }, 500);
+}
+
+function reveal5() { revealed = true; render(); }
+
+// ── Animation P2 : compteur de degrés ────────────────────────────────────────
+function animerCompteurs() {
+  // aigu : 1° → 89° → 1° sur 3s
+  // obtus : 91° → 179° → 91° sur 3s
+  const dur = 3000;
+  const start = performance.now();
+  function tick(now) {
+    const t = ((now - start) % dur) / dur; // 0..1 cyclique
+    // aigu : triangle 1→89→1
+    const ta = t < 0.5 ? t * 2 : (1 - t) * 2;
+    const degA = Math.round(1 + ta * 88);
+    // obtus : triangle 91→179→91
+    const to = t < 0.5 ? t * 2 : (1 - t) * 2;
+    const degO = Math.round(91 + to * 88);
+    const elA = document.getElementById('txt-aigu');
+    const elO = document.getElementById('txt-obtus');
+    if (elA) elA.textContent = degA + '°';
+    if (elO) elO.textContent = degO + '°';
+    if (cur === 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+// ── Rendu ──────────────────────────────────────────────────────────────────────
+function render() {
+  const card = document.getElementById('card');
+  card.innerHTML = STEPS[cur]();
+
+  document.getElementById('pbar').style.width = (cur / (N - 1) * 100) + '%';
+
+  const si = document.getElementById('steps');
+  si.innerHTML = '';
+  for (let i = 0; i < N; i++) {
+    const d = document.createElement('div');
+    d.className = 'step-dot' + (i === cur ? ' active' : i < cur ? ' done' : '');
+    d.textContent = i < cur ? '✓' : (i + 1);
+    si.appendChild(d);
+  }
+
+  document.getElementById('pageInfo').textContent = `Page ${cur + 1} / ${N}`;
+  document.getElementById('btnPrev').style.visibility = cur === 0 ? 'hidden' : 'visible';
+  const bn = document.getElementById('btnNext');
+  if (cur === N - 1) { bn.textContent = '🔁 Recommencer'; } else { bn.textContent = 'Suivant →'; }
+
+  // Lancer compteurs sur P2
+  if (cur === 1) animerCompteurs();
+
+  // Sur P5 si déjà révélé ET qu'on revient, tout montrer immédiatement
+  if (cur === 4 && revealed && !animating) {
+    setTimeout(() => {
+      const els = {
+        vt:  document.getElementById('vert5a'),
+        cod: document.getElementById('cod5a'),
+        l90: document.getElementById('lbl5-90'),
+        ar:  document.getElementById('arc5r'),
+        lq:  document.getElementById('lbl5-q'),
+        dg:  document.getElementById('diag5'),
+        ab:  document.getElementById('arc5b'),
+        l45: document.getElementById('lbl5-45'),
+        af:  document.getElementById('arc5f'),
+        ls:  document.getElementById('lbl5-sum'),
+      };
+      if (els.vt)  els.vt.style.opacity = '1';
+      if (els.cod) els.cod.style.opacity = '1';
+      if (els.l90) { els.l90.style.opacity = '1'; els.l90.textContent = '90°'; }
+      if (els.ar)  { els.ar.style.opacity = '1'; els.ar.setAttribute('stroke-dasharray', '44 44'); }
+      if (els.lq)  { els.lq.style.opacity = '1'; els.lq.textContent = '≈ 50°'; }
+      if (els.dg)  { els.dg.style.opacity = '1'; els.dg.setAttribute('stroke-dasharray', '113 113'); }
+      if (els.ab)  { els.ab.style.opacity = '1'; els.ab.setAttribute('stroke-dasharray', '28 28'); }
+      if (els.l45) { els.l45.style.opacity = '1'; }
+      if (els.af)  { els.af.style.opacity = '1'; els.af.setAttribute('stroke-dasharray', '159 159'); }
+      if (els.ls)  { els.ls.style.opacity = '1'; els.ls.textContent = '≈ 140°'; }
+    }, 50);
+  }
+
+  // Sur P4 si déjà révélé ET qu'on revient (pas depuis le bouton), tout montrer immédiatement
+  if (cur === 3 && revealed && !animating) {
+    setTimeout(() => {
+      const eq = document.getElementById('equerre4');
+      const d4 = document.getElementById('diag4');
+      const l4 = document.getElementById('lbl45');
+      const a45 = document.getElementById('arc45');
+      const a40 = document.getElementById('arc40');
+      const r4 = document.getElementById('lbl40');
+      if (eq) eq.style.opacity = '1';
+      if (d4) { d4.style.opacity = '1'; d4.setAttribute('stroke-dasharray', '127 127'); }
+      if (l4) l4.style.opacity = '1';
+      if (a45) { a45.style.opacity = '1'; a45.setAttribute('stroke-dasharray', '59 59'); }
+      if (a40) { a40.style.opacity = '1'; a40.setAttribute('stroke-dasharray', '40 40'); }
+      if (r4) { r4.style.opacity = '1'; r4.textContent = '≈ 40°'; }
+    }, 50);
+  }
+}
+
+function next() {
+  if (cur === N - 1) { cur = 0; } else { cur++; }
+  revealed = false; animating = false;
+  render();
+}
+function prev() {
+  if (cur > 0) { cur--; revealed = false; animating = false; render(); }
+}
+
+render();
+</script>
+</body>
+</html>

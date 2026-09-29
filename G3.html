@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>G3 — Utiliser un vocabulaire savant en géométrie</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  /* --- dominante du module Géométrie --- */
+  --primary:#16a34a;--primary2:#4ade80;--primary-clair:#dcfce7;
+  --bg:#f0fdf4;--cote:#166534;
+  /* --- palette pédagogique constante (identique aux autres modules) --- */
+  --bleu:#1a73e8;--bleu-clair:#e8f0fe;
+  --orange:#ea580c;--orange-clair:#ffedd5;
+  --vert:#16a34a;--vert-clair:#f0fdf4;
+  --violet:#7c3aed;--violet-clair:#f5f3ff;
+  --gris:#94a3b8;
+  --teal:#0d9488;--teal-clair:#f0fdfa;
+  --card:#fff;--texte:#1e293b;--border:#e2e8f0;
+  /* --- conventions de figures (identiques aux exercices WIMS du module) --- */
+  --fig-bleu:#1d4ed8;--fig-gris:#9ca3af;--fig-label:#4b5563;--fig-cod:#c4c9d1;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+header{display:flex;justify-content:center;margin-bottom:22px;}
+.header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+.badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--primary);background:var(--primary-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--primary);flex-shrink:0;}
+.tache-label{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--primary);line-height:1.3;}
+.progress-bar-wrap{width:100%;max-width:680px;background:var(--primary-clair);border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .5s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+.step-dot{width:34px;height:34px;border-radius:50%;background:var(--primary-clair);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--primary2);transition:all .4s;border:2px solid transparent;cursor:pointer;user-select:none;}
+.step-dot:hover{border-color:var(--primary2);}
+.step-dot.active{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+.card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:360px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(22,101,52,.10);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .45s ease both;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;color:var(--cote);text-align:center;line-height:1.3;}
+.step-text{font-size:.97rem;line-height:1.7;text-align:left;max-width:580px;width:100%;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:580px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 16px;font-weight:600;font-size:.92rem;line-height:1.6;max-width:580px;width:100%;}
+.info.primary{background:var(--primary-clair);border-left:4px solid var(--primary);color:var(--cote);}
+.info.vert{background:var(--vert-clair);border-left:4px solid var(--vert);color:#14532d;}
+.info.bleu{background:var(--bleu-clair);border-left:4px solid var(--bleu);color:#1e3a5f;}
+.info.violet{background:var(--violet-clair);border-left:4px solid var(--violet);color:#4c1d95;}
+.info.orange{background:var(--orange-clair);border-left:4px solid var(--orange);color:#7c2d12;}
+.definition{background:#eef2ff;border-left:4px solid #4f46e5;border-radius:10px;padding:12px 16px;font-size:.92rem;font-weight:600;line-height:1.6;color:#312e81;max-width:580px;width:100%;}
+.def-lead{font-family:'Baloo 2',cursive;font-weight:800;color:#4f46e5;display:block;margin-bottom:4px;}
+.etapes{display:flex;flex-direction:column;gap:10px;max-width:580px;width:100%;text-align:left;}
+.etape{display:flex;align-items:flex-start;gap:11px;}
+.etape-num{min-width:24px;height:24px;border-radius:50%;background:var(--primary);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;
+  font-weight:800;font-size:.8rem;flex-shrink:0;margin-top:1px;}
+.etape-txt{flex:1;line-height:1.55;}
+.liste-simple{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;max-width:580px;width:100%;text-align:left;font-size:.97rem;line-height:1.55;}
+.duo{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;max-width:580px;width:100%;}
+.duo figure{margin:0;flex:1 1 150px;max-width:230px;}
+.duo-anim{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;max-width:640px;width:100%;}
+.col-anim{flex:1 1 260px;max-width:300px;display:flex;flex-direction:column;gap:0;}
+.col-anim .step-text{max-width:none;}
+.col-anim figure{margin-top:-10px;}
+.galerie{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;max-width:640px;width:100%;}
+.galerie-item{display:flex;flex-direction:column;align-items:center;gap:2px;width:84px;}
+.exemple-bloc{border:1.5px solid #e0e7ff;background:#f8faff;border-radius:16px;padding:14px 16px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;max-width:580px;width:100%;}
+.exemple-bloc figure{margin:0;}
+.duo-blocs{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;max-width:600px;width:100%;}
+.duo-blocs .exemple-bloc{flex:1 1 240px;max-width:270px;}
+.mot-defini{color:#4f46e5;font-weight:800;font-size:1.08em;}
+.sous-theme{font-family:'Baloo 2',cursive;font-weight:800;color:var(--cote);font-size:1rem;align-self:flex-start;max-width:580px;width:100%;margin-top:2px;}
+.remarque-discrete{font-size:.82rem;color:var(--gris);line-height:1.5;max-width:580px;width:100%;margin:0;padding:0 2px;}
+.etiquettes-lang{display:flex;flex-direction:column;gap:4px;max-width:580px;width:100%;margin-top:3px;padding:0 2px;}
+.etiquettes-ligne{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.etiquettes-label{font-size:.78rem;color:var(--gris);font-weight:700;min-width:34px;}
+.etiquette{font-size:.76rem;color:var(--gris);background:#eef1f6;border:1px solid #e5e9f0;border-radius:999px;padding:1px 8px;white-space:nowrap;}
+figure{text-align:center;width:100%;}
+svg{max-width:100%;height:auto;overflow:visible;}
+figcaption{font-size:.85rem;color:var(--gris);margin-top:1px;line-height:1.3;}
+.cle{color:var(--cote);font-weight:700;}
+.mot-bleu{color:var(--fig-bleu);font-weight:700;}
+.mot-orange{color:var(--orange);font-weight:700;}
+.rep{opacity:0;transition:opacity .3s ease;max-width:580px;width:100%;text-align:center;font-size:.95rem;line-height:1.7;}
+.rep.on{opacity:1;}
+.btn-complete{border:2px solid var(--teal);background:var(--teal-clair);color:var(--teal);font-family:'Baloo 2',cursive;font-size:1rem;font-weight:700;border-radius:10px;padding:10px 22px;cursor:pointer;transition:all .2s;}
+.btn-complete:hover{background:var(--teal);color:#fff;}
+.btn-complete:disabled{opacity:.45;cursor:default;}
+.btn-anim{border:2px solid var(--violet);background:var(--violet-clair);color:var(--violet);font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;transition:all .2s;}
+.btn-anim:hover{background:var(--violet);color:#fff;}
+.recap-list{display:flex;flex-direction:column;gap:12px;width:100%;max-width:580px;}
+.recap-item{display:flex;gap:12px;align-items:flex-start;background:#f8faff;border-radius:12px;padding:11px 16px;border-left:4px solid transparent;text-align:left;font-size:.92rem;line-height:1.55;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;}
+.nav{display:flex;align-items:center;justify-content:space-between;max-width:680px;width:100%;margin-top:20px;gap:12px;}
+.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;border-radius:12px;padding:11px 22px;cursor:pointer;transition:all .25s;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-prev:disabled{opacity:.35;cursor:default;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;}
+.btn-next:hover{opacity:.9;}
+.step-counter{font-family:'Baloo 2',cursive;font-weight:700;color:var(--primary);font-size:.95rem;white-space:nowrap;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">G3</div>
+    <div class="tache-label">Utiliser un vocabulaire savant en géométrie</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext">Suivant →</button>
+</div>
+
+<script>
+/* =========================================================================
+   Conventions de figure (identiques aux exercices WIMS du module) :
+   objet mis en avant #1d4ed8 · contexte #9ca3af · étiquettes #4b5563
+   codage donné #c4c9d1 · codage révélé #ea580c
+   points = croix, SAUF intersection de 2 tracés déjà présents (aucun marqueur)
+   — écart assumé sur la page "points" de G3 : le point qui a un statut
+   particulier (extrémité, sommet, intersection, milieu, centre) est
+   justement ce qu'on veut faire remarquer, il est donc marqué d'une croix
+   orange sur une figure de contexte grise, plutôt que laissé sans marqueur.
+   ========================================================================= */
+const BLEU='#1d4ed8', GRIS='#9ca3af', LAB='#4b5563', OR='#ea580c', VIOLET='#7c3aed';
+
+/* croix d'un point (un seul path, 2 diagonales) */
+function croix(x,y,col,w,t){
+  w=w||5.5; t=t||1.9;
+  return '<path d="M'+(x-w)+','+(y-w)+' L'+(x+w)+','+(y+w)+
+         ' M'+(x-w)+','+(y+w)+' L'+(x+w)+','+(y-w)+
+         '" stroke="'+col+'" stroke-width="'+t+'" stroke-linecap="round" fill="none"/>';
+}
+
+/* intersection des droites (p1p2) et (p3p4) */
+function inter(p1,p2,p3,p4){
+  const [x1,y1]=p1,[x2,y2]=p2,[x3,y3]=p3,[x4,y4]=p4;
+  const d=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
+  const px=((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/d;
+  const py=((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/d;
+  return [px,py];
+}
+
+/* sommets d'un polygone régulier à n côtés (non nommés), en partant du
+   haut, sens horaire */
+function polyReg(cx,cy,R,n,rot){
+  rot = (rot===undefined) ? -90 : rot;
+  const pts=[];
+  for(let k=0;k<n;k++){
+    const a=(rot+k*360/n)*Math.PI/180;
+    pts.push([cx+R*Math.cos(a), cy+R*Math.sin(a)]);
+  }
+  return pts;
+}
+
+/* un pentagone régulier nommé D,E,F,G,H (exemple récurrent des pages
+   "lignes particulières" et "points"), en partant du haut, sens horaire */
+function pentagoneDEFGH(cx,cy,R){
+  const noms='DEFGH', pts={};
+  for(let k=0;k<5;k++){
+    const a=(-90+k*72)*Math.PI/180;
+    pts[noms[k]] = [cx+R*Math.cos(a), cy+R*Math.sin(a)];
+  }
+  return pts;
+}
+
+/* point sur le segment [p1p2] à la fraction t (0..1) */
+function onLine(p1,p2,t){
+  return [p1[0]+(p2[0]-p1[0])*t, p1[1]+(p2[1]-p1[1])*t];
+}
+
+/* point sur un cercle de centre (cx,cy) et de rayon r, à l'angle deg (°) */
+function arcPoint(cx,cy,r,deg){
+  const a=deg*Math.PI/180;
+  return [cx+r*Math.cos(a), cy+r*Math.sin(a)];
+}
+
+/* codage de mesure : n petits traits parallèles, légèrement penchés
+   (angleDeg = inclinaison par rapport à la verticale), serrés autour du
+   point (cx,cy), perpendiculairement à une ligne horizontale */
+function codage(cx,cy,angleDeg,n,spacing,halfLen,col,w){
+  const rad=angleDeg*Math.PI/180;
+  const dx=Math.sin(rad)*halfLen, dy=Math.cos(rad)*halfLen;
+  const start=-(n-1)/2;
+  let s='';
+  for(let k=0;k<n;k++){
+    const x=cx+(start+k)*spacing;
+    s+=`<line x1="${(x-dx).toFixed(1)}" y1="${(cy-dy).toFixed(1)}" x2="${(x+dx).toFixed(1)}" y2="${(cy+dy).toFixed(1)}" stroke="${col}" stroke-width="${w}"/>`;
+  }
+  return s;
+}
+
+/* ========================== LES PAGES ================================== */
+const STEPS=[
+
+/* ---------- 0. pourquoi ---------- */
+{ titre:"💡 Utiliser un vocabulaire savant en géométrie",
+  html:()=>`
+  <div class="pourquoi fade-in">
+    <span class="pq-lead">🤔 Pourquoi ?</span>
+    Utiliser des mots précis permet de se comprendre les uns les autres.
+  </div>
+  <p class="step-text fade-in">Dans cette capsule, nous allons voir le vocabulaire à connaître, organisé
+  par thème :</p>
+  <div class="etapes fade-in">
+    <div class="etape"><div class="etape-num">1</div><div class="etape-txt">les <span class="cle">formes</span></div></div>
+    <div class="etape"><div class="etape-num">2</div><div class="etape-txt">les <span class="cle">lignes</span></div></div>
+    <div class="etape"><div class="etape-num">3</div><div class="etape-txt">les lignes particulières d'une <span class="cle">figure</span></div></div>
+    <div class="etape"><div class="etape-num">4</div><div class="etape-txt">les <span class="cle">points</span></div></div>
+    <div class="etape"><div class="etape-num">5</div><div class="etape-txt">les <span class="cle">relations</span> entre les objets</div></div>
+  </div>`
+},
+
+/* ---------- 1. les formes ---------- */
+{ titre:"✏️ Les formes",
+  html:()=>{
+    const shapes=[['triangle',3],['quadrilatère',4],['pentagone',5],['hexagone',6],['heptagone',7],['octogone',8]];
+    function shapeSVG(n){
+      const pts=polyReg(40,42,28,n,-90);
+      const d='M'+pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' L')+' Z';
+      return `<svg viewBox="0 0 80 80" width="72" role="img" aria-label="polygone à ${n} côtés"><path d="${d}" fill="var(--bleu-clair)" stroke="${BLEU}" stroke-width="2.4" stroke-linejoin="round"/></svg>`;
+    }
+    const galerie = `<div class="galerie fade-in">${shapes.map(([nom,n])=>`
+      <div class="galerie-item">
+        ${shapeSVG(n)}
+        <span class="cle" style="font-size:.85rem">${nom}</span>
+        <span style="font-size:.78rem;color:var(--gris)">${n} côtés</span>
+      </div>`).join('')}</div>`;
+
+    return `
+  <div class="exemple-bloc fade-in">
+    <div class="definition"><span class="def-lead">📘 Définition</span>
+    Un <span class="mot-defini">polygone</span> est une forme fermée, tracée uniquement avec des segments.</div>
+    <p class="step-text" style="margin:0">On nomme un polygone d'après son nombre de côtés :</p>
+    ${galerie}
+    <p class="remarque-discrete" style="margin-top:4px">Ces mots viennent du latin et du grec :</p>
+    <div class="etiquettes-lang">
+      <div class="etiquettes-ligne">
+        <span class="etiquettes-label">Latin</span>
+        <span class="etiquette">tri = 3</span>
+        <span class="etiquette">quadri = 4</span>
+        <span class="etiquette">latère = côté</span>
+      </div>
+      <div class="etiquettes-ligne">
+        <span class="etiquettes-label">Grec</span>
+        <span class="etiquette">gone = angle</span>
+        <span class="etiquette">penta = 5</span>
+        <span class="etiquette">hexa = 6</span>
+        <span class="etiquette">hepta = 7</span>
+        <span class="etiquette">octo = 8</span>
+      </div>
+    </div>
+  </div>
+  <div class="exemple-bloc fade-in">
+    <div class="definition"><span class="def-lead">📘 Définition</span>
+    Un <span class="mot-defini">disque</span> est la surface pleine délimitée par un cercle.</div>
+    <figure>
+      <svg viewBox="0 0 140 140" width="130" role="img" aria-label="un disque">
+        <circle cx="70" cy="70" r="55" fill="var(--bleu-clair)" stroke="${BLEU}" stroke-width="2.4"/>
+      </svg>
+    </figure>
+  </div>`;
+  }
+},
+
+/* ---------- 2. les lignes ---------- */
+{ titre:"✏️ Les lignes",
+  html:()=>{
+    const segAngle=-8, segRad=segAngle*Math.PI/180, segHalf=58;
+    const [sAx,sAy]=[90-Math.cos(segRad)*segHalf, 34-Math.sin(segRad)*segHalf];
+    const [sBx,sBy]=[90+Math.cos(segRad)*segHalf, 34+Math.sin(segRad)*segHalf];
+    const segmentFig=`
+      <svg viewBox="0 0 180 60" width="190" role="img" aria-label="un segment, légèrement incliné">
+        <line x1="${sAx.toFixed(1)}" y1="${sAy.toFixed(1)}" x2="${sBx.toFixed(1)}" y2="${sBy.toFixed(1)}" stroke="${BLEU}" stroke-width="2.4"/>
+        ${croix(sAx,sAy,BLEU,5,1.8)}${croix(sBx,sBy,BLEU,5,1.8)}
+        <text x="${sAx.toFixed(1)}" y="${(sAy-13).toFixed(1)}" text-anchor="middle" font-size="13" fill="${LAB}" font-weight="700">A</text>
+        <text x="${sBx.toFixed(1)}" y="${(sBy-13).toFixed(1)}" text-anchor="middle" font-size="13" fill="${LAB}" font-weight="700">B</text>
+      </svg>`;
+
+    const droAngle=6, droRad=droAngle*Math.PI/180, droHalf=82;
+    const droP1=[90-Math.cos(droRad)*droHalf, 32-Math.sin(droRad)*droHalf];
+    const droP2=[90+Math.cos(droRad)*droHalf, 32+Math.sin(droRad)*droHalf];
+    const [dAx,dAy]=onLine(droP1,droP2,0.2866), [dBx,dBy]=onLine(droP1,droP2,0.7134);
+    const droiteFig=`
+      <svg viewBox="0 0 180 60" width="190" role="img" aria-label="une droite, légèrement inclinée">
+        <line x1="${droP1[0].toFixed(1)}" y1="${droP1[1].toFixed(1)}" x2="${droP2[0].toFixed(1)}" y2="${droP2[1].toFixed(1)}" stroke="${BLEU}" stroke-width="2.4"/>
+        ${croix(dAx,dAy,BLEU,5,1.8)}${croix(dBx,dBy,BLEU,5,1.8)}
+        <text x="${dAx.toFixed(1)}" y="${(dAy-13).toFixed(1)}" text-anchor="middle" font-size="13" fill="${LAB}" font-weight="700">A</text>
+        <text x="${dBx.toFixed(1)}" y="${(dBy-13).toFixed(1)}" text-anchor="middle" font-size="13" fill="${LAB}" font-weight="700">B</text>
+      </svg>`;
+
+    const ddAngle=-11, ddRad=ddAngle*Math.PI/180, ddLen=134;
+    const ddA=[40,50];
+    const ddEnd=[ddA[0]+Math.cos(ddRad)*ddLen, ddA[1]+Math.sin(ddRad)*ddLen];
+    const [ddBx,ddBy]=onLine(ddA,ddEnd,0.565);
+    const demiDroiteFig=`
+      <svg viewBox="0 0 180 60" width="190" role="img" aria-label="une demi-droite, légèrement inclinée">
+        <line x1="${ddA[0]}" y1="${ddA[1]}" x2="${ddEnd[0].toFixed(1)}" y2="${ddEnd[1].toFixed(1)}" stroke="${BLEU}" stroke-width="2.4"/>
+        ${croix(ddA[0],ddA[1],BLEU,5,1.8)}${croix(ddBx,ddBy,BLEU,5,1.8)}
+        <text x="${ddA[0]}" y="${ddA[1]-13}" text-anchor="middle" font-size="13" fill="${LAB}" font-weight="700">A</text>
+        <text x="${ddBx.toFixed(1)}" y="${(ddBy-13).toFixed(1)}" text-anchor="middle" font-size="13" fill="${LAB}" font-weight="700">B</text>
+      </svg>`;
+
+    const cercleFig=`
+      <svg viewBox="0 0 160 160" width="150" role="img" aria-label="un cercle">
+        <circle cx="80" cy="80" r="55" fill="none" stroke="${BLEU}" stroke-width="2.4"/>
+        ${croix(80,80,LAB,4.5,1.6)}
+        <text x="94" y="84" font-size="13" fill="${LAB}" font-weight="700">O</text>
+      </svg>`;
+
+    const [ax1,ay1]=arcPoint(80,80,55,-55), [ax2,ay2]=arcPoint(80,80,55,65);
+    const arcFig=`
+      <svg viewBox="0 0 160 160" width="150" role="img" aria-label="un arc de cercle">
+        <circle cx="80" cy="80" r="55" fill="none" stroke="${GRIS}" stroke-width="1.6" stroke-dasharray="4 4"/>
+        <path d="M${ax1.toFixed(1)},${ay1.toFixed(1)} A55,55 0 0 1 ${ax2.toFixed(1)},${ay2.toFixed(1)}" fill="none" stroke="${BLEU}" stroke-width="3.4" stroke-linecap="round"/>
+      </svg>`;
+
+    return `
+  <div class="exemple-bloc fade-in">
+    <div class="definition"><span class="def-lead">📘 Définition</span>
+    Un <span class="mot-defini">segment</span> est une ligne qui a un début et une fin.<br>On le note avec
+    des crochets.</div>
+    <figure>${segmentFig}<figcaption>un segment [AB]</figcaption></figure>
+  </div>
+
+  <div class="exemple-bloc fade-in">
+    <div class="definition"><span class="def-lead">📘 Définition</span>
+    Une <span class="mot-defini">droite</span> est une ligne qui n'a ni début ni fin.<br>On la note avec des
+    parenthèses.</div>
+    <figure>${droiteFig}<figcaption>une droite (AB)</figcaption></figure>
+  </div>
+
+  <div class="exemple-bloc fade-in">
+    <div class="definition"><span class="def-lead">📘 Définition</span>
+    Une <span class="mot-defini">demi-droite</span> est une ligne qui a un début mais pas de fin.<br>On la
+    note avec un crochet et une parenthèse.</div>
+    <figure>${demiDroiteFig}<figcaption>une demi-droite [AB)</figcaption></figure>
+  </div>
+
+  <div class="exemple-bloc fade-in">
+    <div class="definition"><span class="def-lead">📘 Définition</span>
+    Un <span class="mot-defini">cercle</span> est une ligne fermée dont tous les points sont à la même
+    distance d'un point, que l'on appelle centre.</div>
+    <figure>${cercleFig}<figcaption>cercle de centre O</figcaption></figure>
+  </div>
+
+  <div class="exemple-bloc fade-in">
+    <div class="definition"><span class="def-lead">📘 Définition</span>
+    Un <span class="mot-defini">arc de cercle</span> est une portion de cercle.</div>
+    <figure>${arcFig}</figure>
+  </div>`;
+  }
+},
+
+/* ---------- 3. les lignes particulières d'une figure ---------- */
+{ titre:"✏️ Les lignes particulières d'une figure",
+  html:()=>{
+    const rayAngle=218;
+    const [rAx,rAy]=arcPoint(70,70,50,rayAngle);
+    const [rAlx,rAly]=arcPoint(70,70,50+15,rayAngle);
+    const [rOlx,rOly]=arcPoint(70,70,15,rayAngle+180);
+    const rayonFig=`
+      <svg viewBox="0 0 140 140" width="140" role="img" aria-label="le rayon d'un cercle, ni vertical ni horizontal">
+        <circle cx="70" cy="70" r="50" fill="none" stroke="${GRIS}" stroke-width="1.6"/>
+        <line x1="70" y1="70" x2="${rAx.toFixed(1)}" y2="${rAy.toFixed(1)}" stroke="${BLEU}" stroke-width="2.6"/>
+        ${croix(70,70,LAB,4.5,1.6)}${croix(rAx,rAy,LAB,4.5,1.6)}
+        <text x="${rOlx.toFixed(1)}" y="${rOly.toFixed(1)}" text-anchor="middle" font-size="12" fill="${LAB}" font-weight="700">O</text>
+        <text x="${rAlx.toFixed(1)}" y="${rAly.toFixed(1)}" text-anchor="middle" font-size="12" fill="${LAB}" font-weight="700">A</text>
+      </svg>`;
+
+    const diaAngle=152;
+    const [dmAx,dmAy]=arcPoint(70,70,50,diaAngle), [dmBx,dmBy]=arcPoint(70,70,50,diaAngle+180);
+    const [dmAlx,dmAly]=arcPoint(70,70,50+15,diaAngle), [dmBlx,dmBly]=arcPoint(70,70,50+15,diaAngle+180);
+    const [dmOlx,dmOly]=arcPoint(70,70,15,diaAngle+90);
+    const diametreFig=`
+      <svg viewBox="0 0 140 140" width="140" role="img" aria-label="le diamètre d'un cercle, ni vertical ni horizontal">
+        <circle cx="70" cy="70" r="50" fill="none" stroke="${GRIS}" stroke-width="1.6"/>
+        <line x1="${dmAx.toFixed(1)}" y1="${dmAy.toFixed(1)}" x2="${dmBx.toFixed(1)}" y2="${dmBy.toFixed(1)}" stroke="${BLEU}" stroke-width="2.6"/>
+        ${croix(dmAx,dmAy,LAB,4.5,1.6)}${croix(dmBx,dmBy,LAB,4.5,1.6)}${croix(70,70,LAB,4,1.4)}
+        <text x="${dmAlx.toFixed(1)}" y="${dmAly.toFixed(1)}" text-anchor="middle" font-size="12" fill="${LAB}" font-weight="700">A</text>
+        <text x="${dmBlx.toFixed(1)}" y="${dmBly.toFixed(1)}" text-anchor="middle" font-size="12" fill="${LAB}" font-weight="700">B</text>
+        <text x="${dmOlx.toFixed(1)}" y="${dmOly.toFixed(1)}" text-anchor="middle" font-size="12" fill="${LAB}" font-weight="700">O</text>
+      </svg>`;
+
+    const {D,E,F,G,H}=pentagoneDEFGH(70,74,55);
+    const pentaBase=`<path d="M${D} L${E} L${F} L${G} L${H} Z" fill="none" stroke="${GRIS}" stroke-width="1.8"/>`;
+
+    const coteFig=`
+      <svg viewBox="0 0 140 150" width="140" role="img" aria-label="un côté de polygone">
+        ${pentaBase}
+        <line x1="${D[0]}" y1="${D[1]}" x2="${E[0]}" y2="${E[1]}" stroke="${BLEU}" stroke-width="2.8"/>
+        ${croix(D[0],D[1],LAB,4,1.5)}${croix(E[0],E[1],LAB,4,1.5)}
+        <text x="${D[0]}" y="${D[1]-8}" font-size="12" fill="${LAB}" font-weight="700" text-anchor="middle">D</text>
+        <text x="${E[0]+11}" y="${E[1]+2}" font-size="12" fill="${LAB}" font-weight="700">E</text>
+      </svg>`;
+
+    const diagFig=`
+      <svg viewBox="0 0 140 150" width="140" role="img" aria-label="une diagonale de polygone">
+        ${pentaBase}
+        <line x1="${D[0]}" y1="${D[1]}" x2="${F[0]}" y2="${F[1]}" stroke="${BLEU}" stroke-width="2.8"/>
+        ${croix(D[0],D[1],LAB,4,1.5)}${croix(F[0],F[1],LAB,4,1.5)}
+        <text x="${D[0]}" y="${D[1]-8}" font-size="12" fill="${LAB}" font-weight="700" text-anchor="middle">D</text>
+        <text x="${F[0]+6}" y="${F[1]+16}" font-size="12" fill="${LAB}" font-weight="700">F</text>
+      </svg>`;
+
+    return `
+  <div class="sous-theme fade-in">Dans les cercles</div>
+  <div class="duo-blocs fade-in">
+    <div class="exemple-bloc">
+      <div class="definition"><span class="def-lead">📘 Définition</span>
+      Un <span class="mot-defini">rayon</span> est un segment qui relie le centre d'un cercle à un point
+      de ce cercle.</div>
+      <figure>${rayonFig}<figcaption>un rayon [OA]</figcaption></figure>
+    </div>
+    <div class="exemple-bloc">
+      <div class="definition"><span class="def-lead">📘 Définition</span>
+      Un <span class="mot-defini">diamètre</span> est un segment qui relie deux points du cercle en
+      passant par le centre.</div>
+      <figure>${diametreFig}<figcaption>un diamètre [AB]</figcaption></figure>
+    </div>
+  </div>
+
+  <div class="sous-theme fade-in">Dans les polygones</div>
+  <div class="duo-blocs fade-in">
+    <div class="exemple-bloc">
+      <div class="definition"><span class="def-lead">📘 Définition</span>
+      Un <span class="mot-defini">côté</span> est un segment qui relie deux sommets voisins d'un
+      polygone.</div>
+      <figure>${coteFig}<figcaption>un côté [DE]</figcaption></figure>
+    </div>
+    <div class="exemple-bloc">
+      <div class="definition"><span class="def-lead">📘 Définition</span>
+      Une <span class="mot-defini">diagonale</span> est un segment qui relie deux sommets non voisins
+      d'un polygone.</div>
+      <figure>${diagFig}<figcaption>une diagonale [DF]</figcaption></figure>
+    </div>
+  </div>
+
+  <div class="info violet fade-in">📜 Remarque : le préfixe grec « dia- » signifie « à travers ». On le
+  retrouve dans <span class="cle">diamètre</span> (qui traverse le cercle) et <span class="cle">diagonale</span>
+  (qui traverse le polygone).</div>`;
+  }
+},
+
+/* ---------- 4. les points ---------- */
+{ titre:"✏️ Les points",
+  html:()=>{
+    const pointFig=`
+      <svg viewBox="0 0 100 80" width="90" role="img" aria-label="un point">
+        ${croix(50,40,BLEU,6,2)}
+        <text x="50" y="24" text-anchor="middle" font-size="13" fill="${LAB}" font-weight="700">A</text>
+      </svg>`;
+
+    const extremFig=`
+      <svg viewBox="0 0 180 90" width="180" role="img" aria-label="les extrémités d'un segment">
+        <line x1="30" y1="50" x2="150" y2="50" stroke="${GRIS}" stroke-width="2"/>
+        ${croix(30,50,OR,5.5,2)}${croix(150,50,OR,5.5,2)}
+        <text x="30" y="34" text-anchor="middle" font-size="13" fill="${LAB}" font-weight="700">A</text>
+        <text x="150" y="34" text-anchor="middle" font-size="13" fill="${LAB}" font-weight="700">B</text>
+      </svg>`;
+
+    const {D,E,F,G,H}=pentagoneDEFGH(80,74,55);
+    const sommetFig=`
+      <svg viewBox="0 0 160 150" width="160" role="img" aria-label="les sommets d'un pentagone">
+        <path d="M${D} L${E} L${F} L${G} L${H} Z" fill="none" stroke="${GRIS}" stroke-width="1.8"/>
+        ${[D,E,F,G,H].map(p=>croix(p[0],p[1],OR,5.5,2)).join('')}
+        <text x="${D[0]}" y="${D[1]-9}" text-anchor="middle" font-size="12" fill="${LAB}" font-weight="700">D</text>
+        <text x="${E[0]+11}" y="${E[1]+2}" font-size="12" fill="${LAB}" font-weight="700">E</text>
+        <text x="${F[0]+6}" y="${F[1]+16}" font-size="12" fill="${LAB}" font-weight="700">F</text>
+        <text x="${G[0]-16}" y="${G[1]+16}" font-size="12" fill="${LAB}" font-weight="700">G</text>
+        <text x="${H[0]-16}" y="${H[1]+2}" font-size="12" fill="${LAB}" font-weight="700">H</text>
+      </svg>`;
+
+    const interFig=`
+      <svg viewBox="0 0 160 120" width="160" role="img" aria-label="un point d'intersection">
+        <line x1="15" y1="30" x2="140" y2="95" stroke="${GRIS}" stroke-width="2"/>
+        <line x1="20" y1="100" x2="130" y2="20" stroke="${GRIS}" stroke-width="2"/>
+        ${croix(76,60,OR,6,2.2)}
+      </svg>`;
+
+    const milieuFig=`
+      <svg viewBox="0 0 180 90" width="180" role="img" aria-label="le milieu d'un segment, avec un codage de mesure sur chaque moitié">
+        <line x1="30" y1="50" x2="150" y2="50" stroke="${GRIS}" stroke-width="2"/>
+        ${codage(60,50,22,3,5,7,LAB,1.5)}
+        ${codage(120,50,22,3,5,7,LAB,1.5)}
+        ${croix(30,50,LAB,4.5,1.6)}${croix(150,50,LAB,4.5,1.6)}
+        ${croix(90,50,OR,6,2.2)}
+        <text x="30" y="34" text-anchor="middle" font-size="12" fill="${LAB}">A</text>
+        <text x="150" y="34" text-anchor="middle" font-size="12" fill="${LAB}">B</text>
+        <text x="90" y="34" text-anchor="middle" font-size="13" fill="${OR}" font-weight="700">M</text>
+      </svg>`;
+
+    const [d1ax,d1ay]=arcPoint(80,80,55,20), [d1bx,d1by]=arcPoint(80,80,55,200);
+    const [d2ax,d2ay]=arcPoint(80,80,55,125), [d2bx,d2by]=arcPoint(80,80,55,305);
+    const centreFig=`
+      <svg viewBox="0 0 160 160" width="150" role="img" aria-label="le centre d'un cercle, avec deux diamètres en pointillés">
+        <circle cx="80" cy="80" r="55" fill="none" stroke="${GRIS}" stroke-width="1.6"/>
+        <line x1="${d1ax.toFixed(1)}" y1="${d1ay.toFixed(1)}" x2="${d1bx.toFixed(1)}" y2="${d1by.toFixed(1)}" stroke="${GRIS}" stroke-width="1.4" stroke-dasharray="4 3"/>
+        <line x1="${d2ax.toFixed(1)}" y1="${d2ay.toFixed(1)}" x2="${d2bx.toFixed(1)}" y2="${d2by.toFixed(1)}" stroke="${GRIS}" stroke-width="1.4" stroke-dasharray="4 3"/>
+        ${croix(80,80,OR,6,2.2)}
+        <text x="93" y="84" font-size="13" fill="${OR}" font-weight="700">O</text>
+      </svg>`;
+
+    return `
+  <div class="exemple-bloc fade-in">
+    <div class="definition"><span class="def-lead">📘 Définition</span>
+    Un <span class="mot-defini">point</span> est un endroit précis. On le repère par une croix, et on le
+    nomme avec une lettre majuscule.</div>
+    <figure>${pointFig}</figure>
+  </div>
+  <p class="step-text fade-in">Certains points ont un statut particulier :</p>
+
+  <div class="exemple-bloc fade-in">
+    <div class="definition"><span class="def-lead">📘 Définition</span>
+    Les <span class="mot-defini">extrémités</span> sont les points de début et de fin d'un segment. Par
+    exemple, les points A et B sont les extrémités de ce segment.</div>
+    <figure>${extremFig}</figure>
+  </div>
+
+  <div class="exemple-bloc fade-in">
+    <div class="definition"><span class="def-lead">📘 Définition</span>
+    Les <span class="mot-defini">sommets</span> sont les points qui forment un polygone. Par exemple, les
+    points D, E, F, G, H sont les sommets de ce pentagone.</div>
+    <figure>${sommetFig}</figure>
+  </div>
+
+  <div class="exemple-bloc fade-in">
+    <div class="definition"><span class="def-lead">📘 Définition</span>
+    Le point d'<span class="mot-defini">intersection</span> est le point où se croisent deux lignes.</div>
+    <figure>${interFig}</figure>
+  </div>
+
+  <div class="exemple-bloc fade-in">
+    <div class="definition"><span class="def-lead">📘 Définition</span>
+    Le <span class="mot-defini">milieu</span> d'un segment est le point qui le partage en deux parties
+    égales.</div>
+    <figure>${milieuFig}</figure>
+  </div>
+
+  <div class="exemple-bloc fade-in">
+    <div class="definition"><span class="def-lead">📘 Définition</span>
+    Le <span class="mot-defini">centre</span> d'un cercle est le point qui se trouve à la même distance de
+    tous les points du cercle.</div>
+    <figure>${centreFig}</figure>
+  </div>`;
+  }
+},
+
+/* ---------- 5. les relations entre les objets ---------- */
+{ titre:"✏️ Les relations entre les objets",
+  html:()=>{
+    const P1=[20,60], P2=[160,30];
+    const [Ax,Ay]=onLine(P1,P2,0.12), [Bx,By]=onLine(P1,P2,0.5), [Cx,Cy]=onLine(P1,P2,0.88);
+    const alignFig=`
+      <svg viewBox="0 0 180 90" width="180" role="img" aria-label="trois points alignés">
+        <line x1="${P1[0]}" y1="${P1[1]}" x2="${P2[0]}" y2="${P2[1]}" stroke="${BLEU}" stroke-width="2.2"/>
+        ${croix(Ax,Ay,LAB,5,1.8)}${croix(Bx,By,LAB,5,1.8)}${croix(Cx,Cy,LAB,5,1.8)}
+        <text x="${Ax}" y="${Ay+16}" text-anchor="middle" font-size="12" fill="${LAB}" font-weight="700">A</text>
+        <text x="${Bx}" y="${By+16}" text-anchor="middle" font-size="12" fill="${LAB}" font-weight="700">B</text>
+        <text x="${Cx}" y="${Cy+16}" text-anchor="middle" font-size="12" fill="${LAB}" font-weight="700">C</text>
+      </svg>`;
+
+    const parallelFig=`
+      <svg viewBox="0 0 175 140" width="180" role="img" aria-label="deux droites parallèles">
+        <line x1="20" y1="20" x2="150" y2="85" stroke="${BLEU}" stroke-width="2.2"/>
+        <line x1="20" y1="58" x2="150" y2="123" stroke="${BLEU}" stroke-width="2.2"/>
+        <text x="156" y="89" font-size="13" fill="${LAB}" font-style="italic">d₁</text>
+        <text x="156" y="127" font-size="13" fill="${LAB}" font-style="italic">d₂</text>
+      </svg>`;
+
+    const secantFig=`
+      <svg viewBox="0 0 180 100" width="180" role="img" aria-label="deux droites sécantes">
+        <line x1="15" y1="20" x2="165" y2="85" stroke="${BLEU}" stroke-width="2.2"/>
+        <line x1="15" y1="85" x2="165" y2="20" stroke="${BLEU}" stroke-width="2.2"/>
+        <text x="168" y="24" font-size="13" fill="${LAB}" font-style="italic">d₁</text>
+        <text x="168" y="89" font-size="13" fill="${LAB}" font-style="italic">d₂</text>
+      </svg>`;
+
+    const pcx=95, pcy=64, pThetaDeg=25, pTheta=pThetaDeg*Math.PI/180;
+    const pux=Math.cos(pTheta), puy=Math.sin(pTheta);
+    const pvx=Math.cos(pTheta+Math.PI/2), pvy=Math.sin(pTheta+Math.PI/2);
+    const pL1=70, pL2=48, pLo=13;
+    const pp1a=[pcx-pux*pL1, pcy-puy*pL1], pp1b=[pcx+pux*pL1, pcy+puy*pL1];
+    const pp2a=[pcx-pvx*pL2, pcy-pvy*pL2], pp2b=[pcx+pvx*pL2, pcy+pvy*pL2];
+    const plab1=[pp1b[0]+pux*pLo, pp1b[1]+puy*pLo];
+    const plab2=[pp2b[0]+pvx*pLo, pp2b[1]+pvy*pLo];
+    const perpFig=`
+      <svg viewBox="0 0 180 135" width="180" role="img" aria-label="deux droites perpendiculaires">
+        <line x1="${pp1a[0].toFixed(1)}" y1="${pp1a[1].toFixed(1)}" x2="${pp1b[0].toFixed(1)}" y2="${pp1b[1].toFixed(1)}" stroke="${BLEU}" stroke-width="2.2"/>
+        <line x1="${pp2a[0].toFixed(1)}" y1="${pp2a[1].toFixed(1)}" x2="${pp2b[0].toFixed(1)}" y2="${pp2b[1].toFixed(1)}" stroke="${BLEU}" stroke-width="2.2"/>
+        <g transform="translate(${pcx},${pcy}) rotate(${pThetaDeg})"><rect x="0" y="-14" width="14" height="14" fill="none" stroke="${LAB}" stroke-width="1.4"/></g>
+        <text x="${plab1[0].toFixed(1)}" y="${plab1[1].toFixed(1)}" font-size="13" fill="${LAB}" font-style="italic">d₁</text>
+        <text x="${plab2[0].toFixed(1)}" y="${plab2[1].toFixed(1)}" font-size="13" fill="${LAB}" font-style="italic">d₂</text>
+      </svg>`;
+
+    return `
+  <div class="exemple-bloc fade-in">
+    <div class="definition"><span class="def-lead">📘 Définition</span>
+    Des points sont <span class="mot-defini">alignés</span> s'ils sont sur une même ligne.</div>
+    <figure>${alignFig}</figure>
+  </div>
+
+  <div class="exemple-bloc fade-in">
+    <div class="definition"><span class="def-lead">📘 Définition</span>
+    On dit que deux droites sont <span class="mot-defini">parallèles</span> quand elles ne se croisent
+    pas.</div>
+    <figure>${parallelFig}</figure>
+  </div>
+
+  <div class="exemple-bloc fade-in">
+    <div class="definition"><span class="def-lead">📘 Définition</span>
+    On dit que deux droites sont <span class="mot-defini">sécantes</span> quand elles se croisent.</div>
+    <figure>${secantFig}</figure>
+  </div>
+
+  <div class="exemple-bloc fade-in">
+    <div class="definition"><span class="def-lead">📘 Définition</span>
+    On dit que deux droites sont <span class="mot-defini">perpendiculaires</span> quand elles se croisent
+    en formant un angle droit.</div>
+    <figure>${perpFig}</figure>
+  </div>`;
+  }
+},
+
+/* ---------- 6. bilan ---------- */
+{ titre:"🏆 Ce qu'il faut retenir",
+  html:()=>`
+  <div class="recap-list">
+    ${[
+      ['var(--primary)','On utilise des mots <span class="cle">précis</span> pour pouvoir se comprendre plus facilement.'],
+      ['var(--teal)','Les <span class="cle">polygones</span> sont des formes qui sont délimitées par des lignes droites. Un <span class="cle">disque</span> est une forme qui est délimitée par un cercle.'],
+      ['var(--bleu)','Un <span class="cle">segment</span> a un début et une fin. Une <span class="cle">droite</span> n\'a pas de début ni de fin.'],
+      ['var(--orange)','Un <span class="cle"><u>dia</u>mètre</span> est une ligne <u>qui traverse</u> un cercle en passant par son centre. Une <span class="cle"><u>dia</u>gonale</span> est un segment <u>qui traverse</u> un polygone en reliant deux sommets.'],
+      ['var(--violet)','Un <span class="cle">point</span> permet d\'indiquer un emplacement précis. L\'<span class="cle">intersection</span> de deux objets géométriques est l\'endroit où ils se croisent. Le <span class="cle">centre</span> d\'un cercle est l\'endroit où on plante la pointe du compas pour le tracer.'],
+      ['var(--gris)','Des points sont <span class="cle">alignés</span> s\'ils sont sur une même ligne.'],
+    ].map(([c,t],idx)=>`
+    <div class="recap-item fade-in" style="animation-delay:${idx*.08}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${idx+1}</div>
+      <span>${t}</span>
+    </div>`).join('')}
+  </div>`
+}
+];
+
+/* ========================== MOTEUR ===================================== */
+let i=0, revealed=false; const N=STEPS.length;
+const card=document.getElementById('card'),
+      progressBar=document.getElementById('progressBar'),
+      stepsIndicator=document.getElementById('stepsIndicator'),
+      btnPrev=document.getElementById('btnPrev'),
+      btnNext=document.getElementById('btnNext'),
+      counter=document.getElementById('counter');
+
+function goTo(k){ i=k; revealed=false; render(); }
+
+function render(){
+  const s=STEPS[i];
+  card.innerHTML =
+    '<div class="step-title pop">'+s.titre+'</div>'+
+    s.html(revealed)+
+    (s.comp  ? '<button class="btn-complete fade-in" id="btnc"'+(revealed?' disabled':'')+'>✏️ Compléter</button>' : '')+
+    (s.trace ? '<button class="btn-anim fade-in" id="btnt">▶ Tracer</button>' : '');
+  const b=document.getElementById('btnc');
+  if(b) b.addEventListener('click',()=>{revealed=true;render();});
+  const t=document.getElementById('btnt');
+  if(t) t.addEventListener('click',()=>{
+    card.querySelectorAll('.master').forEach(a=>{ if(a.beginElement) a.beginElement(); });
+  });
+
+  progressBar.style.width=(i/(N-1)*100)+'%';
+  stepsIndicator.innerHTML='';
+  for(let k=0;k<N;k++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(k===i?' active':k<i?' done':'');
+    d.textContent=k<i?'✓':k+1;
+    d.addEventListener('click',()=>goTo(k));
+    stepsIndicator.appendChild(d);
+  }
+  counter.textContent=`Page ${i+1} / ${N}`;
+  btnPrev.disabled = (i===0);
+  btnNext.textContent = i===N-1 ? '🔁 Recommencer' : 'Suivant →';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+btnPrev.addEventListener('click',()=>{ if(i>0) goTo(i-1); });
+btnNext.addEventListener('click',()=>{ goTo(i===N-1?0:i+1); });
+render();
+</script>
+</body>
+</html>
