@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>G6 — Connaître les propriétés des figures usuelles</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  /* --- dominante du module Géométrie --- */
+  --primary:#16a34a;--primary2:#4ade80;--primary-clair:#dcfce7;
+  --bg:#f0fdf4;--cote:#166534;
+  /* --- palette pédagogique constante (identique aux autres modules) --- */
+  --bleu:#1a73e8;--bleu-clair:#e8f0fe;
+  --orange:#ea580c;--orange-clair:#ffedd5;
+  --vert:#16a34a;--vert-clair:#f0fdf4;
+  --violet:#7c3aed;--violet-clair:#f5f3ff;
+  --gris:#94a3b8;
+  --teal:#0d9488;--teal-clair:#f0fdfa;
+  --card:#fff;--texte:#1e293b;--border:#e2e8f0;
+  /* --- conventions de figures (identiques aux exercices WIMS du module) --- */
+  --fig-bleu:#1d4ed8;--fig-gris:#9ca3af;--fig-label:#4b5563;--fig-cod:#c4c9d1;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+header{display:flex;justify-content:center;margin-bottom:22px;}
+.header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+.badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--primary);background:var(--primary-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--primary);flex-shrink:0;}
+.tache-label{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--primary);line-height:1.3;}
+.progress-bar-wrap{width:100%;max-width:680px;background:var(--primary-clair);border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .5s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+.step-dot{width:34px;height:34px;border-radius:50%;background:var(--primary-clair);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--primary2);transition:all .4s;border:2px solid transparent;cursor:pointer;user-select:none;}
+.step-dot:hover{border-color:var(--primary2);}
+.step-dot.active{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+.card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:360px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(22,101,52,.10);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .45s ease both;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;color:var(--cote);text-align:center;line-height:1.3;}
+.step-text{font-size:.97rem;line-height:1.7;text-align:left;max-width:580px;width:100%;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:580px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 16px;font-weight:600;font-size:.92rem;line-height:1.6;max-width:580px;width:100%;}
+.info.primary{background:var(--primary-clair);border-left:4px solid var(--primary);color:var(--cote);}
+.info.vert{background:var(--vert-clair);border-left:4px solid var(--vert);color:#14532d;}
+.info.bleu{background:var(--bleu-clair);border-left:4px solid var(--bleu);color:#1e3a5f;}
+.info.violet{background:var(--violet-clair);border-left:4px solid var(--violet);color:#4c1d95;}
+.info.orange{background:var(--orange-clair);border-left:4px solid var(--orange);color:#7c2d12;}
+.definition{background:#eef2ff;border-left:4px solid #4f46e5;border-radius:10px;padding:12px 16px;font-size:.92rem;font-weight:600;line-height:1.6;color:#312e81;max-width:580px;width:100%;}
+.def-lead{font-family:'Baloo 2',cursive;font-weight:800;color:#4f46e5;display:block;margin-bottom:4px;}
+.propriete{background:#f0fdfa;border-left:4px solid #0d9488;border-radius:10px;padding:12px 16px;font-size:.92rem;font-weight:600;line-height:1.6;color:#134e4a;max-width:580px;width:100%;}
+.prop-lead{font-family:'Baloo 2',cursive;font-weight:800;color:#0d9488;display:block;margin-bottom:4px;}
+.propriete .ligne{display:block;}
+.etapes{display:flex;flex-direction:column;gap:10px;max-width:580px;width:100%;text-align:left;}
+.etape{display:flex;align-items:flex-start;gap:11px;}
+.etape-num{min-width:24px;height:24px;border-radius:50%;background:var(--primary);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;
+  font-weight:800;font-size:.8rem;flex-shrink:0;margin-top:1px;}
+.etape-txt{flex:1;line-height:1.55;}
+.liste-simple{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;max-width:580px;width:100%;text-align:left;font-size:.97rem;line-height:1.55;}
+.duo{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;max-width:580px;width:100%;}
+.duo figure{margin:0;flex:1 1 150px;max-width:230px;}
+.exemple-bloc{border:1.5px solid #e0e7ff;background:#f8faff;border-radius:16px;padding:14px 16px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;max-width:580px;width:100%;}
+.exemple-bloc figure{margin:0;}
+.duo-blocs{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;max-width:600px;width:100%;}
+.duo-blocs .exemple-bloc{flex:1 1 240px;max-width:270px;}
+.type-label{font-family:'Baloo 2',cursive;font-weight:800;color:var(--primary);font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;align-self:flex-start;}
+.compare-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;max-width:580px;width:100%;}
+.compare-row .info{flex:1 1 240px;max-width:270px;}
+figure{text-align:center;width:100%;}
+svg{max-width:100%;height:auto;overflow:visible;}
+figcaption{font-size:.85rem;color:var(--gris);margin-top:1px;line-height:1.3;}
+.cap-lead{display:block;color:var(--texte);font-size:.85rem;}
+.cle{color:var(--cote);font-weight:700;}
+.prop-oui{color:#14532d;}
+.prop-oui::marker{color:#16a34a;}
+.prop-non{color:#7f1d1d;}
+.prop-non::marker{color:#dc2626;}
+.toujours{font-weight:800;color:#15803d;background:#dcfce7;padding:0 4px;border-radius:5px;white-space:nowrap;}
+.pas-toujours{font-weight:800;color:#b91c1c;background:#fee2e2;padding:0 4px;border-radius:5px;white-space:nowrap;}
+.mot-bleu{color:var(--fig-bleu);font-weight:700;}
+.mot-orange{color:var(--orange);font-weight:700;}
+.mot-defini{color:#4f46e5;font-weight:800;font-size:1.08em;}
+.rep{opacity:0;transition:opacity .3s ease;max-width:580px;width:100%;text-align:center;font-size:.95rem;line-height:1.7;}
+.rep.on{opacity:1;}
+.btn-complete{border:2px solid var(--teal);background:var(--teal-clair);color:var(--teal);font-family:'Baloo 2',cursive;font-size:1rem;font-weight:700;border-radius:10px;padding:10px 22px;cursor:pointer;transition:all .2s;}
+.btn-complete:hover{background:var(--teal);color:#fff;}
+.btn-complete:disabled{opacity:.45;cursor:default;}
+.btn-anim{border:2px solid var(--violet);background:var(--violet-clair);color:var(--violet);font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;transition:all .2s;}
+.btn-anim:hover{background:var(--violet);color:#fff;}
+.recap-list{display:flex;flex-direction:column;gap:12px;width:100%;max-width:580px;}
+.recap-item{display:flex;gap:12px;align-items:flex-start;background:#f8faff;border-radius:12px;padding:11px 16px;border-left:4px solid transparent;text-align:left;font-size:.92rem;line-height:1.55;}
+.bilan-sous{margin-top:6px;gap:3px;font-size:.92rem;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;}
+.nav{display:flex;align-items:center;justify-content:space-between;max-width:680px;width:100%;margin-top:20px;gap:12px;}
+.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;border-radius:12px;padding:11px 22px;cursor:pointer;transition:all .25s;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-prev:disabled{opacity:.35;cursor:default;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;}
+.btn-next:hover{opacity:.9;}
+.step-counter{font-family:'Baloo 2',cursive;font-weight:700;color:var(--primary);font-size:.95rem;white-space:nowrap;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">G6</div>
+    <div class="tache-label">Connaître les propriétés des figures usuelles</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext">Suivant →</button>
+</div>
+
+<script>
+/* =========================================================================
+   Conventions de figure (identiques aux exercices WIMS du module) :
+   objet mis en avant #1d4ed8 (BLEU) · contexte #9ca3af (GRIS) ·
+   étiquettes #4b5563 (LAB) · codages qui prouvent une propriété = ORANGE
+   (reprend la règle « codage gris dans l'énoncé, orange dans le feedback » :
+   ici on montre toujours la preuve, donc toujours en orange).
+   Convention "point = croix" : NON appliquée ici — tous les sommets et
+   intersections de cette capsule sont des intersections de tracés déjà
+   présents (côtés, diagonales), donc aucun marqueur, seulement l'étiquette.
+   ========================================================================= */
+const BLEU='#1d4ed8', GRIS='#9ca3af', LAB='#4b5563', OR='#ea580c', VIOLET='#7c3aed';
+
+/* étiquette : contour blanc fin */
+function lab(x,y,txt,col){
+  return '<text x="'+x+'" y="'+y+'" text-anchor="middle" font-family="Nunito,sans-serif"'+
+         ' font-size="15" font-weight="700" fill="'+(col||LAB)+'"'+
+         ' paint-order="stroke" stroke="#fff" stroke-width="1.4">'+txt+'</text>';
+}
+/* étiquette placée à distance "dist" du centre, dans la direction centre→point
+   (pour toujours poser la lettre à l'extérieur de la figure) */
+function labOut(P,center,dist,txt,col){
+  const dx=P[0]-center[0], dy=P[1]-center[1], d=Math.hypot(dx,dy)||1;
+  return lab(P[0]+dx/d*dist, P[1]+dy/d*dist, txt, col);
+}
+/* point sur le segment [p1p2] à la fraction t (0..1 = segment, hors intervalle = prolongement) */
+function onLine(p1,p2,t){
+  return [p1[0]+(p2[0]-p1[0])*t, p1[1]+(p2[1]-p1[1])*t];
+}
+/* point sur un cercle de centre (cx,cy) et de rayon r, à l'angle deg (°) */
+function arcPoint(cx,cy,r,deg){
+  const a=deg*Math.PI/180;
+  return [cx+r*Math.cos(a), cy+r*Math.sin(a)];
+}
+/* intersection des droites (p1p2) et (p3p4) */
+function inter(p1,p2,p3,p4){
+  const [x1,y1]=p1,[x2,y2]=p2,[x3,y3]=p3,[x4,y4]=p4;
+  const d=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
+  const t=((x1-x3)*(y3-y4)-(y1-y3)*(x3-x4))/d;
+  return [x1+t*(x2-x1), y1+t*(y2-y1)];
+}
+/* tourne une liste de points LOCAUX (relatifs à l'origine) de deg°, puis les
+   place autour de (cx,cy) — toutes les figures de cette capsule sont
+   construites ainsi, jamais avec des coordonnées absolues devinées à l'œil */
+function placeRot(cx,cy,deg,pts){
+  const a=deg*Math.PI/180, co=Math.cos(a), si=Math.sin(a);
+  return pts.map(([x,y])=>[cx+x*co-y*si, cy+x*si+y*co]);
+}
+/* contour d'un quadrilatère fermé à partir de 4 sommets */
+function quadPath(pts,col,w){
+  return '<path d="M'+pts[0][0].toFixed(1)+','+pts[0][1].toFixed(1)+
+    ' L'+pts[1][0].toFixed(1)+','+pts[1][1].toFixed(1)+
+    ' L'+pts[2][0].toFixed(1)+','+pts[2][1].toFixed(1)+
+    ' L'+pts[3][0].toFixed(1)+','+pts[3][1].toFixed(1)+
+    ' Z" fill="none" stroke="'+col+'" stroke-width="'+w+'"/>';
+}
+function segPath(P1,P2,col,w){
+  return '<line x1="'+P1[0].toFixed(1)+'" y1="'+P1[1].toFixed(1)+'" x2="'+P2[0].toFixed(1)+'" y2="'+P2[1].toFixed(1)+'" stroke="'+col+'" stroke-width="'+w+'"/>';
+}
+/* petit repère d'angle droit DANS l'angle formé en P par les côtés (P,A) et (P,B) */
+function angleMark(P,A,B,size,col){
+  const ux=A[0]-P[0], uy=A[1]-P[1], dA=Math.hypot(ux,uy);
+  const vx=B[0]-P[0], vy=B[1]-P[1], dB=Math.hypot(vx,vy);
+  const p1=[P[0]+ux/dA*size, P[1]+uy/dA*size];
+  const p3=[P[0]+vx/dB*size, P[1]+vy/dB*size];
+  const p2=[p1[0]+vx/dB*size, p1[1]+vy/dB*size];
+  return '<path d="M'+p1[0].toFixed(1)+','+p1[1].toFixed(1)+' L'+p2[0].toFixed(1)+','+p2[1].toFixed(1)+
+    ' L'+p3[0].toFixed(1)+','+p3[1].toFixed(1)+'" fill="none" stroke="'+col+'" stroke-width="1.6"/>';
+}
+/* codage de mesure : n petits traits parallèles (repris de G3, bug corrigé),
+   angleDeg = inclinaison par rapport à la verticale. Les n traits sont
+   espacés le LONG du segment codé (perpendiculairement à eux-mêmes) :
+   l'ancienne version décalait toujours en x "écran" quel que soit angleDeg,
+   ce qui faisait se chevaucher les traits dès que le segment n'était pas
+   proche de l'horizontale (ex. les codages à 2 traits sur un côté incliné) */
+function codage(cx,cy,angleDeg,n,spacing,halfLen,col,w){
+  const rad=angleDeg*Math.PI/180;
+  const dx=Math.sin(rad)*halfLen, dy=Math.cos(rad)*halfLen;
+  const ox=Math.cos(rad)*spacing, oy=-Math.sin(rad)*spacing;
+  const start=-(n-1)/2;
+  let s='';
+  for(let k=0;k<n;k++){
+    const x=cx+(start+k)*ox, y=cy+(start+k)*oy;
+    s+='<line x1="'+(x-dx).toFixed(1)+'" y1="'+(y-dy).toFixed(1)+'" x2="'+(x+dx).toFixed(1)+'" y2="'+(y+dy).toFixed(1)+'" stroke="'+col+'" stroke-width="'+w+'"/>';
+  }
+  return s;
+}
+/* tic(s) d'égalité de longueur, perpendiculaire(s) au segment [P1P2], à la
+   fraction t (par défaut le milieu) */
+function tickAt(P1,P2,t,n,col){
+  const [x,y]=onLine(P1,P2,t);
+  const phi=Math.atan2(P2[1]-P1[1],P2[0]-P1[0])*180/Math.PI;
+  return codage(x,y,-phi,n,5,7,col,1.8);
+}
+function sideTick(P1,P2,n,col){ return tickAt(P1,P2,0.5,n,col); }
+/* codage de mesure alternatif : petit rond (contour, fond blanc) à la fraction
+   t du segment [P1P2] — sert à distinguer deux couples de longueurs égales
+   sur une même figure sans se limiter aux seuls tirets */
+function roundMark(P1,P2,t,col,n){
+  if(n===undefined) n=1;
+  const [x,y]=onLine(P1,P2,t);
+  const L=Math.hypot(P2[0]-P1[0],P2[1]-P1[1])||1;
+  const ux=(P2[0]-P1[0])/L, uy=(P2[1]-P1[1])/L, gap=8;
+  const start=-(n-1)/2;
+  let s='';
+  for(let k=0;k<n;k++){
+    const cx=x+(start+k)*gap*ux, cy=y+(start+k)*gap*uy;
+    s+='<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="3.4" fill="#fff" stroke="'+col+'" stroke-width="1.8"/>';
+  }
+  return s;
+}
+
+/* ========================== LES PAGES ================================== */
+const STEPS=[
+
+/* ---------- 0. pourquoi ---------- */
+{ titre:"💡 Connaître les propriétés des figures usuelles",
+  html:()=>`
+  <div class="pourquoi fade-in">
+    <span class="pq-lead">🤔 Pourquoi ?</span>
+    Connaître les propriétés des côtés, des angles et des diagonales d'une figure permet de la reconnaître
+    facilement, de la construire avec les bons outils, et de justifier une réponse en géométrie.
+  </div>
+  <p class="step-text fade-in">Dans cette capsule, nous allons voir les propriétés :</p>
+  <ul class="liste-simple fade-in">
+    <li>du <span class="cle">carré</span>,</li>
+    <li>du <span class="cle">rectangle</span>,</li>
+    <li>du <span class="cle">losange</span>,</li>
+    <li>du <span class="cle">trapèze</span>,</li>
+    <li>et comment ces figures sont <span class="cle">liées</span> entre elles.</li>
+  </ul>`
+},
+
+/* ---------- 1. le carré ---------- */
+{ titre:"✏️ Le carré",
+  html:()=>{
+    const center=[85,80];
+    const pts=placeRot(85,80,20,[[-38,-38],[38,-38],[38,38],[-38,38]]);
+    const noms=['A','B','C','D'];
+    let cotesFig=quadPath(pts,BLEU,2);
+    for(let k=0;k<4;k++) cotesFig+=angleMark(pts[k],pts[(k+3)%4],pts[(k+1)%4],10,OR);
+    for(let k=0;k<4;k++) cotesFig+=sideTick(pts[k],pts[(k+1)%4],1,OR);
+    for(let k=0;k<4;k++) cotesFig+=labOut(pts[k],center,16,noms[k],BLEU);
+    cotesFig=`<svg viewBox="10 10 170 140" width="180" role="img" aria-label="un carré, côtés et angles codés">${cotesFig}</svg>`;
+
+    let diagFig=quadPath(pts,GRIS,1.6);
+    diagFig+=segPath(pts[0],pts[2],BLEU,2.2)+segPath(pts[1],pts[3],BLEU,2.2);
+    diagFig+=roundMark(pts[0],center,0.5,OR)+roundMark(center,pts[2],0.5,OR);
+    diagFig+=roundMark(pts[1],center,0.5,OR)+roundMark(center,pts[3],0.5,OR);
+    diagFig+=angleMark(center,pts[0],pts[1],10,OR);
+    for(let k=0;k<4;k++) diagFig+=labOut(pts[k],center,16,noms[k],GRIS);
+    diagFig=`<svg viewBox="10 10 170 140" width="180" role="img" aria-label="un carré, diagonales codées">${diagFig}</svg>`;
+
+    return `
+  <div class="definition fade-in">
+    <span class="def-lead">📘 Définition</span>
+    Un <span class="mot-defini">carré</span> est un quadrilatère qui a ses 4 côtés de la même longueur et ses 4 angles qui sont droits.
+  </div>
+  <div class="duo-blocs fade-in">
+    <div class="exemple-bloc">
+      <div class="type-label">Côtés et angles</div>
+      <figure>${cotesFig}</figure>
+      <ul class="liste-simple">
+        <li class="prop-oui">Les 4 côtés d'un carré <span class="toujours">sont toujours</span> égaux.</li>
+        <li class="prop-oui">Les 4 angles d'un carré <span class="toujours">sont toujours</span> des angles droits.</li>
+        <li class="prop-oui">Les côtés opposés d'un carré <span class="toujours">sont toujours</span> parallèles.</li>
+      </ul>
+    </div>
+    <div class="exemple-bloc">
+      <div class="type-label">Diagonales</div>
+      <figure>${diagFig}</figure>
+      <ul class="liste-simple">
+        <li class="prop-oui">Les diagonales d'un carré <span class="toujours">sont toujours</span> de la même longueur et perpendiculaires.</li>
+        <li class="prop-oui">Elles <span class="toujours">ont toujours</span> le même milieu.</li>
+      </ul>
+    </div>
+  </div>`;
+  }
+},
+
+/* ---------- 2. le rectangle ---------- */
+{ titre:"✏️ Le rectangle",
+  html:()=>{
+    const center=[90,80];
+    const pts=placeRot(90,80,-15,[[-52,-32],[52,-32],[52,32],[-52,32]]);
+    const noms=['A','B','C','D'];
+    let cotesFig=quadPath(pts,BLEU,2);
+    for(let k=0;k<4;k++) cotesFig+=angleMark(pts[k],pts[(k+3)%4],pts[(k+1)%4],10,OR);
+    cotesFig+=sideTick(pts[0],pts[1],1,OR)+sideTick(pts[2],pts[3],1,OR);
+    cotesFig+=sideTick(pts[1],pts[2],2,OR)+sideTick(pts[3],pts[0],2,OR);
+    for(let k=0;k<4;k++) cotesFig+=labOut(pts[k],center,16,noms[k],BLEU);
+    cotesFig=`<svg viewBox="10 10 170 140" width="180" role="img" aria-label="un rectangle, côtés et angles codés">${cotesFig}</svg>`;
+
+    let diagFig=quadPath(pts,GRIS,1.6);
+    diagFig+=segPath(pts[0],pts[2],BLEU,2.2)+segPath(pts[1],pts[3],BLEU,2.2);
+    diagFig+=roundMark(pts[0],center,0.5,OR)+roundMark(center,pts[2],0.5,OR);
+    diagFig+=roundMark(pts[1],center,0.5,OR)+roundMark(center,pts[3],0.5,OR);
+    for(let k=0;k<4;k++) diagFig+=labOut(pts[k],center,16,noms[k],GRIS);
+    diagFig=`<svg viewBox="10 10 170 140" width="180" role="img" aria-label="un rectangle, diagonales codées">${diagFig}</svg>`;
+
+    return `
+  <div class="definition fade-in">
+    <span class="def-lead">📘 Définition</span>
+    Un <span class="mot-defini">rectangle</span> est un quadrilatère qui a 4 angles droits.
+  </div>
+  <div class="duo-blocs fade-in">
+    <div class="exemple-bloc">
+      <div class="type-label">Côtés et angles</div>
+      <figure>${cotesFig}</figure>
+      <ul class="liste-simple">
+        <li class="prop-oui">Les 4 angles d'un rectangle <span class="toujours">sont toujours</span> des angles droits.</li>
+        <li class="prop-oui">Les côtés opposés d'un rectangle <span class="toujours">sont toujours</span> de la même longueur.</li>
+        <li class="prop-oui">Les côtés opposés d'un rectangle <span class="toujours">sont toujours</span> parallèles.</li>
+        <li class="prop-non">Les côtés d'un rectangle <span class="pas-toujours">ne sont pas toujours</span> tous de la même mesure.</li>
+      </ul>
+    </div>
+    <div class="exemple-bloc">
+      <div class="type-label">Diagonales</div>
+      <figure>${diagFig}</figure>
+      <ul class="liste-simple">
+        <li class="prop-oui">Les diagonales d'un rectangle <span class="toujours">sont toujours</span> de la même longueur.</li>
+        <li class="prop-oui">Les diagonales d'un rectangle <span class="toujours">ont toujours</span> le même milieu.</li>
+        <li class="prop-non">Les diagonales d'un rectangle <span class="pas-toujours">ne sont pas toujours</span> perpendiculaires.</li>
+      </ul>
+    </div>
+  </div>`;
+  }
+},
+
+/* ---------- 3. le losange ---------- */
+{ titre:"✏️ Le losange",
+  html:()=>{
+    const center=[85,80];
+    const pts=placeRot(85,80,25,[[0,-30],[52,0],[0,30],[-52,0]]);
+    const noms=['A','B','C','D'];
+    let cotesFig=quadPath(pts,BLEU,2);
+    for(let k=0;k<4;k++) cotesFig+=sideTick(pts[k],pts[(k+1)%4],1,OR);
+    for(let k=0;k<4;k++) cotesFig+=labOut(pts[k],center,16,noms[k],BLEU);
+    cotesFig=`<svg viewBox="10 10 170 140" width="180" role="img" aria-label="un losange, côtés codés">${cotesFig}</svg>`;
+
+    let diagFig=quadPath(pts,GRIS,1.6);
+    diagFig+=segPath(pts[0],pts[2],BLEU,2.2)+segPath(pts[1],pts[3],BLEU,2.2);
+    diagFig+=roundMark(pts[0],center,0.45,OR)+roundMark(center,pts[2],0.55,OR);
+    diagFig+=roundMark(pts[1],center,0.5,OR,2)+roundMark(center,pts[3],0.5,OR,2);
+    diagFig+=angleMark(center,pts[0],pts[1],10,OR);
+    for(let k=0;k<4;k++) diagFig+=labOut(pts[k],center,16,noms[k],GRIS);
+    diagFig=`<svg viewBox="10 10 170 140" width="180" role="img" aria-label="un losange, diagonales codées">${diagFig}</svg>`;
+
+    return `
+  <div class="definition fade-in">
+    <span class="def-lead">📘 Définition</span>
+    Un <span class="mot-defini">losange</span> est un quadrilatère qui a 4 côtés de la même longueur.
+  </div>
+  <div class="duo-blocs fade-in">
+    <div class="exemple-bloc">
+      <div class="type-label">Côtés</div>
+      <figure>${cotesFig}</figure>
+      <ul class="liste-simple">
+        <li class="prop-oui">Les 4 côtés d'un losange <span class="toujours">sont toujours</span> de la même longueur.</li>
+        <li class="prop-oui">Les côtés opposés d'un losange <span class="toujours">sont toujours</span> parallèles.</li>
+        <li class="prop-non">Les angles d'un losange <span class="pas-toujours">ne sont pas toujours</span> des angles droits.</li>
+      </ul>
+    </div>
+    <div class="exemple-bloc">
+      <div class="type-label">Diagonales</div>
+      <figure>${diagFig}</figure>
+      <ul class="liste-simple">
+        <li class="prop-oui">Les diagonales d'un losange <span class="toujours">sont toujours</span> perpendiculaires.</li>
+        <li class="prop-oui">Les diagonales d'un losange <span class="toujours">ont toujours</span> le même milieu.</li>
+        <li class="prop-non">Les diagonales d'un losange <span class="pas-toujours">ne sont pas toujours</span> de la même longueur.</li>
+      </ul>
+    </div>
+  </div>`;
+  }
+},
+
+/* ---------- 4. le trapèze ---------- */
+{ titre:"✏️ Le trapèze",
+  html:()=>{
+    const center=[90,85];
+    const pts=placeRot(90,85,18,[[-45,-28],[45,-28],[15,28],[-38,28]]);
+    const noms=['A','B','C','D'];
+    let fig=quadPath(pts,BLEU,2);
+    for(let k=0;k<4;k++) fig+=labOut(pts[k],center,16,noms[k],BLEU);
+    fig=`<svg viewBox="10 10 170 140" width="180" role="img" aria-label="un trapèze">${fig}</svg>`;
+
+    return `
+  <div class="definition fade-in">
+    <span class="def-lead">📘 Définition</span>
+    Un <span class="mot-defini">trapèze</span> est un quadrilatère qui a au moins deux côtés parallèles.
+  </div>
+  <div class="exemple-bloc fade-in">
+    <div class="type-label">Côtés</div>
+    <figure>${fig}</figure>
+    <ul class="liste-simple">
+      <li>Les côtés [AB] et [DC] sont parallèles.</li>
+    </ul>
+  </div>
+  <div class="info orange fade-in">💡 Pour un trapèze quelconque, les diagonales n'ont pas de propriété
+  particulière : elles ne sont ni forcément égales, ni forcément perpendiculaires, ni forcément coupées en
+  leur milieu.</div>`;
+  }
+},
+
+/* ---------- 5. inclusion ---------- */
+{ titre:"✏️ Des figures liées entre elles",
+  html:()=>{
+    /* polygone fermé quelconque (points déjà placés) */
+    const poly=(pts,col)=>'<path d="M'+pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' L')+
+      ' Z" fill="#fff" stroke="'+col+'" stroke-width="1.7" stroke-linejoin="round"/>';
+    /* polygone régulier à n sommets, rayon R */
+    const reg=(n,R,rot)=>Array.from({length:n},(_,k)=>{const a=(rot+k*360/n)*Math.PI/180;return [R*Math.cos(a),R*Math.sin(a)];});
+    const fig=(cx,cy,deg,loc,col)=>poly(placeRot(cx,cy,deg,loc.map(([x,y])=>[x*1.15,y*1.15])),col);
+    const T=(x,y,txt,col,anchor)=>'<text x="'+x+'" y="'+y+'" text-anchor="'+(anchor||'start')+
+      '" font-family="Baloo 2,cursive" font-weight="800" font-size="15" fill="'+col+'">'+txt+'</text>';
+
+    /* couleurs des zones : [trait du cadre, fond du cadre, trait des figures, texte] */
+    const POL=['#64748b','#f8fafc','#475569','#334155'];
+    const TRI=['#0d9488','#ccfbf1','#0f766e','#134e4a'];
+    const PEN=['#e11d48','#ffe4e6','#be123c','#881337'];
+    const QUA=['#7c3aed','#f5f3ff','#6d28d9','#4c1d95'];
+    const TRA=['#16a34a','#dcfce7','#15803d','#14532d'];
+    const REC=['#1a73e8','#dbeafe','#1d4ed8','#1e3a5f'];
+    const LOS=['#ea580c','#ffedd5','#c2410c','#7c2d12'];
+    const CAR='#14532d';
+
+    const s=[];
+    /* cadres emboîtés */
+    s.push(`<rect x="8" y="8" width="544" height="414" rx="22" fill="${POL[1]}" stroke="${POL[0]}" stroke-width="1.8"/>`);
+    s.push(T(24,32,'Polygones',POL[3]));
+    s.push(`<rect x="22" y="46" width="138" height="112" rx="16" fill="${TRI[1]}" stroke="${TRI[0]}" stroke-width="1.6"/>`);
+    s.push(T(34,68,'Triangles',TRI[3]));
+    s.push(`<rect x="22" y="170" width="138" height="112" rx="16" fill="${PEN[1]}" stroke="${PEN[0]}" stroke-width="1.6"/>`);
+    s.push(T(34,192,'Pentagones',PEN[3]));
+    s.push(`<rect x="172" y="20" width="370" height="392" rx="20" fill="${QUA[1]}" stroke="${QUA[0]}" stroke-width="1.7"/>`);
+    s.push(T(186,44,'Quadrilatères',QUA[3]));
+    s.push(`<rect x="186" y="100" width="342" height="300" rx="18" fill="${TRA[1]}" stroke="${TRA[0]}" stroke-width="1.7"/>`);
+    s.push(T(200,124,'Trapèzes',TRA[3]));
+    // les deux fonds d'abord, puis les deux contours par-dessus : aucune des
+    // deux ellipses ne masque le contour de l'autre dans la zone commune
+    // zone commune (carrés) : rayures bleues/orange à parts égales, découpées
+    // à l'intersection des deux ellipses — aucune des deux couleurs ne domine
+    s.push(`<defs>
+      <clipPath id="clipRec"><ellipse cx="310" cy="290" rx="110" ry="95"/></clipPath>
+      <pattern id="rayCarres" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <rect width="5" height="10" fill="${REC[1]}"/><rect x="5" width="5" height="10" fill="${LOS[1]}"/>
+      </pattern></defs>`);
+    s.push(`<ellipse cx="310" cy="290" rx="110" ry="95" fill="${REC[1]}"/>`);
+    s.push(`<ellipse cx="410" cy="290" rx="110" ry="95" fill="${LOS[1]}"/>`);
+    s.push(`<ellipse cx="410" cy="290" rx="110" ry="95" fill="url(#rayCarres)" clip-path="url(#clipRec)"/>`);
+    s.push(`<ellipse cx="310" cy="290" rx="110" ry="95" fill="none" stroke="${REC[0]}" stroke-width="1.8"/>`);
+    s.push(`<ellipse cx="410" cy="290" rx="110" ry="95" fill="none" stroke="${LOS[0]}" stroke-width="1.8"/>`);
+    s.push(T(290,220,'Rectangles',REC[3],'middle'));
+    s.push(T(432,220,'Losanges',LOS[3],'middle'));
+    s.push(T(360,296,'Carrés',CAR,'middle'));
+
+    /* figures : au moins 2 par zone */
+    // polygones qui ne sont ni des triangles, ni des quadrilatères, ni des pentagones
+    s.push(fig(62,345,0,reg(6,18,0),POL[2]));
+    s.push(fig(124,348,0,reg(8,16,22.5),POL[2]));
+    // triangles
+    s.push(fig(60,118,0,[[-18,12],[18,12],[-5,-16]],TRI[2]));
+    s.push(fig(124,116,-15,[[-15,13],[17,6],[3,-15]],TRI[2]));
+    // pentagones
+    s.push(fig(62,238,0,reg(5,17,-90),PEN[2]));
+    s.push(fig(124,240,8,[[0,-17],[16,-5],[10,14],[-12,12],[-16,-6]],PEN[2]));
+    // quadrilatères sans côtés parallèles
+    s.push(fig(380,64,0,[[-22,-6],[12,-14],[20,14],[-8,10]],QUA[2]));
+    s.push(fig(470,62,10,[[0,-18],[11,-6],[0,14],[-11,-6]],QUA[2]));
+    // trapèzes (qui ne sont ni rectangles, ni losanges)
+    s.push(fig(370,152,0,[[-22,-11],[22,-11],[12,11],[-16,11]],TRA[2]));
+    s.push(fig(468,150,-12,[[-14,-11],[8,-11],[20,11],[-20,11]],TRA[2]));
+    // rectangles (pas carrés)
+    s.push(fig(250,268,-10,[[-18,-10],[18,-10],[18,10],[-18,10]],REC[2]));
+    s.push(fig(262,334,18,[[-9,-15],[9,-15],[9,15],[-9,15]],REC[2]));
+    // losanges (pas carrés)
+    s.push(fig(470,268,15,[[0,-12],[19,0],[0,12],[-19,0]],LOS[2]));
+    s.push(fig(458,334,-20,[[0,-16],[10,0],[0,16],[-10,0]],LOS[2]));
+    // carrés
+    s.push(fig(360,252,10,[[-11,-11],[11,-11],[11,11],[-11,11]],CAR));
+    s.push(fig(360,334,-25,[[-9,-9],[9,-9],[9,9],[-9,9]],CAR));
+
+    const venn=`<svg viewBox="0 0 560 430" width="560" style="max-width:100%;height:auto" role="img"
+      aria-label="schéma : les polygones contiennent les triangles, les pentagones et les quadrilatères ; les quadrilatères contiennent les trapèzes, qui contiennent les rectangles et les losanges ; les carrés sont à la fois rectangles et losanges">${s.join('')}</svg>`;
+
+    return `
+  <p class="step-text fade-in">Certaines figures ont <span class="cle">toutes les propriétés</span> d'une autre figure : elles en font
+  alors aussi partie.</p>
+  <div class="propriete fade-in">
+    <span class="prop-lead">📌 Propriété</span>
+    <span class="ligne">Tous les carrés sont aussi des rectangles car ils ont 4 angles droits.</span>
+    <span class="ligne">Tous les carrés sont aussi des losanges car ils ont les 4 côtés de la même longueur.</span>
+  </div>
+  <div class="propriete fade-in">
+    <span class="prop-lead">📌 Propriété</span>
+    <span class="ligne">Certains losanges ont 4 angles droits.</span>
+    <span class="ligne">Les losanges qui ont 4 angles droits sont aussi des rectangles et des carrés.</span>
+  </div>
+  <div class="propriete fade-in">
+    <span class="prop-lead">📌 Propriété</span>
+    <span class="ligne">Tous les rectangles ont deux côtés opposés parallèles : ce sont donc tous des trapèzes.</span>
+    <span class="ligne">Tous les losanges ont deux côtés opposés parallèles : ce sont donc tous des trapèzes.</span>
+  </div>
+  <figure class="fade-in">${venn}</figure>
+  <p class="step-text fade-in">Un carré est donc à la fois un rectangle, un losange et un trapèze !</p>`;
+  }
+},
+
+/* ---------- 6. bilan ---------- */
+{ titre:"🏆 Ce qu'il faut retenir",
+  html:()=>`
+  <div class="recap-list">
+    ${[
+      ['var(--primary)','Chaque quadrilatère (<span class="cle">carré</span>, <span class="cle">rectangle</span>, <span class="cle">losange</span>, <span class="cle">trapèze</span>) a ses propres propriétés sur les <span class="cle">côtés</span> et les <span class="cle">diagonales</span>, qui sont parfois :'+
+        '<ul class="liste-simple bilan-sous"><li>de la même mesure,</li><li>perpendiculaires,</li><li>parallèles.</li></ul>'],
+      ['var(--bleu)','Un quadrilatère peut être dans <span class="cle">plusieurs catégories</span>, par exemple :'+
+        '<ul class="liste-simple bilan-sous"><li>les rectangles peuvent parfois être aussi des losanges,</li><li>les losanges sont parfois aussi des carrés,</li>'+
+        '<li>tous les carrés sont des rectangles,</li><li>tous les carrés sont des losanges,</li><li>tous les rectangles sont des trapèzes,</li>'+
+        '<li>tous les losanges sont des trapèzes.</li></ul>'],
+    ].map(([c,t],idx)=>`
+    <div class="recap-item fade-in" style="animation-delay:${idx*.08}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${idx+1}</div>
+      <div>${t}</div>
+    </div>`).join('')}
+  </div>`
+}
+];
+
+/* ========================== MOTEUR ===================================== */
+let i=0, revealed=false, stepIdx=0; const N=STEPS.length;
+const card=document.getElementById('card'),
+      progressBar=document.getElementById('progressBar'),
+      stepsIndicator=document.getElementById('stepsIndicator'),
+      btnPrev=document.getElementById('btnPrev'),
+      btnNext=document.getElementById('btnNext'),
+      counter=document.getElementById('counter');
+
+function goTo(k){ i=k; revealed=false; stepIdx=0; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+function render(){
+  const s=STEPS[i];
+  card.innerHTML =
+    '<div class="step-title pop">'+s.titre+'</div>'+
+    s.html(revealed,stepIdx)+
+    (s.comp  ? '<button class="btn-complete fade-in" id="btnc"'+(revealed?' disabled':'')+'>✏️ Compléter</button>' : '')+
+    (s.trace ? '<button class="btn-anim fade-in" id="btnt">▶ Tracer</button>' : '')+
+    (s.stepwise ? '<button class="btn-anim fade-in" id="btns">'+(stepIdx>=s.stepwise?'🔁 Revoir depuis le début':'▶ Étape suivante')+'</button>' : '');
+  const b=document.getElementById('btnc');
+  if(b) b.addEventListener('click',()=>{revealed=true;render();});
+  const t=document.getElementById('btnt');
+  if(t) t.addEventListener('click',()=>{
+    card.querySelectorAll('.master').forEach(a=>{ if(a.beginElement) a.beginElement(); });
+  });
+  const bs=document.getElementById('btns');
+  if(bs) bs.addEventListener('click',()=>{
+    stepIdx = stepIdx>=s.stepwise ? 0 : stepIdx+1;
+    render();
+  });
+
+  progressBar.style.width=(i/(N-1)*100)+'%';
+  stepsIndicator.innerHTML='';
+  for(let k=0;k<N;k++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(k===i?' active':k<i?' done':'');
+    d.textContent=k<i?'✓':k+1;
+    d.addEventListener('click',()=>goTo(k));
+    stepsIndicator.appendChild(d);
+  }
+  counter.textContent=`Page ${i+1} / ${N}`;
+  btnPrev.disabled = (i===0);
+  btnNext.textContent = i===N-1 ? '🔁 Recommencer' : 'Suivant →';
+}
+btnPrev.addEventListener('click',()=>{ if(i>0) goTo(i-1); });
+btnNext.addEventListener('click',()=>{ goTo(i===N-1?0:i+1); });
+render();
+</script>
+</body>
+</html>

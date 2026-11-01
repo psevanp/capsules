@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>GM16 – Nommer un angle</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+  --primary:#e11d48; --primary2:#fb7185; --primary-clair:#ffe4e6;
+  --bg:#fff1f2; --cote:#9f1239;
+  --bleu:#1a73e8; --bleu-clair:#e8f0fe;
+  --orange:#ea580c; --orange-clair:#ffedd5;
+  --vert:#16a34a; --vert-clair:#f0fdf4;
+  --violet:#7c3aed; --violet-clair:#f5f3ff;
+  --teal:#0d9488; --teal-clair:#f0fdfa;
+  --gris:#94a3b8;
+  --card:#fff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px;}
+header{width:100%;max-width:680px;display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px;}
+.badge-code{font-family:'Baloo 2',cursive;font-weight:800;font-size:1.3rem;background:var(--primary-clair);border:2px solid var(--primary);border-radius:10px;padding:4px 14px;color:var(--primary);white-space:nowrap;}
+.tache-label{font-family:'Baloo 2',cursive;font-weight:800;font-size:1.05rem;color:var(--primary);}
+.progress-bar{width:100%;max-width:680px;height:10px;background:var(--primary-clair);border-radius:99px;margin-bottom:10px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .4s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:14px;}
+.step-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.95rem;cursor:default;transition:all .3s;background:var(--primary-clair);color:var(--primary2);}
+.step-dot.active{background:var(--primary);color:#fff;transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;}
+.card{width:100%;max-width:680px;background:var(--card);border-radius:20px;padding:26px 24px;box-shadow:0 4px 24px rgba(0,0,0,.07);min-height:350px;display:flex;flex-direction:column;align-items:center;gap:14px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;color:var(--primary);text-align:center;}
+.step-title.pop{animation:pop .45s ease both;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:620px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 18px;font-weight:600;font-size:.9rem;line-height:1.6;max-width:620px;width:100%;}
+.info.bleu{background:var(--bleu-clair);border-left:4px solid var(--bleu);color:#1e3a5f;}
+.info.orange{background:var(--orange-clair);border-left:4px solid var(--orange);color:#7c2d12;}
+.info.vert{background:var(--vert-clair);border-left:4px solid var(--vert);color:#14532d;}
+.info.primary{background:var(--primary-clair);border-left:4px solid var(--primary);color:#9f1239;}
+.info.violet{background:var(--violet-clair);border-left:4px solid var(--violet);color:#4c1d95;}
+.bloc{border-radius:12px;padding:13px 16px;font-size:.92rem;font-weight:600;line-height:1.6;max-width:620px;width:100%;}
+.bloc.def{background:#f5f3ff;border-left:4px solid #7c3aed;color:#3b0764;}
+.bloc-label{font-family:'Baloo 2',cursive;font-weight:800;font-size:1rem;}
+.recap-list{display:flex;flex-direction:column;gap:10px;max-width:620px;width:100%;}
+.recap-item{display:flex;gap:12px;background:#f8faff;border-radius:12px;padding:11px 16px;border-left:4px solid var(--primary);align-items:flex-start;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;}
+.btn-complete{border:2px solid var(--vert);background:var(--vert-clair);color:var(--vert);font-family:'Baloo 2',cursive;font-weight:700;border-radius:10px;padding:10px 22px;font-size:1rem;cursor:pointer;transition:all .2s;}
+.btn-complete:hover{background:var(--vert);color:#fff;}
+nav{width:100%;max-width:680px;display:flex;justify-content:space-between;align-items:center;margin-top:14px;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);border:none;border-radius:10px;padding:10px 20px;font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;cursor:pointer;transition:all .2s;}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;border:none;border-radius:10px;padding:10px 24px;font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(225,29,72,.3);}
+.btn-next:hover{opacity:.9;}
+.page-info{font-family:'Baloo 2',cursive;font-weight:600;color:var(--gris);font-size:.95rem;}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+svg{display:block;}
+.btn-mesurer{
+  font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;
+  background:linear-gradient(135deg,var(--bleu),#4f9cf8);
+  color:#fff;border:none;border-radius:10px;
+  padding:9px 22px;cursor:pointer;
+  box-shadow:0 2px 8px rgba(26,115,232,.3);
+  transition:all .2s;
+}
+.btn-mesurer:hover{opacity:.9;}
+.btn-mesurer:disabled{opacity:.5;cursor:default;}
+.result-label{
+  font-family:'Baloo 2',cursive;font-weight:800;font-size:1.05rem;
+  color:#b34700;
+  background:#fffbe8;border:2px solid #b34700;border-radius:10px;
+  padding:7px 18px;
+  opacity:0;transition:opacity .4s;
+}
+.result-label.visible{opacity:1;}
+/* ── GM16 : couleurs sommet (c1) / côtés (c2) ── */
+:root{ --c1:#7c3aed; --c1-clair:#a78bfa; --c2:#1a73e8; --c2-clair:#60a5fa; }
+.bloc.def2{background:#eef5ff;border-left:4px solid var(--c2);color:#1e3a5f;}
+.def-c1{font-family:'Baloo 2',cursive;font-weight:800;color:var(--c1);}
+.def-c2{font-family:'Baloo 2',cursive;font-weight:800;color:var(--c2);}
+.ptpop{transform-box:fill-box;transform-origin:center;animation:ptpop .6s ease both;}
+@keyframes ptpop{0%{transform:scale(1)}45%{transform:scale(1.9)}100%{transform:scale(1)}}
+.nom-ligne{font-family:'Baloo 2',cursive;font-weight:700;font-size:1.25rem;color:#334155;display:flex;align-items:flex-end;gap:10px;}
+.chapeau{position:relative;display:inline-flex;padding-top:10px;}
+.chapeau svg{position:absolute;top:0;left:0;width:100%;height:12px;overflow:visible;}
+.slot{display:inline-block;width:1.25em;text-align:center;font-size:1.6rem;line-height:1.2;color:#94a3b8;}
+.slot.lettre{font-weight:800;animation:pop .45s ease both;}
+.hatw{position:relative;display:inline-block;padding-top:3px;}
+.hatw svg{position:absolute;top:-3px;left:0;width:100%;height:7px;overflow:visible;}
+.alt-noms{opacity:0;transition:opacity .5s;display:flex;flex-direction:column;align-items:center;gap:8px;max-width:620px;width:100%;}
+.alt-noms.visible{opacity:1;}
+.alt-titre{font-family:'Baloo 2',cursive;font-weight:700;font-size:1.05rem;color:#334155;}
+.alt-liste{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;}
+.nom-alt{font-family:'Nunito',sans-serif;font-weight:800;font-size:1.2rem;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:8px 12px 4px;letter-spacing:1px;}
+.regle3{background:#f8fafc;border-left:4px solid var(--primary);border-radius:12px;padding:12px 16px;font-size:.95rem;font-weight:600;line-height:1.6;color:#334155;max-width:620px;width:100%;display:flex;flex-direction:column;gap:8px;}
+.trio-wrap{position:relative;align-self:center;padding-top:22px;}
+.trio-hat{position:absolute;top:0;left:4px;right:4px;width:calc(100% - 8px);height:20px;overflow:visible;}
+.trio{display:flex;gap:8px;justify-content:center;}
+.trio-case{width:clamp(76px,24vw,108px);text-align:center;border-radius:10px;padding:7px 6px;font-size:.88rem;line-height:1.35;border:2px solid;}
+.trio-case small{font-weight:600;opacity:.85;}
+.trio-case.c1{border-color:var(--c1);background:#f5f3ff;color:var(--c1);}
+.trio-case.c2{border-color:var(--c2);background:#eef5ff;color:var(--c2);}
+</style>
+</head>
+<body>
+<header>
+  <div class="badge-code">GM16</div>
+  <div class="tache-label">Nommer un angle</div>
+</header>
+<div class="progress-bar"><div class="progress-fill" id="pbar"></div></div>
+<div class="steps-indicator" id="steps"></div>
+<div class="card" id="card"></div>
+<nav>
+  <button class="btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="page-info" id="pageInfo"></span>
+  <button class="btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</nav>
+
+<script>
+let cur = 0, animating = false, animGen = 0;
+const N = 5;
+
+const C1 = '#7c3aed', C1L = '#a78bfa', C2 = '#1a73e8', C2L = '#60a5fa', ROUGE = '#dc2626';
+const C1A = '#c4b5fd', C2A = '#a5c8fb'; // couleurs (très claires) des flèches
+const FONT = "'Nunito',sans-serif", FONT_T = "'Baloo 2',cursive";
+
+// Convention : angles trigo (0° = droite, 90° = haut) ; en SVG (Y↓) : cos(-r), sin(-r)
+function pt(deg, len, c) {
+  const r = deg * Math.PI / 180;
+  return { x: c.x + Math.cos(-r) * len, y: c.y + Math.sin(-r) * len };
+}
+function arc(deg1, deg2, radius, c) {
+  const a = pt(deg1, radius, c), b = pt(deg2, radius, c);
+  const diff = deg2 - deg1;
+  const sweep = diff < 0 ? 1 : 0, large = Math.abs(diff) > 180 ? 1 : 0;
+  return `M ${a.x.toFixed(2)} ${a.y.toFixed(2)} A ${radius} ${radius} 0 ${large} ${sweep} ${b.x.toFixed(2)} ${b.y.toFixed(2)}`;
+}
+const f = v => v.toFixed(1);
+function shorten(a, b, d1, d2) {
+  const dx = b.x - a.x, dy = b.y - a.y, L = Math.hypot(dx, dy);
+  return { a: { x: a.x + dx * d1 / L, y: a.y + dy * d1 / L }, b: { x: b.x - dx * d2 / L, y: b.y - dy * d2 / L } };
+}
+function marker(id, col) {
+  return `<marker id="${id}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${col}"/></marker>`;
+}
+// Point marqué par une croix
+function croix(id, p, col, s = 6) {
+  return `<path id="${id}" d="M ${f(p.x - s)} ${f(p.y - s)} L ${f(p.x + s)} ${f(p.y + s)} M ${f(p.x - s)} ${f(p.y + s)} L ${f(p.x + s)} ${f(p.y - s)}" stroke="${col}" stroke-width="2.4" stroke-linecap="round" fill="none"/>`;
+}
+// Flèche (ligne) animable : invisible tant qu'elle n'est pas tracée
+function fleche(id, a, b, col, mk) {
+  return `<line id="${id}" x1="${f(a.x)}" y1="${f(a.y)}" x2="${f(a.x)}" y2="${f(a.y)}" data-x2="${f(b.x)}" data-y2="${f(b.y)}" stroke="${col}" stroke-width="2" marker-end="url(#${mk})" opacity="0"/>`;
+}
+function resetFleche(id) {
+  const e = document.getElementById(id); if (!e) return;
+  e.setAttribute('x2', e.getAttribute('x1')); e.setAttribute('y2', e.getAttribute('y1')); e.setAttribute('opacity', '0');
+}
+
+// Outils d'animation liés à une "génération" (annulés si on change de page)
+function animTools() {
+  const myGen = animGen;
+  const live = () => animGen === myGen;
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  function pop(...ids) {
+    ids.forEach(id => { const e = document.getElementById(id); if (!e) return; e.classList.remove('ptpop'); void e.getBoundingClientRect(); e.classList.add('ptpop'); });
+  }
+  function colorer(col, ...ids) {
+    ids.forEach(id => { const e = document.getElementById(id); if (!e) return; e.setAttribute(e.tagName === 'text' ? 'fill' : 'stroke', col); });
+  }
+  async function taper(id, txt, ms) {
+    const e = document.getElementById(id);
+    for (let i = 1; i <= txt.length; i++) { if (!live()) return; e.textContent = txt.slice(0, i); await wait(ms); }
+  }
+  // Trace une ligne de (x1,y1) vers (data-x2,data-y2) ou vers "end"
+  function tracer(id, dur, end) {
+    return new Promise(res => {
+      const e = document.getElementById(id);
+      const x1 = +e.getAttribute('x1'), y1 = +e.getAttribute('y1');
+      const x2 = end ? end.x : +e.dataset.x2, y2 = end ? end.y : +e.dataset.y2;
+      let t0 = null;
+      e.setAttribute('opacity', '1');
+      function step(ts) {
+        if (!live()) return res();
+        if (!t0) t0 = ts;
+        const p = Math.min((ts - t0) / dur, 1), q = 1 - Math.pow(1 - p, 2);
+        e.setAttribute('x2', f(x1 + (x2 - x1) * q)); e.setAttribute('y2', f(y1 + (y2 - y1) * q));
+        if (p < 1) requestAnimationFrame(step); else res();
+      }
+      requestAnimationFrame(step);
+    });
+  }
+  // Trace un chemin (arc) avec stroke-dasharray
+  function tracerChemin(id, dur) {
+    return new Promise(res => {
+      const e = document.getElementById(id), L = e.getTotalLength();
+      e.setAttribute('stroke-dasharray', L); e.setAttribute('stroke-dashoffset', L); e.setAttribute('opacity', '1');
+      let t0 = null;
+      function step(ts) {
+        if (!live()) return res();
+        if (!t0) t0 = ts;
+        const p = Math.min((ts - t0) / dur, 1);
+        e.setAttribute('stroke-dashoffset', f(L * (1 - p)));
+        if (p < 1) requestAnimationFrame(step); else res();
+      }
+      requestAnimationFrame(step);
+    });
+  }
+  return { live, wait, pop, colorer, taper, tracer, tracerChemin };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PAGE 1 — Vocabulaire : sommet et côtés
+// ═══════════════════════════════════════════════════════════════
+function buildSVG_P1() {
+  const F = { x: 230, y: 280 };
+  const DG = 170, DH = 130;
+  const G = pt(30, DG, F), H = pt(80, DH, F);
+  const GE = pt(30, DG * 1.25, F), HE = pt(80, DH * 1.45, F);
+
+  const sTxt = { x: 40, y: 334 };
+  const sArr = shorten({ x: 150, y: 320 }, F, 0, 10);
+
+  const lab = pt(55, 225, F);
+  const onG = pt(30, 110, F), onH = pt(80, 80, F);
+  const aG = shorten({ x: lab.x + 6, y: lab.y + 8 }, onG, 0, 6);
+  const aH = shorten({ x: lab.x - 10, y: lab.y + 8 }, onH, 0, 6);
+
+  return `<svg width="520" height="285" viewBox="0 65 520 285" style="max-width:100%">
+  <defs>${marker('mk1l', C1A)}${marker('mk2l', C2A)}</defs>
+  <path d="${arc(30, 80, 38, F)}" fill="none" stroke="#475569" stroke-width="2"/>
+  <line x1="${F.x}" y1="${F.y}" x2="${f(GE.x)}" y2="${f(GE.y)}" stroke="${C2}" stroke-width="3" stroke-linecap="round"/>
+  <line x1="${F.x}" y1="${F.y}" x2="${f(HE.x)}" y2="${f(HE.y)}" stroke="${C2}" stroke-width="3" stroke-linecap="round"/>
+  ${croix('p1G', G, '#222')}
+  ${croix('p1H', H, '#222')}
+  ${croix('p1F', F, C1)}
+  <text x="${f(G.x + 4)}" y="${f(G.y + 24)}" font-family="${FONT}" font-size="19" font-weight="700" fill="#222">G</text>
+  <text x="${f(H.x - 24)}" y="${f(H.y + 6)}" font-family="${FONT}" font-size="19" font-weight="700" fill="#222">H</text>
+  <text x="${F.x + 10}" y="${F.y + 24}" font-family="${FONT}" font-size="20" font-weight="800" fill="${C1}">F</text>
+
+  <line x1="${f(sArr.a.x)}" y1="${f(sArr.a.y)}" x2="${f(sArr.b.x)}" y2="${f(sArr.b.y)}" stroke="${C1A}" stroke-width="2" marker-end="url(#mk1l)"/>
+  <text x="${sTxt.x}" y="${sTxt.y}" font-family="${FONT_T}" font-size="17" font-weight="700" fill="${C1}">Sommet de l'angle</text>
+
+  <text x="${f(lab.x)}" y="${f(lab.y)}" text-anchor="middle" font-family="${FONT_T}" font-size="17" font-weight="700" fill="${C2}">Côtés de l'angle</text>
+  <line x1="${f(aG.a.x)}" y1="${f(aG.a.y)}" x2="${f(aG.b.x)}" y2="${f(aG.b.y)}" stroke="${C2A}" stroke-width="2" marker-end="url(#mk2l)"/>
+  <line x1="${f(aH.a.x)}" y1="${f(aH.a.y)}" x2="${f(aH.b.x)}" y2="${f(aH.b.y)}" stroke="${C2A}" stroke-width="2" marker-end="url(#mk2l)"/>
+</svg>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PAGE 2 — Nommer un angle
+// ═══════════════════════════════════════════════════════════════
+const P = { x: 270, y: 240 };
+const DEG_B = 20, DEG_K = 130;
+const DB = 165, DK = 140;
+const B = pt(DEG_B, DB, P), K = pt(DEG_K, DK, P);
+const BE = pt(DEG_B, DB * 1.3, P), KE = pt(DEG_K, DK * 1.35, P);
+const BIS = (DEG_B + DEG_K) / 2;
+const LAB2 = pt(BIS, 115, P);
+
+function buildSVG_P2() {
+  const aB = shorten({ x: LAB2.x + 20, y: LAB2.y + 7 }, pt(DEG_B, 95, P), 0, 6);
+  const aK = shorten({ x: LAB2.x - 30, y: LAB2.y + 7 }, pt(DEG_K, 85, P), 0, 6);
+  return `<svg width="540" height="230" viewBox="0 80 540 230" style="max-width:100%">
+  <defs>${marker('mk2l_p2', C2A)}</defs>
+  <path d="${arc(DEG_B, DEG_K, 36, P)}" fill="none" stroke="#222" stroke-width="2"/>
+  <line x1="${P.x}" y1="${P.y}" x2="${f(BE.x)}" y2="${f(BE.y)}" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="${P.x}" y1="${P.y}" x2="${f(KE.x)}" y2="${f(KE.y)}" stroke="#222" stroke-width="2.5" stroke-linecap="round"/>
+  <line id="p2rayB" x1="${P.x}" y1="${P.y}" x2="${P.x}" y2="${P.y}" data-x2="${f(BE.x)}" data-y2="${f(BE.y)}" stroke="${C2}" stroke-width="4" stroke-linecap="round" opacity="0"/>
+  <line id="p2rayK" x1="${P.x}" y1="${P.y}" x2="${P.x}" y2="${P.y}" data-x2="${f(KE.x)}" data-y2="${f(KE.y)}" stroke="${C2}" stroke-width="4" stroke-linecap="round" opacity="0"/>
+
+  ${croix('p2ptB', B, '#222')}
+  ${croix('p2ptK', K, '#222')}
+  ${croix('p2ptP', P, '#222')}
+  <text id="p2lbB" x="${f(B.x + 2)}" y="${f(B.y + 26)}" font-family="${FONT}" font-size="20" font-weight="800" fill="#222">B</text>
+  <text id="p2lbK" x="${f(K.x - 28)}" y="${f(K.y + 16)}" font-family="${FONT}" font-size="20" font-weight="800" fill="#222">K</text>
+  <text id="p2lbP" x="${P.x}" y="${P.y + 28}" text-anchor="middle" font-family="${FONT}" font-size="20" font-weight="800" fill="#222">P</text>
+
+  ${fleche('p2arB', aB.a, aB.b, C2A, 'mk2l_p2')}
+  ${fleche('p2arK', aK.a, aK.b, C2A, 'mk2l_p2')}
+  <text id="p2txtS" x="${P.x}" y="${P.y + 56}" text-anchor="middle" font-family="${FONT_T}" font-size="17" font-weight="700" fill="${C1L}"></text>
+  <text id="p2txtC" x="${f(LAB2.x)}" y="${f(LAB2.y)}" text-anchor="middle" font-family="${FONT_T}" font-size="17" font-weight="700" fill="${C2L}"></text>
+</svg>`;
+}
+
+function nomLigne() {
+  return `<div class="nom-ligne fade-in">Nom de l'angle :
+    <span class="chapeau">
+      <svg viewBox="0 0 100 12" preserveAspectRatio="none"><polyline points="4,11 50,1 96,11" fill="none" stroke="#334155" stroke-width="2.2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>
+      <span class="slot" id="slot1">·</span><span class="slot" id="slot2">·</span><span class="slot" id="slot3">·</span>
+    </span>
+  </div>`;
+}
+
+function resetP2() {
+  ['p2rayB', 'p2rayK', 'p2arB', 'p2arK'].forEach(resetFleche);
+  ['p2ptP', 'p2ptB', 'p2ptK'].forEach(id => { const e = document.getElementById(id); if (e) { e.setAttribute('stroke', '#222'); e.classList.remove('ptpop'); } });
+  ['p2lbP', 'p2lbB', 'p2lbK'].forEach(id => { const e = document.getElementById(id); if (e) { e.setAttribute('fill', '#222'); e.classList.remove('ptpop'); } });
+  ['p2txtS', 'p2txtC'].forEach(id => { const e = document.getElementById(id); if (e) e.textContent = ''; });
+  [1, 2, 3].forEach(i => { const s = document.getElementById('slot' + i); if (s) { s.textContent = '·'; s.className = 'slot'; s.style.color = ''; } });
+}
+
+async function lancerNommer() {
+  if (animating) return;
+  animating = true;
+  const A = animTools();
+  const btn = document.getElementById('btn-nommer');
+  if (btn) btn.disabled = true;
+  resetP2();
+  function poser(i, lettre, col) {
+    const s = document.getElementById('slot' + i);
+    s.textContent = lettre; s.style.color = col; s.className = 'slot lettre';
+  }
+
+  // 1) Sommet
+  A.colorer(C1, 'p2ptP', 'p2lbP'); A.pop('p2ptP', 'p2lbP');
+  await A.taper('p2txtS', "Sommet de l'angle", 90); if (!A.live()) return;
+  await A.wait(500); if (!A.live()) return;
+  poser(2, 'P', C1);
+  await A.wait(1000); if (!A.live()) return;
+
+  // 2) Côtés
+  await A.tracer('p2rayB', 700); if (!A.live()) return;
+  await A.tracer('p2rayK', 700); if (!A.live()) return;
+  await A.wait(500); if (!A.live()) return;
+  await Promise.all([A.tracer('p2arB', 500), A.tracer('p2arK', 500)]); if (!A.live()) return;
+  await A.taper('p2txtC', "Côtés de l'angle", 90); if (!A.live()) return;
+  A.colorer(C2, 'p2ptB', 'p2lbB', 'p2ptK', 'p2lbK'); A.pop('p2ptB', 'p2lbB', 'p2ptK', 'p2lbK');
+  await A.wait(500); if (!A.live()) return;
+  poser(1, 'B', C2); poser(3, 'K', C2);
+
+  animating = false;
+  if (btn) btn.disabled = false;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PAGE 3 — Reconnaître un angle dans une figure
+// ═══════════════════════════════════════════════════════════════
+// Texte « On cherche l'angle ĴUD. » : lettres placées à des abscisses fixes
+const T3 = { y: 50, xEnd: 300, xJ: 318, xU: 338, xD: 358 };
+// Figure : triangle JUS + demi-droite [UD)
+const U3 = { x: 190, y: 355 };
+const DEG_UJ = 55, DEG_UD = 20;
+const J3 = pt(DEG_UJ, 200, U3);
+const S3 = { x: 430, y: 345 };
+const D3 = pt(DEG_UD, 260, U3);
+const DE3 = pt(DEG_UD, 305, U3);
+const R_ARC3 = 95;
+
+function hatSVG(cx, yTop, w, col, halo) {
+  const pts = `${f(cx - w / 2)},${f(yTop + 7)} ${f(cx)},${f(yTop)} ${f(cx + w / 2)},${f(yTop + 7)}`;
+  return (halo ? `<polyline points="${pts}" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>` : '')
+    + `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+}
+
+function buildSVG_P3() {
+  // flèche « sommet » : verticale sous le U
+  const aU = { a: { x: T3.xU, y: 84 }, b: { x: T3.xU, y: T3.y + 8 } };
+  // flèches « directions » : depuis les extrémités du texte du bas vers J et D
+  const aJ = shorten({ x: 246, y: 116 }, { x: T3.xJ - 2, y: T3.y + 6 }, 0, 4);
+  const aD = shorten({ x: 430, y: 116 }, { x: T3.xD + 2, y: T3.y + 6 }, 0, 4);
+  const lab = pt((DEG_UJ + DEG_UD) / 2, R_ARC3, U3);
+  const tf = `font-family="${FONT}" font-size="22" font-weight="800"`;
+
+  return `<svg width="560" height="395" viewBox="0 0 560 395" style="max-width:100%">
+  <defs>${marker('mk1l_p3', C1A)}${marker('mk2l_p3', C2A)}</defs>
+
+  <!-- Texte du haut -->
+  <text x="${T3.xEnd}" y="${T3.y}" text-anchor="end" font-family="${FONT}" font-size="20" font-weight="700" fill="#334155">On cherche l'angle</text>
+  ${hatSVG(T3.xU, T3.y - 30, 56, '#334155')}
+  <text id="p3tJ" x="${T3.xJ}" y="${T3.y}" text-anchor="middle" ${tf} fill="#334155">J</text>
+  <text id="p3tU" x="${T3.xU}" y="${T3.y}" text-anchor="middle" ${tf} fill="#334155">U</text>
+  <text id="p3tD" x="${T3.xD}" y="${T3.y}" text-anchor="middle" ${tf} fill="#334155">D</text>
+  <text x="${T3.xD + 13}" y="${T3.y}" font-family="${FONT}" font-size="20" font-weight="700" fill="#334155">.</text>
+
+  ${fleche('p3arU', aU.a, aU.b, C1A, 'mk1l_p3')}
+  <text id="p3txtS" x="${T3.xU}" y="98" text-anchor="middle" font-family="${FONT_T}" font-size="14" font-weight="700" fill="${C1L}"></text>
+  ${fleche('p3arJ', aJ.a, aJ.b, C2A, 'mk2l_p3')}
+  ${fleche('p3arD', aD.a, aD.b, C2A, 'mk2l_p3')}
+  <text id="p3txtC" x="${T3.xU}" y="128" text-anchor="middle" font-family="${FONT_T}" font-size="15" font-weight="700" fill="${C2L}"></text>
+
+  <!-- Figure -->
+  <polygon points="${f(J3.x)},${f(J3.y)} ${U3.x},${U3.y} ${S3.x},${S3.y}" fill="none" stroke="#222" stroke-width="2" stroke-linejoin="round"/>
+  <line x1="${U3.x}" y1="${U3.y}" x2="${f(DE3.x)}" y2="${f(DE3.y)}" stroke="#222" stroke-width="2" stroke-linecap="round"/>
+  <line id="p3rayD" x1="${U3.x}" y1="${U3.y}" x2="${U3.x}" y2="${U3.y}" data-x2="${f(DE3.x)}" data-y2="${f(DE3.y)}" stroke="${C2}" stroke-width="4" stroke-linecap="round" opacity="0"/>
+  <line id="p3segJ" x1="${U3.x}" y1="${U3.y}" x2="${U3.x}" y2="${U3.y}" data-x2="${f(J3.x)}" data-y2="${f(J3.y)}" stroke="${C2}" stroke-width="4" stroke-linecap="round" opacity="0"/>
+  <path id="p3arc" d="${arc(DEG_UD, DEG_UJ, R_ARC3, U3)}" fill="none" stroke="${ROUGE}" stroke-width="3" opacity="0"/>
+
+  ${croix('p3pJ', J3, '#222')}
+  ${croix('p3pS', S3, '#222')}
+  ${croix('p3pD', D3, '#222')}
+  ${croix('p3pU', U3, '#222')}
+  <text x="${f(J3.x - 7)}" y="${f(J3.y - 13)}" font-family="${FONT}" font-size="20" font-weight="800" fill="#222">J</text>
+  <text x="${f(S3.x + 10)}" y="${f(S3.y + 20)}" font-family="${FONT}" font-size="20" font-weight="800" fill="#222">S</text>
+  <text x="${f(D3.x + 2)}" y="${f(D3.y - 13)}" font-family="${FONT}" font-size="20" font-weight="800" fill="#222">D</text>
+  <text id="p3lU" x="${U3.x - 26}" y="${U3.y + 10}" font-family="${FONT}" font-size="20" font-weight="800" fill="#222">U</text>
+
+  <!-- Nom de l'angle sur l'arc -->
+  <g id="p3nom" opacity="0">
+    ${hatSVG(lab.x, lab.y - 20, 34, ROUGE, true)}
+    <text x="${f(lab.x)}" y="${f(lab.y + 6)}" text-anchor="middle" font-family="${FONT}" font-size="16" font-weight="800" fill="${ROUGE}" stroke="#fff" stroke-width="4" paint-order="stroke">JUD</text>
+  </g>
+</svg>`;
+}
+
+function resetP3() {
+  ['p3arU', 'p3arJ', 'p3arD', 'p3rayD', 'p3segJ'].forEach(resetFleche);
+  ['p3tJ', 'p3tU', 'p3tD', 'p3lU'].forEach(id => { const e = document.getElementById(id); if (e) { e.setAttribute('fill', id === 'p3lU' ? '#222' : '#334155'); e.classList.remove('ptpop'); } });
+  const pu = document.getElementById('p3pU'); if (pu) { pu.setAttribute('stroke', '#222'); pu.classList.remove('ptpop'); }
+  ['p3txtS', 'p3txtC'].forEach(id => { const e = document.getElementById(id); if (e) e.textContent = ''; });
+  const a = document.getElementById('p3arc'); if (a) a.setAttribute('opacity', '0');
+  const n = document.getElementById('p3nom'); if (n) { n.setAttribute('opacity', '0'); n.classList.remove('ptpop'); }
+}
+
+async function lancerReconnaitre() {
+  if (animating) return;
+  animating = true;
+  const A = animTools();
+  const btn = document.getElementById('btn-angle3');
+  if (btn) btn.disabled = true;
+  resetP3();
+
+  // 1) Sommet dans le texte
+  A.colorer(C1, 'p3tU'); A.pop('p3tU');
+  await A.tracer('p3arU', 450); if (!A.live()) return;
+  await A.taper('p3txtS', "sommet de l'angle", 55); if (!A.live()) return;
+  await A.wait(500); if (!A.live()) return;
+
+  // 2) Sommet sur la figure
+  A.colorer(C1, 'p3pU', 'p3lU'); A.pop('p3pU', 'p3lU');
+  await A.wait(1000); if (!A.live()) return;
+
+  // 3) Directions des côtés dans le texte
+  A.colorer(C2, 'p3tJ', 'p3tD'); A.pop('p3tJ', 'p3tD');
+  await Promise.all([A.tracer('p3arJ', 500), A.tracer('p3arD', 500)]); if (!A.live()) return;
+  await A.taper('p3txtC', "direction des côtés de l'angle", 90); if (!A.live()) return;
+  await A.wait(500); if (!A.live()) return;
+
+  // 4) Côtés sur la figure
+  await A.tracer('p3rayD', 700); if (!A.live()) return;
+  await A.tracer('p3segJ', 600); if (!A.live()) return;
+  await A.wait(500); if (!A.live()) return;
+
+  // 5) Arc rouge de [UD) vers [UJ)
+  await A.tracerChemin('p3arc', 600); if (!A.live()) return;
+  await A.wait(500); if (!A.live()) return;
+
+  // 6) Nom de l'angle sur l'arc
+  const n = document.getElementById('p3nom');
+  n.setAttribute('opacity', '1'); A.pop('p3nom');
+
+  animating = false;
+  if (btn) btn.disabled = false;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PAGE 4 — Nommer un angle dans une figure chargée
+// ═══════════════════════════════════════════════════════════════
+// Angle rouge de sommet M, côtés [MT) (par R) et [MN) (par E)
+const M4 = { x: 190, y: 300 };
+const D4_1 = 8, D4_2 = 58;                // directions des deux côtés
+const R4 = pt(D4_1, 140, M4), T4 = pt(D4_1, 290, M4);
+const E4 = pt(D4_2, 110, M4), N4 = pt(D4_2, 230, M4);
+const K4 = pt(D4_1 + 180, 120, M4);       // prolongement de [TM] au-delà de M
+const Q4 = pt(125, 150, M4);              // segment [MQ] hors de l'angle
+const C2D = '#1e40af';                    // bleu plus foncé pour les points des côtés
+const NOMS4 = [['R', 'M', 'E'], ['E', 'M', 'R'], ['R', 'M', 'N'], ['N', 'M', 'R'], ['T', 'M', 'E'], ['E', 'M', 'T'], ['T', 'M', 'N'], ['N', 'M', 'T']];
+
+// Texte placé le long d'un côté, décalé vers l'extérieur de l'angle
+function texteCote(id, deg, dist, normale) {
+  const p = pt(deg, dist, M4), q = pt(normale, 15, p);
+  return `<text id="${id}" x="${f(q.x)}" y="${f(q.y)}" text-anchor="middle" dominant-baseline="middle" transform="rotate(${-deg} ${f(q.x)} ${f(q.y)})" font-family="${FONT_T}" font-size="15" font-weight="700" fill="${C2L}" stroke="#fff" stroke-width="4" paint-order="stroke"></text>`;
+}
+
+function buildSVG_P4() {
+  const lb = (id, p, dx, dy, txt) => `<text id="${id}" x="${f(p.x + dx)}" y="${f(p.y + dy)}" font-family="${FONT}" font-size="19" font-weight="800" fill="#222">${txt}</text>`;
+  const seg = (a, b) => `<line x1="${f(a.x)}" y1="${f(a.y)}" x2="${f(b.x)}" y2="${f(b.y)}" stroke="#222" stroke-width="2" stroke-linecap="round"/>`;
+  return `<svg width="520" height="275" viewBox="25 78 520 275" style="max-width:100%">
+  <!-- Figure en noir -->
+  ${seg(K4, T4)}
+  ${seg(M4, N4)}
+  ${seg(T4, N4)}
+  ${seg(R4, E4)}
+  ${seg(M4, Q4)}
+  ${seg(K4, Q4)}
+  <path d="${arc(D4_1, D4_2, 42, M4)}" fill="none" stroke="${ROUGE}" stroke-width="3"/>
+
+  <!-- Côtés surlignés (animés) -->
+  <line id="p4s1" x1="${M4.x}" y1="${M4.y}" x2="${M4.x}" y2="${M4.y}" data-x2="${f(T4.x)}" data-y2="${f(T4.y)}" stroke="${C2}" stroke-width="4" stroke-linecap="round" opacity="0"/>
+  <line id="p4s2" x1="${M4.x}" y1="${M4.y}" x2="${M4.x}" y2="${M4.y}" data-x2="${f(N4.x)}" data-y2="${f(N4.y)}" stroke="${C2}" stroke-width="4" stroke-linecap="round" opacity="0"/>
+
+  ${croix('p4pK', K4, '#222')}${croix('p4pR', R4, '#222')}${croix('p4pT', T4, '#222')}
+  ${croix('p4pE', E4, '#222')}${croix('p4pN', N4, '#222')}${croix('p4pQ', Q4, '#222')}
+  ${croix('p4pM', M4, '#222')}
+  ${lb('p4lK', K4, -8, 26, 'K')}${lb('p4lR', R4, -6, 26, 'R')}${lb('p4lT', T4, 9, 7, 'T')}
+  ${lb('p4lE', E4, -24, -2, 'E')}${lb('p4lN', N4, -7, -12, 'N')}${lb('p4lQ', Q4, -24, -6, 'Q')}
+  ${lb('p4lM', M4, -7, 28, 'M')}
+
+  ${texteCote('p4c1', D4_1, 215, D4_1 - 90)}
+  ${texteCote('p4c2', D4_2, 170, D4_2 + 90)}
+  <text id="p4txtS" x="${M4.x + 16}" y="${M4.y + 34}" font-family="${FONT_T}" font-size="16" font-weight="700" fill="${C1L}" stroke="#fff" stroke-width="4" paint-order="stroke"></text>
+</svg>`;
+}
+
+// Nom d'angle avec chapeau, en HTML (pour la liste des autres noms)
+function nomHTML(l) {
+  const col = (c, i) => `<span style="color:${i === 1 ? C1 : C2}">${c}</span>`;
+  return `<span class="nom-alt"><span class="hatw">${l.map(col).join('')}<svg viewBox="0 0 100 10" preserveAspectRatio="none"><polyline points="6,9 50,1 94,9" fill="none" stroke="#334155" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg></span></span>`;
+}
+
+function resetP4() {
+  ['p4s1', 'p4s2'].forEach(resetFleche);
+  ['K', 'R', 'T', 'E', 'N', 'Q', 'M'].forEach(n => {
+    const c = document.getElementById('p4p' + n), t = document.getElementById('p4l' + n);
+    if (c) { c.setAttribute('stroke', '#222'); c.classList.remove('ptpop'); }
+    if (t) { t.setAttribute('fill', '#222'); t.classList.remove('ptpop'); }
+  });
+  ['p4txtS', 'p4c1', 'p4c2'].forEach(id => { const e = document.getElementById(id); if (e) e.textContent = ''; });
+  [1, 2, 3].forEach(i => { const s = document.getElementById('slot' + i); if (s) { s.textContent = '·'; s.className = 'slot'; s.style.color = ''; } });
+  const alt = document.getElementById('p4alt'); if (alt) alt.classList.remove('visible');
+}
+
+async function lancerNommer4() {
+  if (animating) return;
+  animating = true;
+  const A = animTools();
+  const btn = document.getElementById('btn-nommer4');
+  if (btn) btn.disabled = true;
+  resetP4();
+  function poser(i, lettre, col) {
+    const s = document.getElementById('slot' + i);
+    s.textContent = lettre; s.style.color = col; s.className = 'slot lettre';
+  }
+
+  // 1) Sommet
+  A.colorer(C1, 'p4pM', 'p4lM'); A.pop('p4pM', 'p4lM');
+  await A.taper('p4txtS', "sommet de l'angle", 90); if (!A.live()) return;
+  await A.wait(500); if (!A.live()) return;
+  poser(2, 'M', C1);
+  await A.wait(1000); if (!A.live()) return;
+
+  // 2) Côtés tracés depuis le sommet, puis légendés
+  await Promise.all([A.tracer('p4s1', 800), A.tracer('p4s2', 800)]); if (!A.live()) return;
+  await Promise.all([A.taper('p4c1', "côté de l'angle", 80), A.taper('p4c2', "côté de l'angle", 80)]); if (!A.live()) return;
+  await A.wait(500); if (!A.live()) return;
+
+  // 3) Un point sur chaque côté
+  A.colorer(C2D, 'p4pR', 'p4lR', 'p4pE', 'p4lE'); A.pop('p4pR', 'p4lR', 'p4pE', 'p4lE');
+  await A.wait(500); if (!A.live()) return;
+  poser(1, 'R', C2D); poser(3, 'E', C2D);
+  await A.wait(800); if (!A.live()) return;
+
+  // 4) Les autres noms possibles
+  const alt = document.getElementById('p4alt'); if (alt) alt.classList.add('visible');
+
+  animating = false;
+  if (btn) btn.disabled = false;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PAGE 5 — Bilan : petit angle nommé
+// ═══════════════════════════════════════════════════════════════
+function buildSVG_P5() {
+  const B5 = { x: 40, y: 120 };
+  const A5 = pt(50, 95, B5), C5 = pt(5, 120, B5);
+  const AE = pt(50, 125, B5), CE = pt(5, 150, B5);
+  const lb = (p, dx, dy, t, col) => `<text x="${f(p.x + dx)}" y="${f(p.y + dy)}" font-family="${FONT}" font-size="18" font-weight="800" fill="${col}">${t}</text>`;
+  const nx = 270, ny = 85;
+  return `<svg width="380" height="145" viewBox="0 0 380 145" style="max-width:100%">
+  <path d="${arc(5, 50, 30, B5)}" fill="none" stroke="${ROUGE}" stroke-width="2.5"/>
+  <line x1="${B5.x}" y1="${B5.y}" x2="${f(AE.x)}" y2="${f(AE.y)}" stroke="${C2}" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="${B5.x}" y1="${B5.y}" x2="${f(CE.x)}" y2="${f(CE.y)}" stroke="${C2}" stroke-width="2.5" stroke-linecap="round"/>
+  ${croix('p5A', A5, C2)}${croix('p5C', C5, C2)}${croix('p5B', B5, C1)}
+  ${lb(A5, -22, 2, 'A', C2)}${lb(C5, -4, 24, 'C', C2)}${lb(B5, -8, 22, 'B', C1)}
+  ${hatSVG(nx, ny - 28, 62, '#334155')}
+  <text x="${nx - 21}" y="${ny}" text-anchor="middle" font-family="${FONT}" font-size="24" font-weight="800" fill="${C2}">A</text>
+  <text x="${nx}" y="${ny}" text-anchor="middle" font-family="${FONT}" font-size="24" font-weight="800" fill="${C1}">B</text>
+  <text x="${nx + 21}" y="${ny}" text-anchor="middle" font-family="${FONT}" font-size="24" font-weight="800" fill="${C2}">C</text>
+</svg>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PAGES
+// ═══════════════════════════════════════════════════════════════
+const STEPS_PAGE = [
+
+// PAGE 1 — Pourquoi + vocabulaire
+() => `
+  <div class="step-title pop">💡 Nommer un angle</div>
+  <div class="pourquoi fade-in">
+    <span class="pq-lead">🤔 Pourquoi ?</span>
+    On donne un nom à chaque angle pour pouvoir le reconnaître dans un dessin et savoir duquel on parle.
+  </div>
+  <p class="fade-in" style="font-size:.95rem;line-height:1.7;color:#334155;max-width:620px;width:100%;">
+    Pour donner le nom à un angle, on utilise le nom des points qui permettent de construire l'angle.
+    Plusieurs mots de vocabulaire sont à connaître :
+  </p>
+  <div class="bloc def fade-in">
+    <span class="bloc-label def-c1">📖 Définition</span><br>
+    Le <b class="def-c1">sommet</b> de l'angle est la « pointe » de l'angle : c'est autour du sommet que l'on tourne.
+  </div>
+  <div class="bloc def2 fade-in">
+    <span class="bloc-label def-c2">📖 Définition</span><br>
+    Les deux <b class="def-c2">côtés</b> de l'angle sont les deux demi-droites qui délimitent l'angle. Leur origine est le sommet de l'angle.
+  </div>
+  <div class="fade-in">${buildSVG_P1()}</div>
+`,
+
+// PAGE 2 — Nommer un angle
+() => `
+  <div class="step-title pop">✏️ Nommer un angle</div>
+  <div class="regle3 fade-in">
+    <div>Pour nommer un angle, on utilise <b>trois lettres</b> et on place un «&nbsp;chapeau&nbsp;» au&#8209;dessus&nbsp;:</div>
+    <div class="trio-wrap">
+      <svg class="trio-hat" viewBox="0 0 100 20" preserveAspectRatio="none"><polyline points="3,18 50,2 97,18" fill="none" stroke="#334155" stroke-width="2.6" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/></svg>
+      <div class="trio">
+        <div class="trio-case c2">un point<br>d'un <b>côté</b></div>
+        <div class="trio-case c1">le <b>sommet</b><br><small>au milieu</small></div>
+        <div class="trio-case c2">un point<br>de l'autre <b>côté</b></div>
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;">
+    ${nomLigne()}
+    <div class="fade-in">${buildSVG_P2()}</div>
+    <button id="btn-nommer" class="btn-mesurer fade-in" onclick="lancerNommer()">Nommer</button>
+  </div>
+`,
+
+// PAGE 3 — Reconnaître un angle
+() => `
+  <div class="step-title pop">🔍 Reconnaître un angle</div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;">
+    <div class="fade-in">${buildSVG_P3()}</div>
+    <button id="btn-angle3" class="btn-mesurer fade-in" onclick="lancerReconnaitre()">Angle <span class="hatw">JUD<svg viewBox="0 0 100 10" preserveAspectRatio="none"><polyline points="6,9 50,1 94,9" fill="none" stroke="#fff" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg></span></button>
+  </div>
+`,
+
+// PAGE 4 — Nommer un angle dans une figure
+() => `
+  <div class="step-title pop">✏️ Nommer un angle</div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;">
+    <div class="fade-in">${buildSVG_P4()}</div>
+    ${nomLigne()}
+    <button id="btn-nommer4" class="btn-mesurer fade-in" onclick="lancerNommer4()">Nommer l'angle rouge</button>
+    <div id="p4alt" class="alt-noms">
+      <div class="alt-titre">Cet angle peut aussi s'appeler :</div>
+      <div class="alt-liste">${NOMS4.filter(n => n.join('') !== 'RME').map(nomHTML).join('')}</div>
+    </div>
+  </div>
+`,
+
+// PAGE 5 — Ce qu'il faut retenir
+() => `
+  <div class="step-title pop">📋 Ce qu'il faut retenir</div>
+  <div class="recap-list">
+    <div class="recap-item fade-in" style="border-left-color:var(--primary);">
+      <div class="recap-num" style="background:var(--primary);">1</div>
+      <div>Le <b style="color:${C1}">sommet</b> de l'angle, c'est la « pointe » de l'angle.</div>
+    </div>
+    <div class="recap-item fade-in" style="animation-delay:.07s;border-left-color:var(--teal);flex-direction:column;align-items:flex-start;gap:6px;">
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div class="recap-num" style="background:var(--teal);">2</div>
+        <div>Pour nommer un angle, il faut <b>3 lettres</b> :
+          <div style="margin-top:4px;">● le nom du <b style="color:${C1}">sommet</b> (au milieu des 3 lettres) ;</div>
+          <div>● les directions des deux <b style="color:${C2}">côtés</b>.</div>
+        </div>
+      </div>
+      <div style="align-self:center;">${buildSVG_P5()}</div>
+    </div>
+    <div class="recap-item fade-in" style="animation-delay:.14s;border-left-color:var(--bleu);">
+      <div class="recap-num" style="background:var(--bleu);">3</div>
+      <div>On écrit un <b>chapeau</b> au-dessus des trois lettres pour comprendre qu'on parle d'un <b>angle</b>.</div>
+    </div>
+    <div class="recap-item fade-in" style="animation-delay:.21s;border-left-color:var(--orange);">
+      <div class="recap-num" style="background:var(--orange);">4</div>
+      <div>Un angle peut avoir <b>plusieurs noms</b>.</div>
+    </div>
+  </div>
+`,
+
+];
+
+// ═══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════
+function render() {
+  animating = false;
+  animGen++;
+  const card = document.getElementById('card');
+  card.innerHTML = STEPS_PAGE[cur]();
+  document.getElementById('pbar').style.width = `${((cur + 1) / N) * 100}%`;
+  const stepsEl = document.getElementById('steps');
+  stepsEl.innerHTML = '';
+  for (let i = 0; i < N; i++) {
+    const d = document.createElement('div');
+    d.className = 'step-dot' + (i === cur ? ' active' : i < cur ? ' done' : '');
+    d.textContent = i + 1;
+    d.onclick = () => { cur = i; render(); };
+    stepsEl.appendChild(d);
+  }
+  document.getElementById('btnPrev').style.visibility = cur === 0 ? 'hidden' : 'visible';
+  document.getElementById('btnNext').style.display = cur === N - 1 ? 'none' : 'inline-block';
+  document.getElementById('pageInfo').textContent = `${cur + 1} / ${N}`;
+}
+function next() { if (cur < N - 1) { cur++; render(); } }
+function prev() { if (cur > 0) { cur--; render(); } }
+render();
+</script>
+</body>
+</html>

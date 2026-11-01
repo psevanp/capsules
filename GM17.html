@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>GM17 – Mesurer un angle avec le rapporteur</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+  --primary:#e11d48; --primary2:#fb7185; --primary-clair:#ffe4e6;
+  --bg:#fff1f2; --cote:#9f1239;
+  --bleu:#1a73e8; --bleu-clair:#e8f0fe;
+  --orange:#ea580c; --orange-clair:#ffedd5;
+  --vert:#16a34a; --vert-clair:#f0fdf4;
+  --violet:#7c3aed; --violet-clair:#f5f3ff;
+  --teal:#0d9488; --teal-clair:#f0fdfa;
+  --gris:#94a3b8;
+  --card:#fff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px;}
+header{width:100%;max-width:680px;display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px;}
+.badge-code{font-family:'Baloo 2',cursive;font-weight:800;font-size:1.3rem;background:var(--primary-clair);border:2px solid var(--primary);border-radius:10px;padding:4px 14px;color:var(--primary);white-space:nowrap;}
+.tache-label{font-family:'Baloo 2',cursive;font-weight:800;font-size:1.05rem;color:var(--primary);}
+.progress-bar{width:100%;max-width:680px;height:10px;background:var(--primary-clair);border-radius:99px;margin-bottom:10px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .4s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:14px;}
+.step-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.95rem;cursor:default;transition:all .3s;background:var(--primary-clair);color:var(--primary2);}
+.step-dot.active{background:var(--primary);color:#fff;transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;}
+.card{width:100%;max-width:680px;background:var(--card);border-radius:20px;padding:26px 24px;box-shadow:0 4px 24px rgba(0,0,0,.07);min-height:350px;display:flex;flex-direction:column;align-items:center;gap:14px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;color:var(--primary);text-align:center;}
+.step-title.pop{animation:pop .45s ease both;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:620px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 18px;font-weight:600;font-size:.9rem;line-height:1.6;max-width:620px;width:100%;}
+.info.bleu{background:var(--bleu-clair);border-left:4px solid var(--bleu);color:#1e3a5f;}
+.info.orange{background:var(--orange-clair);border-left:4px solid var(--orange);color:#7c2d12;}
+.info.vert{background:var(--vert-clair);border-left:4px solid var(--vert);color:#14532d;}
+.info.primary{background:var(--primary-clair);border-left:4px solid var(--primary);color:#9f1239;}
+.info.violet{background:var(--violet-clair);border-left:4px solid var(--violet);color:#4c1d95;}
+.bloc{border-radius:12px;padding:13px 16px;font-size:.92rem;font-weight:600;line-height:1.6;max-width:620px;width:100%;}
+.bloc.def{background:#f5f3ff;border-left:4px solid #7c3aed;color:#3b0764;}
+.bloc-label{font-family:'Baloo 2',cursive;font-weight:800;font-size:1rem;}
+.recap-list{display:flex;flex-direction:column;gap:10px;max-width:620px;width:100%;}
+.recap-item{display:flex;gap:12px;background:#f8faff;border-radius:12px;padding:11px 16px;border-left:4px solid var(--primary);align-items:flex-start;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;}
+.btn-complete{border:2px solid var(--vert);background:var(--vert-clair);color:var(--vert);font-family:'Baloo 2',cursive;font-weight:700;border-radius:10px;padding:10px 22px;font-size:1rem;cursor:pointer;transition:all .2s;}
+.btn-complete:hover{background:var(--vert);color:#fff;}
+nav{width:100%;max-width:680px;display:flex;justify-content:space-between;align-items:center;margin-top:14px;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);border:none;border-radius:10px;padding:10px 20px;font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;cursor:pointer;transition:all .2s;}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;border:none;border-radius:10px;padding:10px 24px;font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(225,29,72,.3);}
+.btn-next:hover{opacity:.9;}
+.page-info{font-family:'Baloo 2',cursive;font-weight:600;color:var(--gris);font-size:.95rem;}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+svg{display:block;}
+.btn-mesurer{
+  font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;
+  background:linear-gradient(135deg,var(--bleu),#4f9cf8);
+  color:#fff;border:none;border-radius:10px;
+  padding:9px 22px;cursor:pointer;
+  box-shadow:0 2px 8px rgba(26,115,232,.3);
+  transition:all .2s;
+}
+.btn-mesurer:hover{opacity:.9;}
+.btn-mesurer:disabled{opacity:.5;cursor:default;}
+.result-label{
+  font-family:'Baloo 2',cursive;font-weight:800;font-size:1.05rem;
+  color:#b34700;
+  background:#fffbe8;border:2px solid #b34700;border-radius:10px;
+  padding:7px 18px;
+  opacity:0;transition:opacity .4s;
+}
+.result-label.visible{opacity:1;}
+</style>
+</head>
+<body>
+<header>
+  <div class="badge-code">GM17</div>
+  <div class="tache-label">Mesurer un angle avec le rapporteur</div>
+</header>
+<div class="progress-bar"><div class="progress-fill" id="pbar"></div></div>
+<div class="steps-indicator" id="steps"></div>
+<div class="card" id="card"></div>
+<nav>
+  <button class="btn-prev" id="btnPrev" onclick="prev()">← Retour</button>
+  <span class="page-info" id="pageInfo"></span>
+  <button class="btn-next" id="btnNext" onclick="next()">Suivant →</button>
+</nav>
+
+<script>
+let cur = 0, animating = false, animGen = 0;
+const N = 4;
+
+// ═══════════════════════════════════════════════════════════════
+// GÉOMÉTRIE — convention : angles en sens trigo (anti-horaire)
+//   0° = droite, 90° = haut, 180° = gauche
+//   Dans SVG (Y vers le bas) : cos(-r), sin(-r)
+// ═══════════════════════════════════════════════════════════════
+const R = 175; // rayon rapporteur
+
+function pt(deg, len, cx, cy) {
+  const r = deg * Math.PI / 180;
+  return { x: cx + Math.cos(-r)*len, y: cy + Math.sin(-r)*len };
+}
+
+function arc(deg1, deg2, radius, cx, cy) {
+  // Convention : angles en trigo (CCW en maths). En SVG (Y↓) :
+  //   cos(-r),sin(-r) place correctement le point à l'angle trigo deg.
+  //   Pour un arc CCW en maths de deg1 → deg2 :
+  //     si deg2 > deg1 : l'arc "monte" → en SVG Y↓ c'est sweep=0 (anti-horaire SVG)
+  //     si deg2 < deg1 : l'arc "descend" → sweep=1 (horaire SVG)
+  //   Autrement dit : sweep = deg2 < deg1 ? 1 : 0, et large-arc si |diff| > 180
+  const r1 = deg1*Math.PI/180, r2 = deg2*Math.PI/180;
+  const x1 = cx+Math.cos(-r1)*radius, y1 = cy+Math.sin(-r1)*radius;
+  const x2 = cx+Math.cos(-r2)*radius, y2 = cy+Math.sin(-r2)*radius;
+  const diff = deg2 - deg1; // en trigo, positif = CCW
+  const sweep = diff < 0 ? 1 : 0; // si on descend en trigo → horaire SVG
+  const large = Math.abs(diff) > 180 ? 1 : 0;
+  return `M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${radius} ${radius} 0 ${large} ${sweep} ${x2.toFixed(2)} ${y2.toFixed(2)}`;
+}
+
+// ─── Helpers compatibles ancien code (cx,cy = P par défaut) ───
+function armPoint(deg, len) { return pt(deg, len, P2.x, P2.y); }
+function arcPath(deg1, deg2, radius) { return arc(deg1, deg2, radius, P2.x, P2.y); }
+
+// ═══════════════════════════════════════════════════════════════
+// PAGE 2 — angle 70°, base rapporteur horizontale
+// ═══════════════════════════════════════════════════════════════
+const P2 = { x: 195, y: 308 };
+const ARM2 = 205;
+const ARC_COLORS_2 = ['#d4620c','#f7a83a'];
+const STEPS_2 = [0,10,20,30,40,50,60,70];
+
+function buildTicks_10() {
+  let d = '';
+  for (let deg = 0; deg <= 180; deg += 10) {
+    const r = deg*Math.PI/180;
+    const inner = (deg%90===0) ? R-24 : (deg%30===0) ? R-18 : R-12;
+    d += `M ${(P2.x+Math.cos(-r)*inner).toFixed(2)} ${(P2.y+Math.sin(-r)*inner).toFixed(2)} L ${(P2.x+Math.cos(-r)*R).toFixed(2)} ${(P2.y+Math.sin(-r)*R).toFixed(2)} `;
+  }
+  return d;
+}
+
+function buildSVG_P2() {
+  const rArc = `M ${P2.x-R} ${P2.y} A ${R} ${R} 0 0 1 ${P2.x+R} ${P2.y}`;
+  const arm0 = armPoint(0, ARM2);
+  // côtés de l'angle
+  const C1 = { x: P2.x+230, y: P2.y }; // côté 1 = 0°, long court
+  const C2 = pt(70, 220, P2.x, P2.y);   // côté 2 = 70°
+  let arcPaths = '';
+  for (let i = 0; i < 7; i++) {
+    const col = ARC_COLORS_2[i%2];
+    arcPaths += `<path id="p2arc-${i}" d="${arc(i*10,(i+1)*10,R-9,P2.x,P2.y)}" fill="none" stroke="${col}" stroke-width="8" stroke-linecap="butt" opacity="0"/>`;
+  }
+  const ticks = buildTicks_10();
+  const angArc = arc(0, 70, 44, P2.x, P2.y);
+
+  return `<svg width="590" height="340" viewBox="0 0 590 340" style="max-width:100%">
+  <line x1="${P2.x}" y1="${P2.y}" x2="${C1.x}" y2="${C1.y}" stroke="#d23333" stroke-width="3" stroke-linecap="round"/>
+  <line x1="${P2.x}" y1="${P2.y}" x2="${C2.x.toFixed(1)}" y2="${C2.y.toFixed(1)}" stroke="#d23333" stroke-width="3" stroke-linecap="round"/>
+  <path d="${angArc}" fill="none" stroke="#d23333" stroke-width="2" opacity="0.5"/>
+  <g id="p2rapp" opacity="0" style="transform-origin:${P2.x}px ${P2.y}px">
+    <path d="${rArc} L ${P2.x-R} ${P2.y} Z" fill="rgba(219,234,254,0.22)" stroke="none"/>
+    <line x1="${P2.x-R}" y1="${P2.y}" x2="${P2.x+R}" y2="${P2.y}" stroke="#4b5563" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="${rArc}" fill="none" stroke="#4b5563" stroke-width="2.5"/>
+    <path d="${ticks}" fill="none" stroke="#4b5563" stroke-width="1.5" stroke-linecap="round"/>
+    ${arcPaths}
+    <line id="p2bras" x1="${P2.x}" y1="${P2.y}" x2="${arm0.x.toFixed(2)}" y2="${arm0.y.toFixed(2)}" stroke="#888" stroke-width="3" stroke-linecap="round" opacity="0"/>
+    <circle cx="${P2.x}" cy="${P2.y}" r="4" fill="#222"/>
+  </g>
+  <rect id="p2box" x="${P2.x+30}" y="${P2.y-68}" width="56" height="28" rx="5" fill="#fffbe8" fill-opacity="0.95" stroke="#b34700" stroke-width="2" opacity="0"/>
+  <text id="p2val" x="${P2.x+58}" y="${P2.y-48}" text-anchor="middle" font-family="'Nunito',sans-serif" font-size="17" font-weight="700" fill="#b34700" stroke="#fff" stroke-width="3" paint-order="stroke" opacity="0">0°</text>
+  <rect id="p2finbox" x="${(P2.x+Math.cos(-70*Math.PI/180)*52-24).toFixed(1)}" y="${(P2.y+Math.sin(-70*Math.PI/180)*52-16).toFixed(1)}" width="52" height="26" rx="5" fill="#fffbe8" fill-opacity="0.95" stroke="#b34700" stroke-width="2" opacity="0"/>
+  <text id="p2fin" x="${(P2.x+Math.cos(-70*Math.PI/180)*52+2).toFixed(1)}" y="${(P2.y+Math.sin(-70*Math.PI/180)*52+5).toFixed(1)}" text-anchor="middle" font-family="'Nunito',sans-serif" font-size="16" font-weight="700" fill="#b34700" stroke="#fff" stroke-width="3" paint-order="stroke" opacity="0">70°</text>
+</svg>`;
+}
+
+function resetP2() {
+  const rg = document.getElementById('p2rapp');
+  if (!rg) return;
+  rg.style.opacity='0'; rg.style.transform='';
+  for (let i=0;i<7;i++){const a=document.getElementById(`p2arc-${i}`);if(a)a.style.opacity='0';}
+  const bras=document.getElementById('p2bras');
+  if(bras){const p=armPoint(0,ARM2);bras.setAttribute('x2',p.x.toFixed(2));bras.setAttribute('y2',p.y.toFixed(2));bras.style.opacity='0';}
+  ['p2box','p2val','p2finbox','p2fin'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.opacity='0';});
+  const res=document.getElementById('p2result');if(res)res.classList.remove('visible');
+}
+
+function lancerMesure2() {
+  if (animating) return;
+  animating = true;
+  const myGen=animGen;
+  const btn = document.getElementById('btn-mesurer2');
+  if (btn) btn.disabled = true;
+  resetP2();
+
+  function live(){ return animGen===myGen; }
+
+  const rg=document.getElementById('p2rapp'),bras=document.getElementById('p2bras'),
+    box=document.getElementById('p2box'),val=document.getElementById('p2val'),
+    fb=document.getElementById('p2finbox'),fin=document.getElementById('p2fin'),
+    res=document.getElementById('p2result');
+
+  let t0=null;
+  rg.style.transform='translateY(120px)'; rg.style.opacity='0';
+  function slideIn(ts){
+    if(!live())return;
+    if(!t0)t0=ts; const p=Math.min((ts-t0)/600,1);
+    const e=p<.5?2*p*p:-1+(4-2*p)*p;
+    rg.style.transform=`translateY(${120*(1-e)}px)`; rg.style.opacity=String(e);
+    if(p<1){requestAnimationFrame(slideIn);return;}
+    rg.style.transform=''; rg.style.opacity='1';
+    setTimeout(go,300);
+  }
+  requestAnimationFrame(slideIn);
+
+  function go(){
+    if(!live())return;
+    bras.style.opacity='1'; box.style.opacity='1'; val.style.opacity='1'; val.textContent='0°';
+    step(0);
+  }
+  function step(s){
+    if(!live())return;
+    if(s===0){setTimeout(()=>step(1),500);return;}
+    document.getElementById(`p2arc-${s-1}`).style.opacity='1';
+    const deg=s*10, p=armPoint(deg,ARM2);
+    bras.setAttribute('x2',p.x.toFixed(2)); bras.setAttribute('y2',p.y.toFixed(2));
+    val.textContent=deg+'°';
+    const bx=P2.x+Math.cos(-deg*Math.PI/180)*55, by=P2.y+Math.sin(-deg*Math.PI/180)*55;
+    box.setAttribute('x',(bx-24).toFixed(1)); box.setAttribute('y',(by-16).toFixed(1));
+    val.setAttribute('x',(bx+4).toFixed(1)); val.setAttribute('y',(by+5).toFixed(1));
+    if(s<7){setTimeout(()=>step(s+1),500);return;}
+    setTimeout(()=>{
+      if(!live())return;
+      box.style.opacity='0'; val.style.opacity='0';
+      fb.style.opacity='1'; fin.style.opacity='1';
+      if(res)res.classList.add('visible');
+      animating=false; if(btn)btn.disabled=false;
+    },500);
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// PAGE 3 — angle 68° INCLINÉ
+// ═══════════════════════════════════════════════════════════════
+// Le rapporteur a rotate(-70) en SVG = rotation CW de 70° visuellement.
+// En SVG (Y↓), rotate(α) transforme (x,y) → (x·cosα - y·sinα, x·sinα + y·cosα).
+// rotate(-70): cosα=cos70°=0.342, sinα=sin70°=0.940 → -sin70°=-0.940
+//   (x,y) → (x·0.342 + y·0.940, -x·0.940 + y·0.342)
+//
+// Grad g° en local = (cos(-g°), sin(-g°)) = (cos g°, -sin g°).
+// Grad 35° local = (cos35°, -sin35°) = (0.819, -0.574)
+//   → absolu : x'=0.819·0.342+(-0.574)·0.940=-0.260, y'=-0.819·0.940+(-0.574)·0.342=-0.966
+//   → direction trigo absolu : atan2(0.966, -0.260) ≈ 105°  → C1_DEG3 = 105
+// Grad 103° local = (cos103°, -sin103°) = (-0.225, -0.974)
+//   → absolu : x'=-0.225·0.342+(-0.974)·0.940=-0.993, y'=0.225·0.940+(-0.974)·0.342=-0.121
+//   → direction trigo absolu : atan2(0.121, -0.993) ≈ 173°  → C2_DEG3 = 173
+
+const P3 = { x: 370, y: 300 };   // sommet en bas-droite pour laisser de la place vers haut-gauche
+const ARM3 = 210;                  // longueur du bras (> R=175)
+const SIDE3 = 200;                 // longueur des côtés (juste > R → visuel zoomé)
+const RAPP_ROT3 = 70;             // rotation SVG du rapporteur (rotate(-70) dans le SVG)
+const C1_DEG3 = 105;              // direction absolue côté 1 (grad 35° du rapporteur)
+const C2_DEG3 = 173;              // direction absolue côté 2 (grad 103° du rapporteur)
+const ANGLE3 = 68;
+
+// Sweep en graduations du rapporteur : de 35° à 103°
+// Séquence : 35→36→37 (pas de 1°), 37→47→…→97 (pas de 10°), 97→103 (pas de 1°… enfin 98→103)
+const STEPS_3 = [35,36,37,38,39,40,50,60,70,80,90,100,101,102,103];
+
+function arcColor3(from, to) {
+  return (to-from <= 2) ? '#1f7a8c' : (Math.floor(from/10)%2===0 ? '#d4620c' : '#f7a83a');
+}
+
+// Graduation du rapporteur dans son repère local (non tourné)
+function buildTicks_1_10_local() {
+  const cx=0, cy=0; // centre dans le repère local
+  let d1='', d5='', d10='';
+  for (let deg=0; deg<=180; deg++) {
+    const r=deg*Math.PI/180;
+    const cos_r=Math.cos(-r), sin_r=Math.sin(-r);
+    if (deg%10===0) {
+      const inner=R-22;
+      d10+=`M ${(cx+cos_r*inner).toFixed(2)} ${(cy+sin_r*inner).toFixed(2)} L ${(cx+cos_r*R).toFixed(2)} ${(cy+sin_r*R).toFixed(2)} `;
+    } else if (deg%5===0) {
+      const inner=R-14;
+      d5+=`M ${(cx+cos_r*inner).toFixed(2)} ${(cy+sin_r*inner).toFixed(2)} L ${(cx+cos_r*R).toFixed(2)} ${(cy+sin_r*R).toFixed(2)} `;
+    } else {
+      const inner=R-8;
+      d1+=`M ${(cx+cos_r*inner).toFixed(2)} ${(cy+sin_r*inner).toFixed(2)} L ${(cx+cos_r*R).toFixed(2)} ${(cy+sin_r*R).toFixed(2)} `;
+    }
+  }
+  return {d1,d5,d10};
+}
+
+function arcLocal(deg1, deg2, radius) {
+  // Arcs du rapporteur en repère local (centré en 0,0).
+  // Les graduations croissent de 0° à 180° en sens CCW (trigo).
+  // deg2 > deg1 toujours ici → sweep=0 (arc CCW SVG = montant en maths).
+  const r1=deg1*Math.PI/180, r2=deg2*Math.PI/180;
+  const x1=Math.cos(-r1)*radius, y1=Math.sin(-r1)*radius;
+  const x2=Math.cos(-r2)*radius, y2=Math.sin(-r2)*radius;
+  const diff=deg2-deg1;
+  const sweep=diff<0?1:0;
+  const large=Math.abs(diff)>180?1:0;
+  return `M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${radius} ${radius} 0 ${large} ${sweep} ${x2.toFixed(2)} ${y2.toFixed(2)}`;
+}
+
+function buildSVG_P3() {
+  // Le rapporteur est dessiné autour de l'origine (0,0) en repère local,
+  // puis translateé et tournée via transform sur le groupe.
+  // Rotation CSS : rotate(${-RAPP_ROT3}deg) en coordonnées SVG (Y vers le bas → sens horaire = -trigo)
+  // → rotate(${-35}deg) sur le groupe fait tourner la graduation 0° vers la direction 35° trigo. ✓
+
+  const rArc_l = `M ${-R} 0 A ${R} ${R} 0 0 1 ${R} 0`;
+  const {d1,d5,d10} = buildTicks_1_10_local();
+  let arcPaths = '';
+  for (let i=0; i<STEPS_3.length-1; i++) {
+    const col=arcColor3(STEPS_3[i],STEPS_3[i+1]);
+    arcPaths+=`<path id="p3arc-${i}" d="${arcLocal(STEPS_3[i],STEPS_3[i+1],R-9)}" fill="none" stroke="${col}" stroke-width="8" stroke-linecap="butt" opacity="0"/>`;
+  }
+
+  // Côtés de l'angle (dans le repère absolu, depuis P3)
+  const side1 = pt(C1_DEG3, SIDE3, P3.x, P3.y);
+  const side2 = pt(C2_DEG3, SIDE3, P3.x, P3.y);
+  // arc de l'angle : de C1 vers C2, le petit arc de 68° (sens CW, diff négatif = 105→173 non, 173-105=68 CCW)
+  // De 105° à 173° en sens trigo CCW = diff=68>0, sweep=0 → petit arc CCW de 68° ✓
+  const angArc = arc(C1_DEG3, C2_DEG3, 44, P3.x, P3.y);
+
+  // bras initial dans le repère local : direction grad 35° (= STEPS_3[0])
+  const bras0_l = { x: Math.cos(-35*Math.PI/180)*ARM3, y: Math.sin(-35*Math.PI/180)*ARM3 };
+
+  // Label final : dans le repère local à la graduation 103° (= STEPS_3 last)
+  const finPt_l = { x: Math.cos(-103*Math.PI/180)*54, y: Math.sin(-103*Math.PI/180)*54 };
+
+  // Compteur initial : dans le repère local, direction grad 35°, dist 58
+  const box0_l = { x: Math.cos(-35*Math.PI/180)*58, y: Math.sin(-35*Math.PI/180)*58 };
+
+  return `<svg width="590" height="390" viewBox="0 0 590 390" style="max-width:100%">
+  <!-- Côtés de l'angle (repère absolu) -->
+  <line x1="${P3.x}" y1="${P3.y}" x2="${side1.x.toFixed(1)}" y2="${side1.y.toFixed(1)}" stroke="#d23333" stroke-width="3" stroke-linecap="round"/>
+  <line x1="${P3.x}" y1="${P3.y}" x2="${side2.x.toFixed(1)}" y2="${side2.y.toFixed(1)}" stroke="#d23333" stroke-width="3" stroke-linecap="round"/>
+  <path d="${angArc}" fill="none" stroke="#d23333" stroke-width="2" opacity="0.5"/>
+  <!-- Wrapper slide-in : translate vers P3, animé en Y -->
+  <g id="p3rapp" opacity="0" transform="translate(${P3.x},${P3.y})">
+    <!-- Rotation du rapporteur autour de (0,0) local = sommet de l'angle -->
+    <g transform="rotate(${-RAPP_ROT3})">
+      <path d="${rArc_l} L ${-R} 0 Z" fill="rgba(219,234,254,0.22)" stroke="none"/>
+      <line x1="${-R}" y1="0" x2="${R}" y2="0" stroke="#4b5563" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="${rArc_l}" fill="none" stroke="#4b5563" stroke-width="2.5"/>
+      <path d="${d1}" fill="none" stroke="#bbbbbb" stroke-width="0.8" stroke-linecap="round"/>
+      <path d="${d5}" fill="none" stroke="#888888" stroke-width="1.2" stroke-linecap="round"/>
+      <path d="${d10}" fill="none" stroke="#444444" stroke-width="1.8" stroke-linecap="round"/>
+      ${arcPaths}
+      <line id="p3bras" x1="0" y1="0" x2="${bras0_l.x.toFixed(2)}" y2="${bras0_l.y.toFixed(2)}" stroke="#888" stroke-width="3" stroke-linecap="round" opacity="0"/>
+      <circle cx="0" cy="0" r="4" fill="#222"/>
+      <!-- Compteur mobile (dans le repère local du rapporteur) -->
+      <rect id="p3box" x="${(box0_l.x-28).toFixed(1)}" y="${(box0_l.y-16).toFixed(1)}" width="56" height="28" rx="5" fill="#fffbe8" fill-opacity="0.95" stroke="#b34700" stroke-width="2" opacity="0"/>
+      <text id="p3val" x="${box0_l.x.toFixed(1)}" y="${(box0_l.y+5).toFixed(1)}" text-anchor="middle" font-family="'Nunito',sans-serif" font-size="17" font-weight="700" fill="#b34700" stroke="#fff" stroke-width="3" paint-order="stroke" opacity="0">0°</text>
+      <!-- Label final 68° (dans le repère local, au bout de la graduation 103°) -->
+      <rect id="p3finbox" x="${(finPt_l.x-28).toFixed(1)}" y="${(finPt_l.y-14).toFixed(1)}" width="54" height="26" rx="5" fill="#fffbe8" fill-opacity="0.95" stroke="#b34700" stroke-width="2" opacity="0"/>
+      <text id="p3fin" x="${(finPt_l.x).toFixed(1)}" y="${(finPt_l.y+5).toFixed(1)}" text-anchor="middle" font-family="'Nunito',sans-serif" font-size="16" font-weight="700" fill="#b34700" stroke="#fff" stroke-width="3" paint-order="stroke" opacity="0">68°</text>
+    </g>
+  </g>
+</svg>`;
+}
+
+function resetP3() {
+  const rg=document.getElementById('p3rapp');
+  if(!rg)return;
+  // Uniquement attribut SVG — pas de CSS transform
+  rg.style.cssText='';
+  rg.setAttribute('transform',`translate(${P3.x},${P3.y})`);
+  rg.setAttribute('opacity','0');
+  for(let i=0;i<STEPS_3.length-1;i++){const a=document.getElementById(`p3arc-${i}`);if(a)a.setAttribute('opacity','0');}
+  const bras=document.getElementById('p3bras');
+  if(bras){
+    const bx=Math.cos(-35*Math.PI/180)*ARM3, by=Math.sin(-35*Math.PI/180)*ARM3;
+    bras.setAttribute('x2',bx.toFixed(2));bras.setAttribute('y2',by.toFixed(2));bras.setAttribute('opacity','0');
+  }
+  ['p3box','p3val','p3finbox','p3fin'].forEach(id=>{const e=document.getElementById(id);if(e)e.setAttribute('opacity','0');});
+  const res=document.getElementById('p3result');if(res)res.classList.remove('visible');
+}
+
+function lancerMesure3() {
+  if(animating)return;
+  animating=true;
+  const myGen=animGen; // capture la génération courante
+  const btn=document.getElementById('btn-mesurer3');
+  if(btn)btn.disabled=true;
+  resetP3();
+
+  function live(){ return animGen===myGen; } // retourne false si render() a été appelé
+
+  const rg=document.getElementById('p3rapp'),bras=document.getElementById('p3bras'),
+    box=document.getElementById('p3box'),val=document.getElementById('p3val'),
+    fb=document.getElementById('p3finbox'),fin=document.getElementById('p3fin'),
+    res=document.getElementById('p3result');
+
+  let t0=null;
+  rg.setAttribute('transform',`translate(${P3.x},${P3.y+120})`);
+  rg.setAttribute('opacity','0');
+
+  function slideIn(ts){
+    if(!live())return;
+    if(!t0)t0=ts; const p=Math.min((ts-t0)/600,1);
+    const e=p<.5?2*p*p:-1+(4-2*p)*p;
+    const oy=120*(1-e);
+    rg.setAttribute('transform',`translate(${P3.x},${P3.y+oy})`);
+    rg.setAttribute('opacity',e.toFixed(3));
+    if(p<1){requestAnimationFrame(slideIn);return;}
+    rg.setAttribute('transform',`translate(${P3.x},${P3.y})`);
+    rg.setAttribute('opacity','1');
+    setTimeout(go3,300);
+  }
+  requestAnimationFrame(slideIn);
+
+  function go3(){
+    if(!live())return;
+    bras.setAttribute('opacity','1'); box.setAttribute('opacity','1'); val.setAttribute('opacity','1');
+    val.textContent='0°';
+    step3(0);
+  }
+
+  function delay3(idx){
+    if(idx>=STEPS_3.length-1)return 0;
+    return STEPS_3[idx+1]-STEPS_3[idx]===1 ? 300 : 550;
+  }
+
+  function step3(idx){
+    if(!live())return;
+    if(idx===0){setTimeout(()=>step3(1),delay3(0));return;}
+    document.getElementById(`p3arc-${idx-1}`).setAttribute('opacity','1');
+    const deg=STEPS_3[idx];
+    const bx=Math.cos(-deg*Math.PI/180)*ARM3, by=Math.sin(-deg*Math.PI/180)*ARM3;
+    bras.setAttribute('x2',bx.toFixed(2)); bras.setAttribute('y2',by.toFixed(2));
+    val.textContent=(deg-35)+'°';
+    const cx=Math.cos(-deg*Math.PI/180)*58, cy=Math.sin(-deg*Math.PI/180)*58;
+    box.setAttribute('x',(cx-28).toFixed(1)); box.setAttribute('y',(cy-16).toFixed(1));
+    val.setAttribute('x',cx.toFixed(1)); val.setAttribute('y',(cy+5).toFixed(1));
+    if(idx<STEPS_3.length-1){setTimeout(()=>step3(idx+1),delay3(idx));return;}
+    setTimeout(()=>{
+      if(!live())return;
+      box.setAttribute('opacity','0'); val.setAttribute('opacity','0');
+      fb.setAttribute('opacity','1'); fin.setAttribute('opacity','1');
+      if(res)res.classList.add('visible');
+      animating=false; if(btn)btn.disabled=false;
+    },500);
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// PAGES
+// ═══════════════════════════════════════════════════════════════
+const STEPS_PAGE = [
+
+// PAGE 1 — Intro / Pourquoi
+() => `
+  <div class="step-title pop">💡 Mesurer un angle avec le rapporteur</div>
+  <div class="pourquoi fade-in">
+    <span class="pq-lead">🤔 Pourquoi ?</span>
+    Le rapporteur permet de donner une mesure précise de l'angle.
+  </div>
+  <p class="fade-in" style="font-size:.95rem;line-height:1.7;color:#334155;max-width:620px;width:100%;">
+    Le rapporteur mesure l'écartement entre deux lignes : il permet de mesurer des angles.
+  </p>
+`,
+
+// PAGE 2 — graduations de 10 en 10 — angle 70°
+() => `
+  <div class="step-title pop">✏️ Exemple : on compte de 10 en 10</div>
+  <p class="fade-in" style="font-size:.9rem;color:#334155;max-width:620px;width:100%;">
+    On place le centre du rapporteur sur le sommet de l'angle, puis on place un côté de l'angle sur une grande graduation.<br>
+    Entre deux grandes graduations, il y a un écart de <b>10°</b>.
+  </p>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;">
+    ${buildSVG_P2()}
+    <button id="btn-mesurer2" class="btn-mesurer fade-in" onclick="lancerMesure2()">Mesurer</button>
+    <div id="p2result" class="result-label">L'angle mesure 70°.</div>
+  </div>
+`,
+
+// PAGE 3 — graduations de 1 en 1 et de 10 en 10 — angle 68° incliné
+() => `
+  <div class="step-title pop">✏️ Exemple : on compte les graduations</div>
+  <p class="fade-in" style="font-size:.9rem;color:#334155;max-width:620px;width:100%;">
+    On place le centre du rapporteur au sommet de l'angle puis on compte les graduations.<br>
+    Entre deux petites graduations, il y a un écart d'angle de <b>1°</b>.
+  </p>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;">
+    ${buildSVG_P3()}
+    <button id="btn-mesurer3" class="btn-mesurer fade-in" onclick="lancerMesure3()">Mesurer</button>
+    <div id="p3result" class="result-label">L'angle mesure 68°.</div>
+  </div>
+`,
+
+// PAGE 4 — Bilan
+() => `
+  <div class="step-title pop">📋 Ce qu'il faut retenir</div>
+  <div class="recap-list fade-in">
+    <div class="recap-item" style="border-left-color:var(--primary);">
+      <div class="recap-num" style="background:var(--primary);">1</div>
+      <div>
+        <span style="font-family:'Baloo 2',cursive;font-weight:800;color:var(--primary);">Estimer d'abord</span><br>
+        Avant d'utiliser le rapporteur, on <b>estime</b> la mesure de l'angle pour avoir une idée de ce qu'on attend.
+      </div>
+    </div>
+    <div class="recap-item" style="animation-delay:.07s;border-left-color:var(--teal);">
+      <div class="recap-num" style="background:var(--teal);">2</div>
+      <div>
+        <span style="font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);">Placer le centre</span><br>
+        On place le <b>centre du rapporteur</b> exactement sur le <b>sommet de l'angle</b>.
+      </div>
+    </div>
+    <div class="recap-item" style="animation-delay:.14s;border-left-color:var(--orange);">
+      <div class="recap-num" style="background:var(--orange);">3</div>
+      <div>
+        <span style="font-family:'Baloo 2',cursive;font-weight:800;color:var(--orange);">Compter les graduations</span><br>
+        Pas besoin de regarder les nombres : on <b>compte</b> depuis le côté de l'angle jusqu'à l'autre côté.
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;">
+          <div class="info orange" style="padding:8px 14px;">
+            ● Entre deux <b>grandes</b> graduations : <b>10°</b>
+          </div>
+          <div class="info bleu" style="padding:8px 14px;">
+            ● Entre deux <b>petites</b> graduations : <b>1°</b>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="recap-item" style="animation-delay:.21s;border-left-color:var(--vert);">
+      <div class="recap-num" style="background:var(--vert);">4</div>
+      <div>
+        <span style="font-family:'Baloo 2',cursive;font-weight:800;color:var(--vert);">Vérifier</span><br>
+        On vérifie que la mesure trouvée est <b>proche de notre estimation</b>.
+      </div>
+    </div>
+  </div>
+`,
+
+];
+
+// ═══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════
+function render() {
+  animating = false;
+  animGen++; // invalide toutes les animations en cours
+  const card = document.getElementById('card');
+  card.innerHTML = STEPS_PAGE[cur]();
+
+  document.getElementById('pbar').style.width = `${((cur+1)/N)*100}%`;
+
+  const stepsEl = document.getElementById('steps');
+  stepsEl.innerHTML = '';
+  for (let i = 0; i < N; i++) {
+    const d = document.createElement('div');
+    d.className = 'step-dot' + (i===cur ? ' active' : i<cur ? ' done' : '');
+    d.textContent = i+1;
+    d.onclick = () => { cur=i; render(); };
+    stepsEl.appendChild(d);
+  }
+
+  document.getElementById('btnPrev').style.visibility = cur===0 ? 'hidden' : 'visible';
+  document.getElementById('btnNext').style.display = cur===N-1 ? 'none' : 'inline-block';
+  document.getElementById('pageInfo').textContent = `${cur+1} / ${N}`;
+}
+
+function next() { if(cur<N-1){cur++;render();} }
+function prev() { if(cur>0){cur--;render();} }
+
+render();
+</script>
+</body>
+</html>

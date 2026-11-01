@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>G7 — Caractériser le cercle</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  /* --- dominante du module Géométrie --- */
+  --primary:#16a34a;--primary2:#4ade80;--primary-clair:#dcfce7;
+  --bg:#f0fdf4;--cote:#166534;
+  /* --- palette pédagogique constante (identique aux autres modules) --- */
+  --bleu:#1a73e8;--bleu-clair:#e8f0fe;
+  --orange:#ea580c;--orange-clair:#ffedd5;
+  --vert:#16a34a;--vert-clair:#f0fdf4;
+  --violet:#7c3aed;--violet-clair:#f5f3ff;
+  --gris:#94a3b8;
+  --teal:#0d9488;--teal-clair:#f0fdfa;
+  --card:#fff;--texte:#1e293b;--border:#e2e8f0;
+  /* --- conventions de figures (identiques aux exercices WIMS du module) --- */
+  --fig-bleu:#1d4ed8;--fig-gris:#9ca3af;--fig-label:#4b5563;--fig-cod:#c4c9d1;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+header{display:flex;justify-content:center;margin-bottom:22px;}
+.header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+.badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--primary);background:var(--primary-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--primary);flex-shrink:0;}
+.tache-label{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--primary);line-height:1.3;}
+.progress-bar-wrap{width:100%;max-width:680px;background:var(--primary-clair);border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .5s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+.step-dot{width:34px;height:34px;border-radius:50%;background:var(--primary-clair);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--primary2);transition:all .4s;border:2px solid transparent;cursor:pointer;user-select:none;}
+.step-dot:hover{border-color:var(--primary2);}
+.step-dot.active{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+.card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:360px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(22,101,52,.10);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .45s ease both;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;color:var(--cote);text-align:center;line-height:1.3;}
+.step-text{font-size:.97rem;line-height:1.7;text-align:left;max-width:580px;width:100%;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:580px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 16px;font-weight:600;font-size:.92rem;line-height:1.6;max-width:580px;width:100%;}
+.info.primary{background:var(--primary-clair);border-left:4px solid var(--primary);color:var(--cote);}
+.info.vert{background:var(--vert-clair);border-left:4px solid var(--vert);color:#14532d;}
+.info.bleu{background:var(--bleu-clair);border-left:4px solid var(--bleu);color:#1e3a5f;}
+.info.violet{background:var(--violet-clair);border-left:4px solid var(--violet);color:#4c1d95;}
+.info.orange{background:var(--orange-clair);border-left:4px solid var(--orange);color:#7c2d12;}
+.definition{background:#eef2ff;border-left:4px solid #4f46e5;border-radius:10px;padding:12px 16px;font-size:.92rem;font-weight:600;line-height:1.6;color:#312e81;max-width:580px;width:100%;}
+.def-lead{font-family:'Baloo 2',cursive;font-weight:800;color:#4f46e5;display:block;margin-bottom:4px;}
+.propriete{background:#f0fdfa;border-left:4px solid #0d9488;border-radius:10px;padding:12px 16px;font-size:.92rem;font-weight:600;line-height:1.6;color:#134e4a;max-width:580px;width:100%;}
+.prop-lead{font-family:'Baloo 2',cursive;font-weight:800;color:#0d9488;display:block;margin-bottom:4px;}
+.propriete .ligne{display:block;}
+.etapes{display:flex;flex-direction:column;gap:10px;max-width:580px;width:100%;text-align:left;}
+.etape{display:flex;align-items:flex-start;gap:11px;}
+.etape-num{min-width:24px;height:24px;border-radius:50%;background:var(--primary);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;
+  font-weight:800;font-size:.8rem;flex-shrink:0;margin-top:1px;}
+.etape-txt{flex:1;line-height:1.55;}
+.liste-simple{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;max-width:580px;width:100%;text-align:left;font-size:.97rem;line-height:1.55;}
+.duo{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;max-width:580px;width:100%;}
+.duo figure{margin:0;flex:1 1 150px;max-width:230px;}
+.exemple-bloc{border:1.5px solid #e0e7ff;background:#f8faff;border-radius:16px;padding:14px 16px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;max-width:580px;width:100%;}
+.exemple-bloc figure{margin:0;}
+.duo-blocs{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;max-width:600px;width:100%;}
+.duo-blocs .exemple-bloc{flex:1 1 240px;max-width:270px;}
+.type-label{font-family:'Baloo 2',cursive;font-weight:800;color:var(--primary);font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;align-self:flex-start;}
+.compare-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;max-width:580px;width:100%;}
+.compare-row .info{flex:1 1 240px;max-width:270px;}
+figure{text-align:center;width:100%;}
+svg{max-width:100%;height:auto;overflow:visible;}
+figcaption{font-size:.85rem;color:var(--gris);margin-top:1px;line-height:1.3;}
+.cap-lead{display:block;color:var(--texte);font-size:.85rem;}
+.cle{color:var(--cote);font-weight:700;}
+.prop-oui{color:#14532d;}
+.prop-oui::marker{color:#16a34a;}
+.prop-non{color:#7f1d1d;}
+.prop-non::marker{color:#dc2626;}
+.toujours{font-weight:800;color:#15803d;background:#dcfce7;padding:0 4px;border-radius:5px;white-space:nowrap;}
+.pas-toujours{font-weight:800;color:#b91c1c;background:#fee2e2;padding:0 4px;border-radius:5px;white-space:nowrap;}
+.mot-bleu{color:var(--fig-bleu);font-weight:700;}
+.mot-orange{color:var(--orange);font-weight:700;}
+.mot-defini{color:#4f46e5;font-weight:800;font-size:1.08em;}
+.rep{opacity:0;transition:opacity .3s ease;max-width:580px;width:100%;text-align:center;font-size:.95rem;line-height:1.7;}
+.rep.on{opacity:1;}
+.btn-complete{border:2px solid var(--teal);background:var(--teal-clair);color:var(--teal);font-family:'Baloo 2',cursive;font-size:1rem;font-weight:700;border-radius:10px;padding:10px 22px;cursor:pointer;transition:all .2s;}
+.btn-complete:hover{background:var(--teal);color:#fff;}
+.btn-complete:disabled{opacity:.45;cursor:default;}
+.btn-anim{border:2px solid var(--violet);background:var(--violet-clair);color:var(--violet);font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;transition:all .2s;}
+.btn-anim:hover{background:var(--violet);color:#fff;}
+.recap-list{display:flex;flex-direction:column;gap:12px;width:100%;max-width:580px;}
+.recap-item{display:flex;gap:12px;align-items:flex-start;background:#f8faff;border-radius:12px;padding:11px 16px;border-left:4px solid transparent;text-align:left;font-size:.92rem;line-height:1.55;}
+.bilan-sous{margin-top:6px;gap:3px;font-size:.92rem;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;}
+.nav{display:flex;align-items:center;justify-content:space-between;max-width:680px;width:100%;margin-top:20px;gap:12px;}
+.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;border-radius:12px;padding:11px 22px;cursor:pointer;transition:all .25s;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-prev:disabled{opacity:.35;cursor:default;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;}
+.btn-next:hover{opacity:.9;}
+.step-counter{font-family:'Baloo 2',cursive;font-weight:700;color:var(--primary);font-size:.95rem;white-space:nowrap;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">G7</div>
+    <div class="tache-label">Caractériser le cercle</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext">Suivant →</button>
+</div>
+
+<script>
+/* =========================================================================
+   G7 — Caractériser le cercle. Conventions de figure du module :
+   objet mis en avant #1d4ed8 (BLEU) · contexte #9ca3af (GRIS) ·
+   étiquettes #4b5563 (LAB) · codages = ORANGE.
+   Point = croix (convention G4/G5). Pages "étape par étape" : couleurs
+   froid → chaud (GRAD) comme G4/G5. Échelle des figures : 1 cm = 18 unités
+   (CM), toutes les distances sont calculées, jamais devinées.
+   ========================================================================= */
+const BLEU='#1d4ed8', GRIS='#9ca3af', LAB='#4b5563', OR='#ea580c', VIOLET='#7c3aed';
+
+/* étiquette : contour blanc fin */
+function lab(x,y,txt,col){
+  return '<text x="'+x+'" y="'+y+'" text-anchor="middle" font-family="Nunito,sans-serif"'+
+         ' font-size="15" font-weight="700" fill="'+(col||LAB)+'"'+
+         ' paint-order="stroke" stroke="#fff" stroke-width="1.4">'+txt+'</text>';
+}
+/* étiquette placée à distance "dist" du centre, dans la direction centre→point
+   (pour toujours poser la lettre à l'extérieur de la figure) */
+function labOut(P,center,dist,txt,col){
+  const dx=P[0]-center[0], dy=P[1]-center[1], d=Math.hypot(dx,dy)||1;
+  return lab(P[0]+dx/d*dist, P[1]+dy/d*dist, txt, col);
+}
+/* point sur le segment [p1p2] à la fraction t (0..1 = segment, hors intervalle = prolongement) */
+function onLine(p1,p2,t){
+  return [p1[0]+(p2[0]-p1[0])*t, p1[1]+(p2[1]-p1[1])*t];
+}
+/* point sur un cercle de centre (cx,cy) et de rayon r, à l'angle deg (°) */
+function arcPoint(cx,cy,r,deg){
+  const a=deg*Math.PI/180;
+  return [cx+r*Math.cos(a), cy+r*Math.sin(a)];
+}
+/* intersection des droites (p1p2) et (p3p4) */
+function inter(p1,p2,p3,p4){
+  const [x1,y1]=p1,[x2,y2]=p2,[x3,y3]=p3,[x4,y4]=p4;
+  const d=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
+  const t=((x1-x3)*(y3-y4)-(y1-y3)*(x3-x4))/d;
+  return [x1+t*(x2-x1), y1+t*(y2-y1)];
+}
+/* tourne une liste de points LOCAUX (relatifs à l'origine) de deg°, puis les
+   place autour de (cx,cy) — toutes les figures de cette capsule sont
+   construites ainsi, jamais avec des coordonnées absolues devinées à l'œil */
+function placeRot(cx,cy,deg,pts){
+  const a=deg*Math.PI/180, co=Math.cos(a), si=Math.sin(a);
+  return pts.map(([x,y])=>[cx+x*co-y*si, cy+x*si+y*co]);
+}
+/* contour d'un quadrilatère fermé à partir de 4 sommets */
+function quadPath(pts,col,w){
+  return '<path d="M'+pts[0][0].toFixed(1)+','+pts[0][1].toFixed(1)+
+    ' L'+pts[1][0].toFixed(1)+','+pts[1][1].toFixed(1)+
+    ' L'+pts[2][0].toFixed(1)+','+pts[2][1].toFixed(1)+
+    ' L'+pts[3][0].toFixed(1)+','+pts[3][1].toFixed(1)+
+    ' Z" fill="none" stroke="'+col+'" stroke-width="'+w+'"/>';
+}
+function segPath(P1,P2,col,w){
+  return '<line x1="'+P1[0].toFixed(1)+'" y1="'+P1[1].toFixed(1)+'" x2="'+P2[0].toFixed(1)+'" y2="'+P2[1].toFixed(1)+'" stroke="'+col+'" stroke-width="'+w+'"/>';
+}
+/* petit repère d'angle droit DANS l'angle formé en P par les côtés (P,A) et (P,B) */
+function angleMark(P,A,B,size,col){
+  const ux=A[0]-P[0], uy=A[1]-P[1], dA=Math.hypot(ux,uy);
+  const vx=B[0]-P[0], vy=B[1]-P[1], dB=Math.hypot(vx,vy);
+  const p1=[P[0]+ux/dA*size, P[1]+uy/dA*size];
+  const p3=[P[0]+vx/dB*size, P[1]+vy/dB*size];
+  const p2=[p1[0]+vx/dB*size, p1[1]+vy/dB*size];
+  return '<path d="M'+p1[0].toFixed(1)+','+p1[1].toFixed(1)+' L'+p2[0].toFixed(1)+','+p2[1].toFixed(1)+
+    ' L'+p3[0].toFixed(1)+','+p3[1].toFixed(1)+'" fill="none" stroke="'+col+'" stroke-width="1.6"/>';
+}
+/* codage de mesure : n petits traits parallèles (repris de G3, bug corrigé),
+   angleDeg = inclinaison par rapport à la verticale. Les n traits sont
+   espacés le LONG du segment codé (perpendiculairement à eux-mêmes) :
+   l'ancienne version décalait toujours en x "écran" quel que soit angleDeg,
+   ce qui faisait se chevaucher les traits dès que le segment n'était pas
+   proche de l'horizontale (ex. les codages à 2 traits sur un côté incliné) */
+function codage(cx,cy,angleDeg,n,spacing,halfLen,col,w){
+  const rad=angleDeg*Math.PI/180;
+  const dx=Math.sin(rad)*halfLen, dy=Math.cos(rad)*halfLen;
+  const ox=Math.cos(rad)*spacing, oy=-Math.sin(rad)*spacing;
+  const start=-(n-1)/2;
+  let s='';
+  for(let k=0;k<n;k++){
+    const x=cx+(start+k)*ox, y=cy+(start+k)*oy;
+    s+='<line x1="'+(x-dx).toFixed(1)+'" y1="'+(y-dy).toFixed(1)+'" x2="'+(x+dx).toFixed(1)+'" y2="'+(y+dy).toFixed(1)+'" stroke="'+col+'" stroke-width="'+w+'"/>';
+  }
+  return s;
+}
+/* tic(s) d'égalité de longueur, perpendiculaire(s) au segment [P1P2], à la
+   fraction t (par défaut le milieu) */
+function tickAt(P1,P2,t,n,col){
+  const [x,y]=onLine(P1,P2,t);
+  const phi=Math.atan2(P2[1]-P1[1],P2[0]-P1[0])*180/Math.PI;
+  return codage(x,y,-phi,n,5,7,col,1.8);
+}
+function sideTick(P1,P2,n,col){ return tickAt(P1,P2,0.5,n,col); }
+/* codage de mesure alternatif : petit rond (contour, fond blanc) à la fraction
+   t du segment [P1P2] — sert à distinguer deux couples de longueurs égales
+   sur une même figure sans se limiter aux seuls tirets */
+function roundMark(P1,P2,t,col,n){
+  if(n===undefined) n=1;
+  const [x,y]=onLine(P1,P2,t);
+  const L=Math.hypot(P2[0]-P1[0],P2[1]-P1[1])||1;
+  const ux=(P2[0]-P1[0])/L, uy=(P2[1]-P1[1])/L, gap=8;
+  const start=-(n-1)/2;
+  let s='';
+  for(let k=0;k<n;k++){
+    const cx=x+(start+k)*gap*ux, cy=y+(start+k)*gap*uy;
+    s+='<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="3.4" fill="#fff" stroke="'+col+'" stroke-width="1.8"/>';
+  }
+  return s;
+}
+
+/* ===================== HELPERS PROPRES À G7 =========================== */
+const VERT='#16a34a';
+const CM=18;                       /* échelle des figures : 1 cm = 18 unités */
+const GRAD=['#2563eb','#7c3aed','#c026d3','#e11d48'];   /* étapes : froid → chaud (G4/G5) */
+/* point = croix (convention G4/G5) */
+function croix(x,y,col,w,t){
+  w=w||5; t=t||1.9;
+  return '<path d="M'+(x-w).toFixed(1)+','+(y-w).toFixed(1)+' L'+(x+w).toFixed(1)+','+(y+w).toFixed(1)+
+         ' M'+(x-w).toFixed(1)+','+(y+w).toFixed(1)+' L'+(x+w).toFixed(1)+','+(y-w).toFixed(1)+
+         '" stroke="'+col+'" stroke-width="'+t+'" stroke-linecap="round" fill="none"/>';
+}
+/* liste des consignes révélées une à une (repris de G5) */
+function listeEtapes(consignes, stepIdx){
+  if(stepIdx===0) return '<p class="step-text" style="margin:0;color:var(--gris)">Clique sur « Étape suivante » pour commencer.</p>';
+  return consignes.slice(0,stepIdx).map((txt,idx)=>`
+    <div class="etape${idx===stepIdx-1?' fade-in':''}">
+      <div class="etape-num" style="background:${GRAD[idx]}">${idx+1}</div>
+      <div class="etape-txt">${txt}</div>
+    </div>`).join('');
+}
+function circ(C,r,col,w,extra){
+  return '<circle cx="'+C[0].toFixed(1)+'" cy="'+C[1].toFixed(1)+'" r="'+r.toFixed(1)+'" fill="none" stroke="'+col+
+         '" stroke-width="'+(w||2)+'"'+(extra||'')+'/>';
+}
+function seg(P,Q,col,w,extra){
+  return '<line x1="'+P[0].toFixed(1)+'" y1="'+P[1].toFixed(1)+'" x2="'+Q[0].toFixed(1)+'" y2="'+Q[1].toFixed(1)+
+         '" stroke="'+col+'" stroke-width="'+(w||2)+'"'+(extra||'')+'/>';
+}
+/* longueur écrite au milieu de [PQ], décalée de "off" perpendiculairement */
+function segLab(P,Q,txt,col,off){
+  const [mx,my]=onLine(P,Q,0.5), dx=Q[0]-P[0], dy=Q[1]-P[1], d=Math.hypot(dx,dy)||1;
+  const x=mx-dy/d*off, y=my+dx/d*off;
+  return '<text x="'+x.toFixed(1)+'" y="'+(y+4).toFixed(1)+'" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11.5" font-weight="800" fill="'+col+
+         '" paint-order="stroke" stroke="#fff" stroke-width="3">'+txt+'</text>';
+}
+/* intersections du cercle (C,r) et de la droite (PQ) */
+function interLC(C,r,P,Q){
+  const dx=Q[0]-P[0], dy=Q[1]-P[1], fx=P[0]-C[0], fy=P[1]-C[1];
+  const a=dx*dx+dy*dy, b=2*(fx*dx+fy*dy), c=fx*fx+fy*fy-r*r, disc=b*b-4*a*c;
+  if(disc<0) return [];
+  const s=Math.sqrt(disc);
+  return [(-b-s)/(2*a),(-b+s)/(2*a)].map(t=>[P[0]+t*dx,P[1]+t*dy]);
+}
+/* intersections des cercles (A,rA) et (B,rB) : [au-dessus, en dessous] */
+function interCC(A,rA,B,rB){
+  const dx=B[0]-A[0], dy=B[1]-A[1], d=Math.hypot(dx,dy);
+  const a=(rA*rA-rB*rB+d*d)/(2*d), h=Math.sqrt(Math.max(0,rA*rA-a*a));
+  const mx=A[0]+a*dx/d, my=A[1]+a*dy/d, px=-dy/d, py=dx/d;
+  return [[mx-h*px,my-h*py],[mx+h*px,my+h*py]];
+}
+/* étiquette de point centrée verticalement (lab() pose la ligne de base) */
+const L=(P,dx,dy,txt,col)=>lab((P[0]+dx).toFixed(1),(P[1]+dy+5).toFixed(1),txt,col);
+
+/* animation JS : un "jeton" par lancement ; changer de page ou relancer
+   incrémente le jeton, ce qui arrête proprement l'animation en cours */
+let animToken=0;
+const ROUGE='#dc2626';
+function pause(ms,tok){ return new Promise(res=>setTimeout(()=>res(tok===animToken),ms)); }
+function tween(ms,fn,tok){
+  return new Promise(res=>{
+    const t0=performance.now();
+    function f(now){
+      if(tok!==animToken) return res(false);
+      const u=Math.min(1,(now-t0)/ms); fn(u);
+      if(u<1) requestAnimationFrame(f); else res(true);
+    }
+    requestAnimationFrame(f);
+  });
+}
+
+/* mot écrit lettre par lettre en bleu et orange alternés */
+function melange(mot){
+  return '<strong>'+[...mot].map((c,k)=>'<span style="color:'+(k%2?OR:BLEU)+'">'+c+'</span>').join('')+'</strong>';
+}
+
+/* ========================== LES PAGES ================================== */
+const STEPS=[
+
+/* ---------- 0. pourquoi ---------- */
+{ titre:"💡 Caractériser le cercle",
+  html:()=>`
+  <div class="pourquoi fade-in">
+    <span class="pq-lead">🤔 Pourquoi ?</span>
+    Le cercle n'est pas seulement une jolie forme ronde : c'est un outil très utile pour trouver tous les
+    points qui sont à une distance précise d'un point. C'est grâce à lui qu'on pourra, par exemple, tracer un
+    triangle quand on connaît les longueurs de ses côtés.
+  </div>
+  <p class="step-text fade-in">Dans cette capsule, nous allons voir :</p>
+  <ul class="liste-simple fade-in">
+    <li>ce qu'est vraiment un <span class="cle">cercle</span>,</li>
+    <li>ce qui se passe à l'<span class="cle">intérieur</span> et à l'<span class="cle">extérieur</span> d'un cercle,</li>
+    <li>comment trouver des points à une distance donnée d'un point,</li>
+    <li>comment trouver un point à une distance donnée de <span class="cle">deux points</span> à la fois,</li>
+    <li>et comment colorier des <span class="cle">zones</span> de points.</li>
+  </ul>`
+},
+
+/* ---------- 1. découverte : des points tous à 3 cm de O (animation) ---------- */
+{ titre:"✏️ Des points tous à la même distance",
+  run:true,
+  html:()=>{
+    const O=[90,88];
+    return `
+  <p class="step-text fade-in">Que se passe-t-il si on place beaucoup de points, tous à <strong>3 cm</strong> du point O ?</p>
+  <div class="exemple-bloc fade-in">
+    <figure>
+    <svg id="cercleAnim" viewBox="18 16 144 168" width="240" role="img" aria-label="des points rouges placés un à un à 3 cm du point O, qui finissent par former un cercle">
+      <circle id="cercleRouge" cx="${O[0]}" cy="${O[1]}" r="${3*CM}" fill="none" stroke="${ROUGE}" stroke-width="2"
+        transform="rotate(-30 ${O[0]} ${O[1]})" opacity="0"/>
+      <line id="rayon" x1="${O[0]}" y1="${O[1]}" x2="${O[0]}" y2="${O[1]}" stroke="#cbd5e1" stroke-width="2.2" stroke-linecap="round"/>
+      <text id="lbl3" opacity="0" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11.5" font-weight="800" fill="#64748b"
+        paint-order="stroke" stroke="#fff" stroke-width="3">3 cm</text>
+      <g id="dots"></g>
+      <circle id="bout" r="2.2" fill="${ROUGE}" opacity="0"/>
+      <text id="legende" x="${O[0]}" y="172" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12.5"
+        font-weight="800" fill="${ROUGE}"></text>
+      ${croix(O[0],O[1],LAB)}${L(O,-11,12,'O',LAB)}
+    </svg>
+    </figure>
+  </div>
+  <div id="apresAnim" style="display:none;flex-direction:column;gap:14px;width:100%;align-items:center">
+    <div class="definition fade-in">
+      <span class="def-lead">📘 Définition</span>
+      Le <span class="mot-defini">cercle</span> de centre O et de rayon 3 cm, ce sont <strong>tous les points</strong> qui
+      sont à 3 cm du point O.<br>
+      Plus généralement, un cercle, ce sont tous les points qui sont à la même distance d'un point, appelé le
+      <span class="cle">centre</span>. Cette distance s'appelle le <span class="cle">rayon</span>.
+    </div>
+    <p class="step-text fade-in" style="margin:0">C'est pour cela qu'on trace un cercle avec un compas : la pointe reste sur le
+    centre et l'écartement ne change pas, donc chaque point tracé est à la même distance du centre.</p>
+  </div>`;
+  },
+  /* animation pilotée en JS (durées exactes demandées par Sven) */
+  play: async(btn)=>{
+    const tok=++animToken;
+    const svg=document.getElementById('cercleAnim'); if(!svg) return;
+    const dots=svg.querySelector('#dots'), ray=svg.querySelector('#rayon'), lbl=svg.querySelector('#lbl3');
+    const apres=document.getElementById('apresAnim');
+    const cR=svg.querySelector('#cercleRouge'), bout=svg.querySelector('#bout'), leg=svg.querySelector('#legende');
+    leg.textContent='';
+    dots.innerHTML=''; apres.style.display='none';
+    cR.setAttribute('opacity','0'); bout.setAttribute('opacity','0'); ray.setAttribute('opacity','1');
+    btn.disabled=true; btn.textContent='Animation en cours…';
+    const O=[90,88], r=3*CM, depart=-30;
+    const setEnd=(x,y)=>{ ray.setAttribute('x2',x.toFixed(2)); ray.setAttribute('y2',y.toFixed(2)); };
+    /* [tracé, pause avant le point, pause avant l'effacement, effacement, pause après] en ms */
+    const tempo=k=> k===0 ? [700,500,500,450,500] : k===1 ? [450,300,300,300,0] : k<7 ? [150,200,200,120,0] : [100,100,100,80,0];
+    for(let k=0;k<36;k++){
+      const [tT,p1,p2,tE,p3]=tempo(k);
+      const E=arcPoint(O[0],O[1],r,depart+10*k);
+      setEnd(O[0],O[1]);
+      if(k===0){
+        const [mx,my]=onLine(O,E,0.5), dx=E[0]-O[0], dy=E[1]-O[1], d=Math.hypot(dx,dy);
+        lbl.setAttribute('x',(mx+dy/d*10).toFixed(1)); lbl.setAttribute('y',(my-dx/d*10+4).toFixed(1));
+      }
+      if(!await tween(tT,u=>{ setEnd(O[0]+u*(E[0]-O[0]),O[1]+u*(E[1]-O[1])); if(k===0) lbl.setAttribute('opacity',u); },tok)) return;
+      if(!await pause(p1,tok)) return;
+      dots.insertAdjacentHTML('beforeend','<circle cx="'+E[0].toFixed(2)+'" cy="'+E[1].toFixed(2)+'" r="2.2" fill="'+ROUGE+'"/>');
+      if(!await pause(p2,tok)) return;
+      if(!await tween(tE,u=>{ setEnd(E[0]+u*(O[0]-E[0]),E[1]+u*(O[1]-E[1])); if(k===0) lbl.setAttribute('opacity',1-u); },tok)) return;
+      if(p3 && !await pause(p3,tok)) return;
+    }
+    setEnd(O[0],O[1]);
+    /* final : un rayon de 3 cm avec un rond rouge au bout fait le tour de O et trace le cercle (2 s) */
+    if(!await pause(1000,tok)) return;
+    const P0=arcPoint(O[0],O[1],r,depart);
+    const setBout=(x,y)=>{ bout.setAttribute('cx',x.toFixed(2)); bout.setAttribute('cy',y.toFixed(2)); setEnd(x,y); };
+    bout.setAttribute('opacity','1');
+    if(!await tween(500,u=>setBout(O[0]+u*(P0[0]-O[0]),O[1]+u*(P0[1]-O[1])),tok)) return;
+    const per=2*Math.PI*r;
+    cR.setAttribute('stroke-dasharray',per.toFixed(2)); cR.setAttribute('stroke-dashoffset',per.toFixed(2)); cR.setAttribute('opacity','1');
+    if(!await tween(2000,u=>{
+      const P=arcPoint(O[0],O[1],r,depart+360*u); setBout(P[0],P[1]);
+      cR.setAttribute('stroke-dashoffset',(per*(1-u)).toFixed(2));
+    },tok)) return;
+    cR.removeAttribute('stroke-dasharray');
+    /* le rayon mobile disparaît, il reste le cercle rouge et les 36 points */
+    if(!await tween(300,u=>{ ray.setAttribute('opacity',1-u); bout.setAttribute('opacity',1-u); },tok)) return;
+    setEnd(O[0],O[1]); ray.setAttribute('opacity','1');
+    /* légende tapée lentement, façon machine à écrire */
+    const phrase='Cercle de centre O, de rayon 3 cm.';
+    for(let c=1;c<=phrase.length;c++){
+      leg.textContent=phrase.slice(0,c);
+      if(!await pause(110,tok)) return;
+    }
+    if(!await pause(400,tok)) return;
+    apres.style.display='flex';
+    btn.disabled=false; btn.textContent="🔁 Revoir l'animation";
+  }
+},
+
+/* ---------- 2. intérieur / sur / extérieur ---------- */
+{ titre:"✏️ À l'intérieur, sur le cercle, à l'extérieur",
+  html:()=>{
+    const O=[92,86], r=3*CM;
+    const M=arcPoint(O[0],O[1],2*CM,160), N=arcPoint(O[0],O[1],r,-40), P=arcPoint(O[0],O[1],4*CM,72);
+    const R=arcPoint(O[0],O[1],r,235);   /* un rayon, dans une direction libre */
+    const BLEU_F='#1e3a8a';              /* N plus foncé que le cercle pour bien ressortir */
+    const svg=`
+    <svg viewBox="6 6 176 170" width="240" role="img" aria-label="un point à l'intérieur du disque, un point sur le cercle, un point à l'extérieur">
+      <circle cx="${O[0]}" cy="${O[1]}" r="${r}" fill="#dbeafe" fill-opacity=".75"/>
+      ${circ(O,r,BLEU,2.2)}
+      ${seg(O,R,GRIS,1.8)}${segLab(O,R,'3 cm',LAB,-9)}
+      ${croix(O[0],O[1],LAB)}${L(O,13,5,'O',LAB)}
+      ${croix(M[0],M[1],VERT)}${labOut(M,O,17,'M',VERT)}
+      ${croix(N[0],N[1],BLEU_F,5,2.2)}${labOut(N,O,14,'N',BLEU_F)}
+      ${croix(P[0],P[1],VIOLET)}${labOut(P,O,16,'P',VIOLET)}
+    </svg>`;
+    return `
+  <div class="definition fade-in">
+    <span class="def-lead">📘 Définition</span>
+    Le <span class="mot-defini">disque</span> de centre O et de rayon 3 cm, c'est la surface délimitée par
+    le cercle de centre O et de rayon 3 cm.
+  </div>
+  <div class="exemple-bloc fade-in">
+    <div class="type-label">Distance par rapport au point O</div>
+    <figure>${svg}</figure>
+    <ul class="liste-simple">
+      <li><strong style="color:${VERT}">M</strong> est à l'<span class="cle">intérieur</span> du disque : il est à
+        <strong>moins de 3 cm</strong> du point O.</li>
+      <li><strong style="color:${BLEU_F}">N</strong> est <span class="cle">sur le cercle</span> : il est
+        <strong>exactement à 3 cm</strong> du point O.</li>
+      <li><strong style="color:${VIOLET}">P</strong> est à l'<span class="cle">extérieur</span> du disque : il est à
+        <strong>plus de 3 cm</strong> du point O.</li>
+    </ul>
+  </div>
+  <p class="step-text fade-in">Les points à l'intérieur du disque sont à moins de 3 cm du centre O.<br>
+  Les points sur le cercle sont exactement à 3 cm du centre O.<br>
+  Les points à l'extérieur du disque sont à plus de 3 cm du centre O.</p>`;
+  }
+},
+
+/* ---------- 3. points d'une droite à 3 cm de A ---------- */
+{ titre:"✏️ Trouver des points sur une droite",
+  stepwise:3,
+  html:(revealed,stepIdx)=>{
+    stepIdx=stepIdx||0;
+    const A=[86,80], r=3*CM;
+    /* droite (d) inclinée de -15°, passant à 1,5 cm du point A */
+    const ang=-15*Math.PI/180, ux=Math.cos(ang), uy=Math.sin(ang), nx=-uy, ny=ux;
+    const H=[A[0]+nx*1.5*CM, A[1]+ny*1.5*CM];
+    const D1=[H[0]-ux*98,H[1]-uy*98], D2=[H[0]+ux*98,H[1]+uy*98];
+    const [M,N]=interLC(A,r,D1,D2);
+    const consignes=[
+      'Tous les points à 3 cm de A sont sur le cercle de centre A et de rayon 3 cm : on trace ce cercle.',
+      "Les points cherchés sont à la fois sur la droite (d) et sur le cercle : ce sont les points d'intersection. On les nomme M et N.",
+      'On peut vérifier : AM = 3 cm et AN = 3 cm.'
+    ];
+    const show=(k,content)=>`<g opacity="${stepIdx>=k?1:0}" class="${stepIdx===k?'fade-in':''}">${content}</g>`;
+    const svg=`
+    <svg viewBox="-16 14 204 140" width="250" role="img" aria-label="les points de la droite (d) à 3 cm du point A, à l'intersection de la droite et du cercle">
+      ${seg(D1,D2,LAB,2)}${lab((D2[0]-6).toFixed(1),(D2[1]-8).toFixed(1),'(d)',LAB)}
+      ${show(1,circ(A,r,GRAD[0],2.2))}
+      ${show(3,seg(A,M,GRAD[2],1.6,' stroke-dasharray="4 3"')+segLab(A,M,'3 cm',GRAD[2],-9)+
+               seg(A,N,GRAD[2],1.6,' stroke-dasharray="4 3"')+segLab(A,N,'3 cm',GRAD[2],9))}
+      ${show(2,croix(M[0],M[1],GRAD[1])+L(M,-8,14,'M',GRAD[1])+croix(N[0],N[1],GRAD[1])+L(N,8,14,'N',GRAD[1]))}
+      ${croix(A[0],A[1],LAB)}${L(A,0,-14,'A',LAB)}
+    </svg>`;
+    /* mini-figure : droite qui passe trop loin */
+    const A2=[60,50], r2=1.6*CM;
+    const mini=`
+    <svg viewBox="0 8 150 100" width="170" role="img" aria-label="une droite qui ne coupe pas le cercle">
+      ${circ(A2,r2,GRAD[0],1.8)}
+      ${seg([4,104],[146,82],LAB,1.8)}
+      ${croix(A2[0],A2[1],LAB,4,1.6)}${L(A2,0,-13,'A',LAB)}
+    </svg>`;
+    return `
+  <p class="step-text fade-in">On cherche les points de la droite (d) qui sont à <strong>3 cm</strong> du point A.</p>
+  <div class="exemple-bloc fade-in">
+    <div class="etapes">${listeEtapes(consignes,stepIdx)}</div>
+    <figure>${svg}</figure>
+  </div>
+  ${stepIdx>=3?`
+  <div class="exemple-bloc fade-in">
+    <div class="type-label">Et si la droite passe trop loin ?</div>
+    <figure>${mini}</figure>
+    <p class="step-text" style="margin:0">La droite ne coupe pas le cercle : aucun point de la droite n'est à
+    3 cm du point A.</p>
+  </div>`:''}`;
+  }
+},
+
+/* ---------- 4. à une distance de deux points (ouverture G9) ---------- */
+{ titre:"✏️ À une distance de deux points",
+  stepwise:3,
+  html:(revealed,stepIdx)=>{
+    stepIdx=stepIdx||0;
+    const A=[40,96], B=[40+6*CM,96], rA=4*CM, rB=3*CM;
+    const [C,D]=interCC(A,rA,B,rB);
+    const consignes=[
+      '<strong>À 4 cm du point A :</strong> ce sont les points sur le cercle de centre A et de rayon 4 cm.',
+      '<strong>À 3 cm du point B :</strong> ce sont les points sur le cercle de centre B et de rayon 3 cm.',
+      "<strong>Les deux à la fois :</strong> ce sont les points à l'intersection des deux cercles."
+    ];
+    const show=(k,content)=>`<g opacity="${stepIdx>=k?1:0}" class="${stepIdx===k?'fade-in':''}">${content}</g>`;
+    const svg=`
+    <svg viewBox="-38 16 252 162" width="290" role="img" aria-label="les deux points à 4 cm de A et à 3 cm de B, à l'intersection de deux cercles">
+      ${seg(A,B,GRIS,1.6)}${segLab(A,onLine(A,B,0.6),'6 cm',LAB,10)}
+      ${show(1,circ(A,rA,GRAD[0],2))}
+      ${show(2,circ(B,rB,GRAD[1],2))}
+      ${show(3,croix(C[0],C[1],GRAD[2])+L(C,0,-14,'C',GRAD[2])+croix(D[0],D[1],GRAD[2])+L(D,0,14,'D',GRAD[2]))}
+      ${croix(A[0],A[1],LAB)}${L(A,-13,-2,'A',LAB)}
+      ${croix(B[0],B[1],LAB)}${L(B,13,-2,'B',LAB)}
+    </svg>`;
+    return `
+  <p class="step-text fade-in">Les points A et B sont à 6 cm l'un de l'autre. On cherche un point qui est à la fois
+  à <strong>4 cm du point A</strong> et à <strong>3 cm du point B</strong>.</p>
+  <div class="exemple-bloc fade-in">
+    <div class="etapes">${listeEtapes(consignes,stepIdx)}</div>
+    <figure>${svg}</figure>
+  </div>
+  ${stepIdx>=3?`<p class="fade-in" style="text-align:center;color:var(--gris);font-size:.85rem;margin:0">C'est cette
+  méthode qu'on utilisera dans la leçon G9 pour tracer un triangle dont on connaît les longueurs des trois côtés.<br>
+  Attention : si les deux cercles ne se coupent pas, aucun point ne convient.</p>`:''}`;
+  }
+},
+
+/* ---------- 5. zones de points ---------- */
+{ titre:"✏️ Des zones de points",
+  html:()=>{
+    /* bloc 1 : entre 2 cm et 3 cm de A (anneau) */
+    const A=[80,78], r1=2*CM, r2=3*CM;
+    const ring='<path fill-rule="evenodd" fill="#dbeafe" d="M'+(A[0]-r2)+','+A[1]+' a'+r2+','+r2+' 0 1,0 '+(2*r2)+',0 a'+r2+','+r2+' 0 1,0 '+(-2*r2)+',0 Z'+
+               ' M'+(A[0]-r1)+','+A[1]+' a'+r1+','+r1+' 0 1,0 '+(2*r1)+',0 a'+r1+','+r1+' 0 1,0 '+(-2*r1)+',0 Z"/>';
+    const R1=arcPoint(A[0],A[1],r1,200), R2=arcPoint(A[0],A[1],r2,-30);
+    const fig1=`
+    <svg viewBox="12 10 136 136" width="190" role="img" aria-label="la zone des points entre 2 cm et 3 cm du point A">
+      ${ring}
+      ${circ(A,r1,BLEU,1.8)}${circ(A,r2,BLEU,1.8)}
+      ${seg(A,R1,LAB,1.3,' stroke-dasharray="3 3"')}${segLab(A,R1,'2 cm',LAB,-8)}
+      ${seg(A,R2,LAB,1.3,' stroke-dasharray="3 3"')}${segLab(A,R2,'3 cm',LAB,-8)}
+      ${croix(A[0],A[1],LAB,4.5)}${L(A,10,10,'A',LAB)}
+    </svg>`;
+    /* bloc 2 : à moins de 4 cm de A ET à moins de 3 cm de B — disques coloriés,
+       zone commune en rayures bleu/orange à parts égales (comme G6 page 6) */
+    const P=[80,84], Q=[80+4*CM,84], rP=4*CM, rQ=3*CM;
+    const RP=arcPoint(P[0],P[1],rP,215), RQ=arcPoint(Q[0],Q[1],rQ,-40);
+    const FB='#bfdbfe', FO='#fed7aa';
+    const fig2=`
+    <svg viewBox="2 6 210 158" width="220" style="max-width:100%;height:auto" role="img" aria-label="la zone des points à moins de 4 cm de A et à moins de 3 cm de B">
+      <defs>
+        <clipPath id="clipA"><circle cx="${P[0]}" cy="${P[1]}" r="${rP}"/></clipPath>
+        <pattern id="rayAB" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="6" height="12" fill="${FB}"/><rect x="6" width="6" height="12" fill="${FO}"/></pattern>
+      </defs>
+      <circle cx="${P[0]}" cy="${P[1]}" r="${rP}" fill="${FB}"/>
+      <circle cx="${Q[0]}" cy="${Q[1]}" r="${rQ}" fill="${FO}"/>
+      <circle cx="${Q[0]}" cy="${Q[1]}" r="${rQ}" fill="url(#rayAB)" clip-path="url(#clipA)"/>
+      ${circ(P,rP,BLEU,1.8)}${circ(Q,rQ,OR,1.8)}
+      ${seg(P,RP,GRIS,1.6)}${segLab(P,RP,'4 cm',LAB,-9)}
+      ${seg(Q,RQ,GRIS,1.6)}${segLab(Q,RQ,'3 cm',LAB,-9)}
+      ${croix(P[0],P[1],LAB,4.5)}${L(P,0,14,'A',LAB)}
+      ${croix(Q[0],Q[1],LAB,4.5)}${L(Q,0,14,'B',LAB)}
+    </svg>`;
+    return `
+  <p class="step-text fade-in">Avec les cercles et les disques, on peut aussi colorier des <span class="cle">zones</span>
+  de points.</p>
+  <div class="duo-blocs fade-in">
+    <div class="exemple-bloc">
+      <div class="type-label">Entre deux distances</div>
+      <figure>${fig1}</figure>
+      <ul class="liste-simple">
+        <li>Les points dans la zone bleue sont à <strong>plus de 2 cm</strong> et à <strong>moins de 3 cm</strong> du point A.</li>
+        <li>Ils sont à l'extérieur du petit disque, mais à l'intérieur du grand.</li>
+      </ul>
+    </div>
+    <div class="exemple-bloc">
+      <div class="type-label">Près de deux points</div>
+      <figure>${fig2}</figure>
+      <ul class="liste-simple">
+        <li><span style="color:${BLEU};font-weight:800">En bleu</span> : les points à moins de 4 cm de A.</li>
+        <li><span style="color:${OR};font-weight:800">En orange</span> : les points à moins de 3 cm de B.</li>
+        <li>Dans la zone où les deux couleurs sont ${melange('mélangées')}, les points sont à moins de 4 cm de A
+          <strong>et</strong> à moins de 3 cm de B.</li>
+      </ul>
+    </div>
+  </div>`;
+  }
+},
+
+/* ---------- 6. bilan ---------- */
+{ titre:"🏆 Ce qu'il faut retenir",
+  html:()=>`
+  <div class="recap-list">
+    ${[
+      ['var(--primary)','Le <span class="cle">cercle</span> de centre O et de rayon 3 cm, ce sont tous les points qui sont à 3 cm du point O. Le compas permet de le tracer, car son écartement ne change pas.'],
+      ['var(--bleu)','Pour le cercle de centre O et de rayon 3 cm :'+
+        '<ul class="liste-simple bilan-sous"><li>un point à <span class="cle">moins de 3 cm</span> de O est à l\'intérieur du disque,</li>'+
+        '<li>un point à <span class="cle">exactement 3 cm</span> de O est sur le cercle,</li>'+
+        '<li>un point à <span class="cle">plus de 3 cm</span> de O est à l\'extérieur du disque.</li></ul>'],
+      ['var(--violet)','Pour trouver les points qui sont à une distance donnée d\'un point, on trace un <span class="cle">cercle</span>.'],
+      ['var(--orange)','Pour trouver un point qui est à la fois à une distance donnée de deux points, on cherche l\'<span class="cle">intersection de deux cercles</span> : c\'est comme cela qu\'on pourra tracer un triangle quand on connaît la longueur de ses côtés.'],
+    ].map(([c,t],idx)=>`
+    <div class="recap-item fade-in" style="animation-delay:${idx*.08}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${idx+1}</div>
+      <div>${t}</div>
+    </div>`).join('')}
+  </div>`
+}
+];
+
+/* ========================== MOTEUR ===================================== */
+let i=0, revealed=false, stepIdx=0; const N=STEPS.length;
+const card=document.getElementById('card'),
+      progressBar=document.getElementById('progressBar'),
+      stepsIndicator=document.getElementById('stepsIndicator'),
+      btnPrev=document.getElementById('btnPrev'),
+      btnNext=document.getElementById('btnNext'),
+      counter=document.getElementById('counter');
+
+function goTo(k){ animToken++; i=k; revealed=false; stepIdx=0; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+function render(){
+  const s=STEPS[i];
+  card.innerHTML =
+    '<div class="step-title pop">'+s.titre+'</div>'+
+    s.html(revealed,stepIdx)+
+    (s.comp  ? '<button class="btn-complete fade-in" id="btnc"'+(revealed?' disabled':'')+'>✏️ Compléter</button>' : '')+
+    (s.trace ? '<button class="btn-anim fade-in" id="btnt">▶ Tracer</button>' : '')+
+    (s.stepwise ? '<button class="btn-anim fade-in" id="btns">'+(stepIdx>=s.stepwise?'🔁 Revoir depuis le début':'▶ Étape suivante')+'</button>' : '')+
+    (s.run ? '<button class="btn-anim fade-in" id="btnr">▶ Lancer l\'animation</button>' : '');
+  const b=document.getElementById('btnc');
+  if(b) b.addEventListener('click',()=>{revealed=true;render();});
+  const t=document.getElementById('btnt');
+  if(t) t.addEventListener('click',()=>{
+    card.querySelectorAll('.master').forEach(a=>{ if(a.beginElement) a.beginElement(); });
+  });
+  const br=document.getElementById('btnr');
+  if(br) br.addEventListener('click',()=>s.play(br));
+  const bs=document.getElementById('btns');
+  if(bs) bs.addEventListener('click',()=>{
+    stepIdx = stepIdx>=s.stepwise ? 0 : stepIdx+1;
+    render();
+  });
+
+  progressBar.style.width=(i/(N-1)*100)+'%';
+  stepsIndicator.innerHTML='';
+  for(let k=0;k<N;k++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(k===i?' active':k<i?' done':'');
+    d.textContent=k<i?'✓':k+1;
+    d.addEventListener('click',()=>goTo(k));
+    stepsIndicator.appendChild(d);
+  }
+  counter.textContent=`Page ${i+1} / ${N}`;
+  btnPrev.disabled = (i===0);
+  btnNext.textContent = i===N-1 ? '🔁 Recommencer' : 'Suivant →';
+}
+btnPrev.addEventListener('click',()=>{ if(i>0) goTo(i-1); });
+btnNext.addEventListener('click',()=>{ goTo(i===N-1?0:i+1); });
+render();
+</script>
+</body>
+</html>
