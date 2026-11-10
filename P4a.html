@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>P4a — Résoudre un problème additif en une étape</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  /* --- dominante du module Problèmes (orange) --- */
+  --primary:#ea580c;--primary2:#fb923c;--primary-clair:#ffedd5;
+  --bg:#fff7ed;--cote:#9a3412;
+  /* --- palette pédagogique constante (identique aux autres modules) --- */
+  --bleu:#1a73e8;--bleu-clair:#e8f0fe;
+  --orange:#ea580c;--orange-clair:#ffedd5;
+  --vert:#16a34a;--vert-clair:#f0fdf4;
+  --violet:#7c3aed;--violet-clair:#f5f3ff;
+  --gris:#94a3b8;
+  --teal:#0d9488;--teal-clair:#f0fdfa;
+  --card:#fff;--texte:#1e293b;--border:#e2e8f0;
+  --fig-bleu:#1d4ed8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+header{display:flex;justify-content:center;margin-bottom:22px;}
+.header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+.badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;padding:0 6px;border-radius:12px;border:2.5px solid var(--primary);background:var(--primary-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--primary);flex-shrink:0;}
+.tache-label{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--primary);line-height:1.3;}
+.progress-bar-wrap{width:100%;max-width:680px;background:var(--primary-clair);border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .5s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+.step-dot{width:34px;height:34px;border-radius:50%;background:var(--primary-clair);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--primary2);transition:all .4s;border:2px solid transparent;cursor:pointer;user-select:none;}
+.step-dot:hover{border-color:var(--primary2);}
+.step-dot.active{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+.card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:360px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(154,52,18,.10);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes fadeOp{from{opacity:0}to{opacity:1}}
+.fade-op{animation:fadeOp .6s ease both;}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .45s ease both;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;color:var(--cote);text-align:center;line-height:1.3;}
+.step-text{font-size:.97rem;line-height:1.7;text-align:left;max-width:580px;width:100%;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:580px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 16px;font-weight:600;font-size:.92rem;line-height:1.6;max-width:580px;width:100%;text-align:left;}
+.info.vert{background:var(--vert-clair);border-left:4px solid var(--vert);color:#14532d;}
+.info.bleu{background:var(--bleu-clair);border-left:4px solid var(--bleu);color:#1e3a5f;}
+.info.violet{background:var(--violet-clair);border-left:4px solid var(--violet);color:#4c1d95;}
+.info.orange{background:var(--orange-clair);border-left:4px solid var(--orange);color:#7c2d12;}
+.liste-simple{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;max-width:580px;width:100%;text-align:left;font-size:.97rem;line-height:1.55;}
+.exemple-bloc{border:1.5px solid #e0e7ff;background:#f8faff;border-radius:16px;padding:14px 16px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;max-width:580px;width:100%;}
+.exemple-bloc figure{margin:0;}
+.bilan-schemas{display:flex;flex-direction:column;gap:10px;width:100%;max-width:580px;align-items:center;}
+.duo-blocs{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;max-width:600px;width:100%;}
+.duo-blocs .exemple-bloc{flex:1 1 240px;max-width:270px;}
+figure{text-align:center;width:100%;}
+svg{max-width:100%;height:auto;overflow:visible;}
+figcaption{font-size:.85rem;color:var(--gris);margin-top:1px;line-height:1.3;}
+.cle{color:var(--cote);font-weight:700;}
+.btn-anim{border:2px solid var(--violet);background:var(--violet-clair);color:var(--violet);font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;transition:all .2s;}
+.btn-anim:hover{background:var(--violet);color:#fff;}
+.recap-list{display:flex;flex-direction:column;gap:12px;width:100%;max-width:580px;}
+.recap-item{display:flex;gap:12px;align-items:flex-start;background:#f8faff;border-radius:12px;padding:11px 16px;border-left:4px solid transparent;text-align:left;font-size:.92rem;line-height:1.55;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;}
+.nav{display:flex;align-items:center;justify-content:space-between;max-width:680px;width:100%;margin-top:20px;gap:12px;}
+.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;border-radius:12px;padding:11px 22px;cursor:pointer;transition:all .25s;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-prev:disabled{opacity:.35;cursor:default;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;}
+.btn-next:hover{opacity:.9;}
+.step-counter{font-family:'Baloo 2',cursive;font-weight:700;color:var(--primary);font-size:.95rem;white-space:nowrap;}
+
+/* ---- propre aux capsules Problèmes : cas, énoncé, calcul ---- */
+.cas-bloc{display:flex;flex-direction:column;gap:6px;align-items:center;max-width:580px;width:100%;}
+.cas-groupe{font-family:'Baloo 2',cursive;font-weight:800;font-size:.82rem;color:var(--cote);margin-top:2px;}
+.cas-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+.cas-pill{font-family:'Baloo 2',cursive;font-weight:700;font-size:.85rem;border:2px solid var(--primary);background:#fff;color:var(--primary);border-radius:99px;padding:4px 12px;cursor:pointer;transition:all .2s;}
+.cas-pill:hover{background:var(--primary-clair);}
+.cas-pill.on{background:var(--primary);color:#fff;}
+.enonce{background:#fff;border:1.5px solid #fed7aa;border-left:4px solid var(--primary);border-radius:10px;padding:10px 14px;font-weight:600;font-size:.97rem;line-height:1.55;max-width:580px;width:100%;text-align:left;}
+.n{color:var(--fig-bleu);font-weight:800;}
+.ans{color:var(--violet);font-weight:800;}
+.quest{color:var(--violet);font-weight:800;}
+.fig-zone{width:100%;display:flex;align-items:center;justify-content:center;}
+.fig-vide{color:var(--gris);font-size:.9rem;text-align:center;}
+.zone-txt{display:flex;flex-direction:column;gap:10px;align-items:center;width:100%;min-height:110px;}
+.btn-alt{border:2px solid var(--teal);background:var(--teal-clair);color:var(--teal);font-family:'Baloo 2',cursive;font-size:.88rem;font-weight:700;border-radius:10px;padding:6px 16px;cursor:pointer;transition:all .2s;}
+.btn-alt:hover{background:var(--teal);color:#fff;}
+.calcul{font-family:'Baloo 2',cursive;font-size:1.35rem;font-weight:800;color:#475569;text-align:center;display:flex;flex-wrap:wrap;justify-content:center;gap:0 .4em;}
+.calcul .t{white-space:nowrap;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">P4a</div>
+    <div class="tache-label">Résoudre un problème additif en une étape</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext">Suivant →</button>
+</div>
+
+<script>
+/* =========================================================================
+   P4a — Résoudre un problème additif en une étape.
+   Convention des figures : valeurs connues en BLEU, inconnue "?" en VIOLET
+   (pointillé, puis pleine une fois la réponse révélée), contexte en gris.
+   Chaque page présente une même situation avec plusieurs inconnues ("cas") ;
+   un cas se déroule en 4 temps : énoncé -> schéma -> lecture du schéma ->
+   calcul et réponse. Aucun code d'enseignant (e1, t1...) n'apparaît.
+   Toutes les positions sont calculées ; les lignes numériques n'ont pas de
+   flèche au bout et dépassent un peu la dernière graduation.
+   ========================================================================= */
+const BLEU='#1d4ed8', VIOLET='#7c3aed', LAB='#4b5563', GRIS='#9ca3af';
+const f1=x=>(+x).toFixed(1);
+
+/* valeur : v connue (texte) ou null (inconnue). u=0 connue, 1 "?", 2 révélée */
+function val(v,st,ans){ return v===null ? (st>=3 ? {t:ans,u:2} : {t:'?',u:1}) : {t:v,u:0}; }
+const STY=[
+  {fill:'#dbeafe',stroke:BLEU,  col:BLEU,  dash:''},
+  {fill:'#f5f3ff',stroke:VIOLET,col:VIOLET,dash:' stroke-dasharray="5 3"'},
+  {fill:'#ede9fe',stroke:VIOLET,col:VIOLET,dash:''}
+];
+function T(x,y,s,col,size,anchor,extra){
+  return '<text x="'+f1(x)+'" y="'+f1(y)+'" text-anchor="'+(anchor||'middle')+
+    '" font-family="Baloo 2,Nunito,sans-serif" font-size="'+(size||15)+'" font-weight="800" fill="'+col+'"'+(extra||'')+'>'+s+'</text>';
+}
+const HALO=' paint-order="stroke" stroke="#fff" stroke-width="3"';
+function cap(x,y,s,anchor){
+  return '<text x="'+f1(x)+'" y="'+f1(y)+'" text-anchor="'+(anchor||'middle')+
+    '" font-family="Nunito,sans-serif" font-size="12.5" font-weight="700" fill="'+LAB+'">'+s+'</text>';
+}
+function barre(x,y,w,h,v){
+  const k=STY[v.u];
+  return '<rect x="'+f1(x)+'" y="'+f1(y)+'" width="'+f1(w)+'" height="'+f1(h)+'" rx="5" fill="'+k.fill+
+    '" stroke="'+k.stroke+'" stroke-width="2"'+k.dash+'/>'+
+    (v.t!==''?T(x+w/2,y+h/2+5.5,v.t,k.col,16,'middle',v.u===2?' class="fade-op"':''):'');
+}
+function croix(x,y,col,w){
+  w=w||5;
+  return '<path d="M'+f1(x-w)+','+f1(y-w)+' L'+f1(x+w)+','+f1(y+w)+' M'+f1(x-w)+','+f1(y+w)+' L'+f1(x+w)+','+f1(y-w)+
+    '" stroke="'+col+'" stroke-width="2" stroke-linecap="round" fill="none"/>';
+}
+function arrowHead(tx,ty,ang,s,col){
+  const dx=Math.cos(ang), dy=Math.sin(ang), bx=tx-dx*s, by=ty-dy*s, px=-dy, py=dx;
+  return '<polygon points="'+f1(tx)+','+f1(ty)+' '+f1(bx+px*s*.55)+','+f1(by+py*s*.55)+' '+f1(bx-px*s*.55)+','+f1(by-py*s*.55)+'" fill="'+col+'"/>';
+}
+/* ligne numérique graduée de min à max : pas de flèche, dépasse un peu aux deux bouts */
+function nl(min,max,y,step){
+  step=step||1;
+  const x=v=>30+(v-min)*270/(max-min);
+  let s='<line x1="'+f1(x(min)-14)+'" y1="'+y+'" x2="'+f1(x(max)+14)+'" y2="'+y+'" stroke="#374151" stroke-width="2.2" stroke-linecap="round"/>';
+  for(let v=min;v<=max;v+=step) s+='<line x1="'+f1(x(v))+'" y1="'+(y-5)+'" x2="'+f1(x(v))+'" y2="'+(y+5)+'" stroke="#374151" stroke-width="1.6"/>';
+  return {x:x,svg:s};
+}
+/* saut au-dessus de la ligne, de x1 à x2, de hauteur h, étiqueté par v */
+function saut(x1,x2,y,h,v,inside){
+  const k=STY[v.u], xm=(x1+x2)/2, cy=y-2*h, ang=Math.atan2(y-cy,x2-xm);
+  return '<path d="M'+f1(x1)+','+f1(y)+' Q'+f1(xm)+','+f1(cy)+' '+f1(x2)+','+f1(y)+'" fill="none" stroke="'+k.stroke+
+    '" stroke-width="2.4" stroke-linecap="round"'+k.dash+'/>'+arrowHead(x2,y,ang,10,k.stroke)+
+    T(xm,inside?y-h+20:y-h-6,v.t,k.col,16,'middle',HALO+(v.u===2?' class="fade-op"':''));
+}
+
+/* ---------- schéma 1 : parties et tout (barres) ---------- */
+function schComposition(d,st){
+  const tot=val(d.tout,st,d.ans), a=val(d.a,st,d.ans), b=val(d.b,st,d.ans);
+  const X=20, W=280, wA=W*d.wa, wB=W-wA;
+  return '<svg viewBox="0 0 320 168" width="320" role="img" aria-label="schéma en barres : un tout et deux parties">'+
+    cap(X,25,d.cTout,'start')+
+    barre(X,32,W,36,tot)+
+    '<line x1="'+X+'" y1="70" x2="'+X+'" y2="98" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3 3"/>'+
+    '<line x1="'+(X+W)+'" y1="70" x2="'+(X+W)+'" y2="98" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3 3"/>'+
+    barre(X,100,wA,36,a)+barre(X+wA,100,wB,36,b)+
+    cap(X+wA/2,154,d.cA)+cap(X+wA+wB/2,154,d.cB)+
+    '</svg>';
+}
+
+/* ---------- schéma 2 : comparaison (deux barres l'une sous l'autre) ---------- */
+function schComparaison(d,st){
+  const lo=val(d.louis,st,d.ans), ec=val(d.ecart,st,d.ans), em=val(d.emma,st,d.ans);
+  const X=20, WL=200, WE=80, kE=STY[em.u];
+  return '<svg viewBox="0 0 320 178" width="320" role="img" aria-label="schéma en barres : comparaison de deux tailles">'+
+    cap(X,25,'Louis','start')+
+    barre(X,31,WL,30,lo)+
+    cap(X,84,'Emma','start')+
+    '<line x1="'+(X+WL)+'" y1="62" x2="'+(X+WL)+'" y2="122" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="3 3"/>'+
+    barre(X,90,WL,30,{t:'',u:0})+
+    barre(X+WL,90,WE,30,ec)+
+    '<path d="M'+X+',128 v8 H'+(X+WL+WE)+' v-8" fill="none" stroke="'+kE.stroke+'" stroke-width="2"'+kE.dash+'/>'+
+    T(X+(WL+WE)/2,158,em.t,kE.col,16,'middle',em.u===2?' class="fade-op"':'')+
+    '</svg>';
+}
+
+/* ---------- schéma 3 : une quantité qui change (ligne numérique) ---------- */
+function schTransfo(d,st){
+  const y=92, N=nl(d.min||10,d.max||19,y,d.step||1);
+  const ini=val(d.ini,st,d.ans), fin=val(d.fin,st,d.ans), tr=val(d.t,st,d.ans);
+  const x1=N.x(d.pi), x2=N.x(d.pf);
+  return '<svg viewBox="0 0 320 150" width="320" role="img" aria-label="ligne numérique : une quantité qui change">'+
+    N.svg+
+    saut(x1,x2,y-8,38,tr)+
+    croix(x1,y,STY[ini.u].col,6)+croix(x2,y,STY[fin.u].col,6)+
+    T(x1,y+30,ini.t,STY[ini.u].col,16,'middle',ini.u===2?' class="fade-op"':'')+
+    T(x2,y+30,fin.t,STY[fin.u].col,16,'middle',fin.u===2?' class="fade-op"':'')+
+    cap(x1,y+47,d.cI)+cap(x2,y+47,d.cF)+
+    '</svg>';
+}
+
+/* ---------- schéma 4 : des déplacements qui s'enchaînent ---------- */
+function schEnchaine(d,st){
+  const y=100, N=nl(d.min,d.max,y);
+  const t1=val(d.t1,st,d.ans), t2=val(d.t2,st,d.ans), tt=val(d.tt,st,d.ans);
+  const x0=N.x(0), xp=N.x(d.p1), xe=N.x(d.p2);
+  const d1=Math.sign(xp-x0), d2=Math.sign(xe-xp), g=8;
+  const hh=(a,b)=>Math.min(34,14+Math.abs(b-a)*.14);
+  const oppose=d1*d2<0;
+  /* chaque saut s'arrête un peu avant la croix où il arrive et repart de l'autre côté de la croix :
+     les deux extrémités qui se touchent au point intermédiaire restent bien séparées */
+  const a1=x0+d1*g, b1=xp-d1*g, a2=xp+d1*g, b2=xe-d2*g;
+  const h1=hh(a1,b1), h2=hh(a2,b2)+(oppose?30:0);
+  /* flèche bilan : arrondie comme les autres, mais sous la ligne */
+  const kT=STY[tt.u], yb=148, xm=(x0+xe)/2, hb=Math.min(24,10+Math.abs(xe-x0)*.1), cyb=yb+2*hb;
+  const angB=Math.atan2(yb-cyb,xe-xm);
+  return '<svg viewBox="0 0 320 200" width="320" role="img" aria-label="ligne numérique : deux déplacements qui s\'enchaînent">'+
+    N.svg+
+    saut(a1,b1,y-8,h1,t1,oppose)+saut(a2,b2,y-8,h2,t2)+
+    croix(x0,y,LAB,6)+croix(xp,y,GRIS,5)+croix(xe,y,LAB,6)+
+    cap(x0,y+24,'départ')+
+    '<line x1="'+f1(x0)+'" y1="130" x2="'+f1(x0)+'" y2="'+yb+'" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3 3"/>'+
+    '<line x1="'+f1(xe)+'" y1="130" x2="'+f1(xe)+'" y2="'+yb+'" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3 3"/>'+
+    '<path d="M'+f1(x0)+','+yb+' Q'+f1(xm)+','+f1(cyb)+' '+f1(xe)+','+yb+'" fill="none" stroke="'+kT.stroke+'" stroke-width="2.4" stroke-linecap="round"'+kT.dash+'/>'+
+    arrowHead(xe,yb,angB,10,kT.stroke)+
+    '<text x="'+f1(xm)+'" y="'+f1(yb+hb+20)+'" text-anchor="middle" font-family="Baloo 2,Nunito,sans-serif" font-size="15" font-weight="800">'+
+      '<tspan fill="'+LAB+'">en tout : </tspan><tspan fill="'+kT.col+'"'+(tt.u===2?' class="fade-op"':'')+'>'+tt.t+'</tspan></text>'+
+    '</svg>';
+}
+
+/* ---------- mini-figures du bilan ---------- */
+function miniBarres(){
+  const k=STY[0];
+  const r=(x,y,w,t)=>'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="24" rx="4" fill="'+k.fill+'" stroke="'+k.stroke+'" stroke-width="2"/>'+T(x+w/2,y+17,t,k.col,12.5);
+  return '<svg viewBox="0 0 200 84" width="190" role="img" aria-label="barres : un tout et deux parties">'+
+    r(10,6,180,'tout')+r(10,48,110,'partie')+r(120,48,70,'partie')+'</svg>';
+}
+function miniLigne(signe){
+  const y=44, pos=(signe==='+'), xd=pos?40:160, xa=pos?160:40;
+  let s='<line x1="8" y1="'+y+'" x2="194" y2="'+y+'" stroke="#374151" stroke-width="2.2" stroke-linecap="round"/>';
+  for(let x=20;x<=180;x+=20) s+='<line x1="'+x+'" y1="'+(y-5)+'" x2="'+x+'" y2="'+(y+5)+'" stroke="#374151" stroke-width="1.6"/>';
+  return '<svg viewBox="0 0 200 76" width="190" role="img" aria-label="ligne numérique : un saut vers la '+(pos?'droite':'gauche')+'">'+s+
+    saut(xd,xa,y-8,16,{t:pos?'+':'−',u:0})+
+    croix(xd,y,LAB,5)+croix(xa,y,LAB,5)+cap(xd,y+24,'départ')+cap(xa,y+24,'arrivée')+'</svg>';
+}
+
+/* ========================== LES PAGES ================================== */
+/* données d'un schéma "tout / parties" (barres), partagées par les pages 2 à 5 */
+/* calcul écrit avec l'unité sur chaque nombre ; passe à la ligne proprement si c'est trop long */
+const C=(a,op,b,r,u)=>'<span class="t n">'+a+u+'</span><span class="t"><span>'+op+'</span> <span class="n">'+b+u+'</span></span><span class="t"><span>=</span> <span class="ans">'+r+u+'</span></span>';
+const B=(cTout,cA,cB,wa,tout,a,b,ans)=>({cTout,cA,cB,wa,tout,a,b,ans});
+const STEPS=[
+
+/* ---------- 0. pourquoi ---------- */
+{ titre:"💡 Résoudre un problème en une étape",
+  html:()=>`
+  <div class="pourquoi fade-in">
+    <span class="pq-lead">🤔 Pourquoi ?</span>
+    Un gros problème de maths est toujours fait de petites étapes. Pour réussir un gros problème, il faut d'abord
+    savoir réussir chaque petite étape. Et pour y arriver, il faut s'entraîner à
+    <span class="cle">reconnaître les situations qui se ressemblent</span> : quand on en connaît une,
+    on sait comment s'y prendre.
+  </div>
+  <p class="step-text fade-in">Ici, on s'entraîne sur les problèmes qui se résolvent avec <span class="cle">une seule addition ou une seule soustraction</span>. Il y a 4 grandes situations :</p>
+  <ul class="liste-simple fade-in">
+    <li>on <span class="cle">rassemble</span> des parties pour former un tout ;</li>
+    <li>on <span class="cle">compare</span> deux quantités ;</li>
+    <li>une quantité <span class="cle">change</span> : on ajoute ou on enlève ;</li>
+    <li>plusieurs changements <span class="cle">s'enchaînent</span>.</li>
+  </ul>
+  <div class="info orange fade-in">Pour chacune, on commence par <b>représenter le problème</b> (avec des barres ou sur une ligne numérique) : c'est cette représentation qui nous aide à comprendre ce qu'on cherche.</div>`
+},
+
+/* ---------- 1. rassembler des parties ---------- */
+{ titre:"✏️ Rassembler des parties",
+  intro:`Quand on <span class="cle">rassemble</span> des parties pour former un tout, on dessine des <span class="cle">barres</span> : une grande barre pour le tout, et des barres plus petites, bout à bout, pour les parties.`,
+  hFig:176, schema:schComposition,
+  cas:[
+   { pill:"On cherche le tout",
+     enonce:`Issa achète un cartable à <b class="n">20 €</b> et un classeur à <b class="n">5 €</b>. <span class="quest">Combien va-t-il payer ?</span>`,
+     d:B('à payer en tout','cartable','classeur',.8,null,'20 €','5 €','25 €'),
+     calcul:C('20','+','5','25',' €'),
+     rep:`Issa va payer <b>25 €</b>.` },
+   { pill:"On cherche une partie",
+     enonce:`Issa achète un cartable à <b class="n">20 €</b> et un classeur. Il paye <b class="n">25 €</b> en tout. <span class="quest">Combien coûte le classeur ?</span>`,
+     d:B('à payer en tout','cartable','classeur',.8,'25 €','20 €',null,'5 €'),
+     calcul:C('25','−','20','5',' €'),
+     rep:`Le classeur coûte <b>5 €</b>.` }
+  ]
+},
+
+/* ---------- 2. comparer deux quantités (barres, même format que la page 2) ---------- */
+{ titre:"✏️ Comparer deux quantités",
+  intro:`Quand on <span class="cle">compare</span> deux quantités, on dessine une barre pour la plus grande. Dessous, la barre de la plus petite est complétée par l'<span class="cle">écart</span>.`,
+  hFig:176, schema:schComposition, schemaAlt:schTransfo,
+  note:`Si l'énoncé dit « Louis mesure 15 cm <b>de moins</b> qu'Emma », c'est la même situation, lue dans l'autre sens : la représentation ne change pas.`,
+  cas:[
+   { pill:"Taille d'Emma ?",
+     enonce:`Louis mesure <b class="n">145 cm</b>. Emma mesure <b class="n">15 cm</b> de plus que Louis. <span class="quest">Quelle est la taille d'Emma ?</span>`,
+     d:B('Emma','Louis','écart',.72,null,'145 cm','+15 cm','160 cm'),
+     dA:{min:140,max:165,step:5,pi:145,pf:160,ini:'145 cm',fin:null,t:'+15 cm',cI:'Louis',cF:'Emma',ans:'160 cm'},
+     calcul:C('145','+','15','160',' cm'),
+     rep:`Emma mesure <b>160 cm</b>.` },
+   { pill:"Taille de Louis ?",
+     enonce:`Emma mesure <b class="n">160 cm</b>. Elle mesure <b class="n">15 cm</b> de plus que Louis. <span class="quest">Quelle est la taille de Louis ?</span>`,
+     d:B('Emma','Louis','écart',.72,'160 cm',null,'+15 cm','145 cm'),
+     dA:{min:140,max:165,step:5,pi:145,pf:160,ini:null,fin:'160 cm',t:'+15 cm',cI:'Louis',cF:'Emma',ans:'145 cm'},
+     calcul:C('160','−','15','145',' cm'),
+     rep:`Louis mesure <b>145 cm</b>.` },
+   { pill:"L'écart ?",
+     enonce:`Louis mesure <b class="n">145 cm</b>. Emma mesure <b class="n">160 cm</b>. <span class="quest">De combien de centimètres Emma est-elle plus grande que Louis ?</span>`,
+     d:B('Emma','Louis','écart',.72,'160 cm','145 cm',null,'+15 cm'),
+     dA:{min:140,max:165,step:5,pi:145,pf:160,ini:'145 cm',fin:'160 cm',t:null,cI:'Louis',cF:'Emma',ans:'+15 cm'},
+     calcul:C('160','−','145','15',' cm'),
+     rep:`Emma est plus grande de <b>15 cm</b>.` }
+  ]
+},
+
+/* ---------- 3. une quantité qui change ---------- */
+{ titre:"✏️ Une quantité qui change",
+  intro:`Quand une quantité <span class="cle">change</span>, on la suit sur une <span class="cle">ligne numérique</span> : le changement est un saut vers la droite (on ajoute) ou vers la gauche (on enlève).`,
+  hFig:176, schema:schTransfo, schemaAlt:schComposition,
+  cas:[
+   { g:"🌷 On plante des tulipes", pill:"À la fin ?",
+     enonce:`Il y a <b class="n">11</b> tulipes dans le jardin. Samia en plante <b class="n">7</b>. <span class="quest">Combien y a-t-il de tulipes maintenant ?</span>`,
+     d:{pi:11,pf:18,ini:'11',fin:null,t:'+7',cI:'au départ',cF:'à la fin',ans:'18'},
+     dA:B('à la fin','au départ','plantées',.61,null,'11','7','18'),
+     calcul:C('11','+','7','18',' tulipes'),
+     rep:`Il y a <b>18 tulipes</b>.` },
+   { g:"🌷 On plante des tulipes", pill:"Au départ ?",
+     enonce:`Samia a planté <b class="n">7</b> tulipes. Maintenant il y en a <b class="n">18</b> dans le jardin. <span class="quest">Combien y avait-il de tulipes au départ ?</span>`,
+     d:{pi:11,pf:18,ini:null,fin:'18',t:'+7',cI:'au départ',cF:'à la fin',ans:'11'},
+     dA:B('à la fin','au départ','plantées',.61,'18',null,'7','11'),
+     calcul:C('18','−','7','11',' tulipes'),
+     rep:`Il y avait <b>11 tulipes</b> au départ.` },
+   { g:"🌷 On plante des tulipes", pill:"Ce qui change ?",
+     enonce:`Il y a <b class="n">11</b> tulipes dans le jardin. Après en avoir planté, il y en a <b class="n">18</b>. <span class="quest">Combien de tulipes ont été plantées ?</span>`,
+     d:{pi:11,pf:18,ini:'11',fin:'18',t:null,cI:'au départ',cF:'à la fin',ans:'+7'},
+     dA:B('à la fin','au départ','plantées',.61,'18','11',null,'7'),
+     calcul:C('18','−','11','7',' tulipes'),
+     rep:`On a planté <b>7 tulipes</b>.` },
+   { g:"✂️ On cueille des tulipes", pill:"À la fin ?",
+     enonce:`Il y a <b class="n">18</b> tulipes dans le jardin. On en cueille <b class="n">7</b>. <span class="quest">Combien reste-t-il de tulipes ?</span>`,
+     d:{pi:18,pf:11,ini:'18',fin:null,t:'−7',cI:'au départ',cF:'à la fin',ans:'11'},
+     dA:B('au départ','à la fin','cueillies',.61,'18',null,'7','11'),
+     calcul:C('18','−','7','11',' tulipes'),
+     rep:`Il reste <b>11 tulipes</b>.` },
+   { g:"✂️ On cueille des tulipes", pill:"Au départ ?",
+     enonce:`On a cueilli <b class="n">7</b> tulipes. Il en reste <b class="n">11</b> dans le jardin. <span class="quest">Combien y avait-il de tulipes avant la cueillette ?</span>`,
+     d:{pi:18,pf:11,ini:null,fin:'11',t:'−7',cI:'au départ',cF:'à la fin',ans:'18'},
+     dA:B('au départ','à la fin','cueillies',.61,null,'11','7','18'),
+     calcul:C('11','+','7','18',' tulipes'),
+     rep:`Il y avait <b>18 tulipes</b> avant.` },
+   { g:"✂️ On cueille des tulipes", pill:"Ce qui change ?",
+     enonce:`Il y a <b class="n">18</b> tulipes dans le jardin. Après la cueillette, il en reste <b class="n">11</b>. <span class="quest">Combien de tulipes ont été cueillies ?</span>`,
+     d:{pi:18,pf:11,ini:'18',fin:'11',t:null,cI:'au départ',cF:'à la fin',ans:'−7'},
+     dA:B('au départ','à la fin','cueillies',.61,'18','11',null,'7'),
+     calcul:C('18','−','11','7',' tulipes'),
+     rep:`On a cueilli <b>7 tulipes</b>.` }
+  ]
+},
+
+/* ---------- 4. des changements qui s'enchaînent ---------- */
+{ titre:"✏️ Des changements qui s'enchaînent",
+  intro:`Quand plusieurs déplacements <span class="cle">s'enchaînent</span>, on les dessine l'un après l'autre sur la ligne numérique, puis on regarde où l'on arrive par rapport au point de <span class="cle">départ</span>.`,
+  hFig:206, schema:schEnchaine, schemaAlt:schComposition,
+  cas:[
+   { pill:"Avancer, avancer",
+     enonce:`Au jeu de l'oie, Aïsha avance de <b class="n">9 cases</b>, puis avance de <b class="n">7 cases</b>. <span class="quest">De combien de cases a-t-elle avancé ou reculé au total ?</span>`,
+     d:{min:0,max:16,p1:9,p2:16,t1:'+9',t2:'+7',tt:null,ans:'+16'},
+     dA:B('en tout','avancer de 9','avancer de 7',.5625,null,'9','7','16'),
+     calcul:C('9','+','7','16',' cases'),
+     rep:`Aïsha a avancé de <b>16 cases</b> au total.` },
+   { pill:"Avancer, reculer",
+     enonce:`Au jeu de l'oie, Aïsha avance de <b class="n">8 cases</b>, puis recule de <b class="n">10 cases</b>. <span class="quest">De combien de cases a-t-elle avancé ou reculé au total ?</span>`,
+     d:{min:-2,max:8,p1:8,p2:-2,t1:'+8',t2:'−10',tt:null,ans:'−2'},
+     dA:B('reculer de 10','avancer de 8','écart',.8,'10','8',null,'2'),
+     calcul:C('10','−','8','2',' cases'),
+     rep:`Aïsha a reculé de <b>2 cases</b> au total.` },
+   { pill:"Reculer, avancer",
+     enonce:`Au jeu de l'oie, Aïsha recule de <b class="n">8 cases</b>, puis avance de <b class="n">15 cases</b>. <span class="quest">De combien de cases a-t-elle avancé ou reculé au total ?</span>`,
+     d:{min:-8,max:7,p1:-8,p2:7,t1:'−8',t2:'+15',tt:null,ans:'+7'},
+     dA:B('avancer de 15','reculer de 8','écart',.5333,'15','8',null,'7'),
+     calcul:C('15','−','8','7',' cases'),
+     rep:`Aïsha a avancé de <b>7 cases</b> au total.` },
+   { pill:"Le 2ᵉ déplacement ?",
+     enonce:`Au jeu de l'oie, Tom avance de <b class="n">4 cases</b>. Il avance encore, et en tout il a avancé de <b class="n">6 cases</b>. <span class="quest">De combien de cases a-t-il avancé la deuxième fois ?</span>`,
+     d:{min:0,max:6,p1:4,p2:6,t1:'+4',t2:null,tt:'+6',ans:'+2'},
+     dA:B('en tout','1er déplacement','2e déplacement',.6667,'6','4',null,'2'),
+     calcul:C('6','−','4','2',' cases'),
+     rep:`Tom a avancé de <b>2 cases</b> la deuxième fois.` }
+  ]
+},
+
+/* ---------- 5. bilan ---------- */
+{ titre:"🏆 Ce qu'il faut retenir",
+  html:()=>`
+  <div class="recap-list">
+    <div class="recap-item fade-in" style="border-left-color:var(--primary)">
+      <div>Pour comprendre un problème, on commence par le <span class="cle">représenter</span>.</div>
+    </div>
+  </div>
+  <div class="bilan-schemas fade-in">
+    <div class="exemple-bloc"><figure>${miniBarres()}<figcaption>des barres</figcaption></figure></div>
+    <div class="exemple-bloc"><figure>${miniLigne('+')}<figcaption>la ligne numérique : on ajoute</figcaption></figure></div>
+    <div class="exemple-bloc"><figure>${miniLigne('−')}<figcaption>la ligne numérique : on enlève</figcaption></figure></div>
+  </div>`
+}
+];
+
+/* ========================== MOTEUR ===================================== */
+/* un cas se déroule en 3 temps : st=0 énoncé, st=1 représentation, st=2 lecture + calcul + réponse */
+let i=0, cas=0, st=0, alt=false, fadeFig=false; const N=STEPS.length;
+const card=document.getElementById('card'),
+      progressBar=document.getElementById('progressBar'),
+      stepsIndicator=document.getElementById('stepsIndicator'),
+      btnPrev=document.getElementById('btnPrev'),
+      btnNext=document.getElementById('btnNext'),
+      counter=document.getElementById('counter');
+
+function goTo(k){ i=k; cas=0; st=0; alt=false; fadeFig=false; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+/* page à cas : pastilles, énoncé, bouton, représentation, lecture, calcul */
+function pageCas(s){
+  const c=s.cas[cas], last=s.cas.length-1;
+  let pills='<div class="cas-bloc">', g;
+  s.cas.forEach((x,k)=>{
+    if(k===0||x.g!==g){
+      if(k>0) pills+='</div>';
+      g=x.g; if(g) pills+='<div class="cas-groupe">'+g+'</div>';
+      pills+='<div class="cas-row">';
+    }
+    pills+='<button class="cas-pill'+(k===cas?' on':'')+'" data-k="'+k+'">'+x.pill+'</button>';
+  });
+  pills+='</div></div>';
+  const main='<button class="btn-anim fade-in" id="btns">'+
+    (st===0?'▶ Représenter le problème':st===1?'▶ Calculer':(cas<last?'▶ Cas suivant':'🔁 Revoir depuis le début'))+'</button>';
+  const sch = alt ? s.schemaAlt : s.schema;
+  const d = alt ? c.dA : c.d;
+  const fig = st===0
+    ? '<p class="fig-vide">La représentation apparaîtra ici.</p>'
+    : '<figure class="'+(fadeFig?'fade-in':'')+'">'+sch(d,st+1)+'</figure>';
+  const bAlt = (st>=1 && s.schemaAlt) ? '<button class="btn-alt" id="btna">🔄 Autre représentation</button>' : '';
+  fadeFig=false;
+  return '<p class="step-text fade-in">'+s.intro+'</p>'+pills+
+    '<div class="enonce">'+c.enonce+'</div>'+
+    main+
+    '<div class="fig-zone" style="min-height:'+s.hFig+'px">'+fig+'</div>'+
+    bAlt+
+    '<div class="zone-txt">'+
+      (st>=2?'<div class="calcul fade-in">'+c.calcul+'</div><div class="info violet fade-in">'+c.rep+'</div>':'')+
+      (st>=2&&cas===last&&s.note?'<div class="info bleu fade-in">'+s.note+'</div>':'')+
+    '</div>';
+}
+
+function render(){
+  const s=STEPS[i];
+  card.innerHTML =
+    '<div class="step-title pop">'+s.titre+'</div>'+
+    (s.cas ? pageCas(s) : s.html());
+  const bs=document.getElementById('btns');
+  if(bs) bs.addEventListener('click',()=>{
+    if(st<2){ st++; fadeFig=(st===1); }
+    else if(cas<s.cas.length-1){ cas++; st=0; alt=false; }
+    else { cas=0; st=0; alt=false; }
+    render();
+  });
+  const ba=document.getElementById('btna');
+  if(ba) ba.addEventListener('click',()=>{ alt=!alt; fadeFig=true; render(); });
+  card.querySelectorAll('.cas-pill').forEach(b=>b.addEventListener('click',()=>{
+    cas=+b.dataset.k; fadeFig=(st>=1); render();
+  }));
+
+  progressBar.style.width=(i/(N-1)*100)+'%';
+  stepsIndicator.innerHTML='';
+  for(let k=0;k<N;k++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(k===i?' active':k<i?' done':'');
+    d.textContent=k<i?'✓':k+1;
+    d.addEventListener('click',()=>goTo(k));
+    stepsIndicator.appendChild(d);
+  }
+  counter.textContent='Page '+(i+1)+' / '+N;
+  btnPrev.disabled=(i===0);
+  btnNext.textContent=i===N-1?'🔁 Recommencer':'Suivant →';
+}
+btnPrev.addEventListener('click',()=>{ if(i>0) goTo(i-1); });
+btnNext.addEventListener('click',()=>{ goTo(i===N-1?0:i+1); });
+render();
+</script>
+</body>
+</html>

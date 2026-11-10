@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>P4m — Résoudre un problème multiplicatif en une étape</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  /* --- dominante du module Problèmes (orange) --- */
+  --primary:#ea580c;--primary2:#fb923c;--primary-clair:#ffedd5;
+  --bg:#fff7ed;--cote:#9a3412;
+  /* --- palette pédagogique constante (identique aux autres modules) --- */
+  --bleu:#1a73e8;--bleu-clair:#e8f0fe;
+  --orange:#ea580c;--orange-clair:#ffedd5;
+  --vert:#16a34a;--vert-clair:#f0fdf4;
+  --violet:#7c3aed;--violet-clair:#f5f3ff;
+  --gris:#94a3b8;
+  --teal:#0d9488;--teal-clair:#f0fdfa;
+  --card:#fff;--texte:#1e293b;--border:#e2e8f0;
+  --fig-bleu:#1d4ed8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+header{display:flex;justify-content:center;margin-bottom:22px;}
+.header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+.badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;padding:0 6px;border-radius:12px;border:2.5px solid var(--primary);background:var(--primary-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--primary);flex-shrink:0;}
+.tache-label{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--primary);line-height:1.3;}
+.progress-bar-wrap{width:100%;max-width:680px;background:var(--primary-clair);border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .5s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+.step-dot{width:34px;height:34px;border-radius:50%;background:var(--primary-clair);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--primary2);transition:all .4s;border:2px solid transparent;cursor:pointer;user-select:none;}
+.step-dot:hover{border-color:var(--primary2);}
+.step-dot.active{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+.card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:360px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(154,52,18,.10);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes fadeOp{from{opacity:0}to{opacity:1}}
+.fade-op{animation:fadeOp .6s ease both;}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .45s ease both;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;color:var(--cote);text-align:center;line-height:1.3;}
+.step-text{font-size:.97rem;line-height:1.7;text-align:left;max-width:580px;width:100%;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:580px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 16px;font-weight:600;font-size:.92rem;line-height:1.6;max-width:580px;width:100%;text-align:left;}
+.info.vert{background:var(--vert-clair);border-left:4px solid var(--vert);color:#14532d;}
+.info.bleu{background:var(--bleu-clair);border-left:4px solid var(--bleu);color:#1e3a5f;}
+.info.violet{background:var(--violet-clair);border-left:4px solid var(--violet);color:#4c1d95;}
+.info.orange{background:var(--orange-clair);border-left:4px solid var(--orange);color:#7c2d12;}
+.liste-simple{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;max-width:580px;width:100%;text-align:left;font-size:.97rem;line-height:1.55;}
+.exemple-bloc{border:1.5px solid #e0e7ff;background:#f8faff;border-radius:16px;padding:14px 16px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;max-width:580px;width:100%;}
+.exemple-bloc figure{margin:0;}
+.bilan-schemas{display:flex;flex-direction:column;gap:10px;width:100%;max-width:580px;align-items:center;}
+.duo-blocs{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;max-width:600px;width:100%;}
+.duo-blocs .exemple-bloc{flex:1 1 240px;max-width:270px;}
+figure{text-align:center;width:100%;}
+svg{max-width:100%;height:auto;overflow:visible;}
+figcaption{font-size:.85rem;color:var(--gris);margin-top:1px;line-height:1.3;}
+.cle{color:var(--cote);font-weight:700;}
+.btn-anim{border:2px solid var(--violet);background:var(--violet-clair);color:var(--violet);font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;transition:all .2s;}
+.btn-anim:hover{background:var(--violet);color:#fff;}
+.recap-list{display:flex;flex-direction:column;gap:12px;width:100%;max-width:580px;}
+.recap-item{display:flex;gap:12px;align-items:flex-start;background:#f8faff;border-radius:12px;padding:11px 16px;border-left:4px solid transparent;text-align:left;font-size:.92rem;line-height:1.55;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;}
+.nav{display:flex;align-items:center;justify-content:space-between;max-width:680px;width:100%;margin-top:20px;gap:12px;}
+.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;border-radius:12px;padding:11px 22px;cursor:pointer;transition:all .25s;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-prev:disabled{opacity:.35;cursor:default;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;}
+.btn-next:hover{opacity:.9;}
+.step-counter{font-family:'Baloo 2',cursive;font-weight:700;color:var(--primary);font-size:.95rem;white-space:nowrap;}
+
+/* ---- propre aux capsules Problèmes : cas, énoncé, calcul ---- */
+.cas-bloc{display:flex;flex-direction:column;gap:6px;align-items:center;max-width:580px;width:100%;}
+.cas-groupe{font-family:'Baloo 2',cursive;font-weight:800;font-size:.82rem;color:var(--cote);margin-top:2px;}
+.cas-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+.cas-pill{font-family:'Baloo 2',cursive;font-weight:700;font-size:.85rem;border:2px solid var(--primary);background:#fff;color:var(--primary);border-radius:99px;padding:4px 12px;cursor:pointer;transition:all .2s;}
+.cas-pill:hover{background:var(--primary-clair);}
+.cas-pill.on{background:var(--primary);color:#fff;}
+.enonce{background:#fff;border:1.5px solid #fed7aa;border-left:4px solid var(--primary);border-radius:10px;padding:10px 14px;font-weight:600;font-size:.97rem;line-height:1.55;max-width:580px;width:100%;text-align:left;}
+.n{color:var(--fig-bleu);font-weight:800;}
+.ans{color:var(--violet);font-weight:800;}
+.quest{color:var(--violet);font-weight:800;}
+.fig-zone{width:100%;display:flex;align-items:center;justify-content:center;}
+.fig-vide{color:var(--gris);font-size:.9rem;text-align:center;}
+.zone-txt{display:flex;flex-direction:column;gap:10px;align-items:center;width:100%;min-height:110px;}
+.btn-alt{border:2px solid var(--teal);background:var(--teal-clair);color:var(--teal);font-family:'Baloo 2',cursive;font-size:.88rem;font-weight:700;border-radius:10px;padding:6px 16px;cursor:pointer;transition:all .2s;}
+.btn-alt:hover{background:var(--teal);color:#fff;}
+.calcul{font-family:'Baloo 2',cursive;font-size:1.35rem;font-weight:800;color:#475569;text-align:center;display:flex;flex-wrap:wrap;justify-content:center;gap:0 .4em;}
+.calcul .t{white-space:nowrap;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">P4m</div>
+    <div class="tache-label">Résoudre un problème multiplicatif en une étape</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext">Suivant →</button>
+</div>
+
+<script>
+/* =========================================================================
+   P4m — Résoudre un problème multiplicatif en une étape.
+   Convention des figures : valeurs connues en BLEU, inconnue "?" en VIOLET
+   (pointillé, puis pleine une fois la réponse révélée), contexte en gris.
+   Chaque page présente une même situation avec plusieurs inconnues ("cas") ;
+   un cas se déroule en 4 temps : énoncé -> schéma -> lecture du schéma ->
+   calcul et réponse. Aucun code d'enseignant (e1, t1...) n'apparaît.
+   Toutes les positions sont calculées ; les lignes numériques n'ont pas de
+   flèche au bout et dépassent un peu la dernière graduation.
+   ========================================================================= */
+const BLEU='#1d4ed8', VIOLET='#7c3aed', LAB='#4b5563', GRIS='#9ca3af';
+const f1=x=>(+x).toFixed(1);
+
+/* valeur : v connue (texte) ou null (inconnue). u=0 connue, 1 "?", 2 révélée */
+function val(v,st,ans){ return v===null ? (st>=3 ? {t:ans,u:2} : {t:'?',u:1}) : {t:v,u:0}; }
+const STY=[
+  {fill:'#dbeafe',stroke:BLEU,  col:BLEU,  dash:''},
+  {fill:'#f5f3ff',stroke:VIOLET,col:VIOLET,dash:' stroke-dasharray="5 3"'},
+  {fill:'#ede9fe',stroke:VIOLET,col:VIOLET,dash:''}
+];
+function T(x,y,s,col,size,anchor,extra){
+  return '<text x="'+f1(x)+'" y="'+f1(y)+'" text-anchor="'+(anchor||'middle')+
+    '" font-family="Baloo 2,Nunito,sans-serif" font-size="'+(size||15)+'" font-weight="800" fill="'+col+'"'+(extra||'')+'>'+s+'</text>';
+}
+const HALO=' paint-order="stroke" stroke="#fff" stroke-width="3"';
+function cap(x,y,s,anchor){
+  return '<text x="'+f1(x)+'" y="'+f1(y)+'" text-anchor="'+(anchor||'middle')+
+    '" font-family="Nunito,sans-serif" font-size="12.5" font-weight="700" fill="'+LAB+'">'+s+'</text>';
+}
+function barre(x,y,w,h,v){
+  const k=STY[v.u];
+  return '<rect x="'+f1(x)+'" y="'+f1(y)+'" width="'+f1(w)+'" height="'+f1(h)+'" rx="5" fill="'+k.fill+
+    '" stroke="'+k.stroke+'" stroke-width="2"'+k.dash+'/>'+
+    (v.t!==''?T(x+w/2,y+h/2+5.5,v.t,k.col,16,'middle',v.u===2?' class="fade-op"':''):'');
+}
+function croix(x,y,col,w){
+  w=w||5;
+  return '<path d="M'+f1(x-w)+','+f1(y-w)+' L'+f1(x+w)+','+f1(y+w)+' M'+f1(x-w)+','+f1(y+w)+' L'+f1(x+w)+','+f1(y-w)+
+    '" stroke="'+col+'" stroke-width="2" stroke-linecap="round" fill="none"/>';
+}
+function arrowHead(tx,ty,ang,s,col){
+  const dx=Math.cos(ang), dy=Math.sin(ang), bx=tx-dx*s, by=ty-dy*s, px=-dy, py=dx;
+  return '<polygon points="'+f1(tx)+','+f1(ty)+' '+f1(bx+px*s*.55)+','+f1(by+py*s*.55)+' '+f1(bx-px*s*.55)+','+f1(by-py*s*.55)+'" fill="'+col+'"/>';
+}
+/* ligne numérique graduée de min à max : pas de flèche, dépasse un peu aux deux bouts */
+function nl(min,max,y,step){
+  step=step||1;
+  const x=v=>30+(v-min)*270/(max-min);
+  let s='<line x1="'+f1(x(min)-14)+'" y1="'+y+'" x2="'+f1(x(max)+14)+'" y2="'+y+'" stroke="#374151" stroke-width="2.2" stroke-linecap="round"/>';
+  for(let v=min;v<=max;v+=step) s+='<line x1="'+f1(x(v))+'" y1="'+(y-5)+'" x2="'+f1(x(v))+'" y2="'+(y+5)+'" stroke="#374151" stroke-width="1.6"/>';
+  return {x:x,svg:s};
+}
+/* saut au-dessus de la ligne, de x1 à x2, de hauteur h, étiqueté par v */
+function saut(x1,x2,y,h,v,inside,as){
+  const k=STY[v.u], xm=(x1+x2)/2, cy=y-2*h, ang=Math.atan2(y-cy,x2-xm);
+  return '<path d="M'+f1(x1)+','+f1(y)+' Q'+f1(xm)+','+f1(cy)+' '+f1(x2)+','+f1(y)+'" fill="none" stroke="'+k.stroke+
+    '" stroke-width="2.4" stroke-linecap="round"'+k.dash+'/>'+arrowHead(x2,y,ang,as||10,k.stroke)+
+    T(xm,inside?y-h+20:y-h-6,v.t,k.col,16,'middle',HALO+(v.u===2?' class="fade-op"':''));
+}
+
+const HALO5=' paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round"';
+/* ---------- étiquette "valeur + unité" colorée selon l'état (connue / ? / révélée) ---------- */
+function vlab(x,y,v,unit,anchor,size,prefix){
+  const k=STY[v.u];
+  return '<text x="'+f1(x)+'" y="'+f1(y)+'" text-anchor="'+(anchor||'middle')+'" font-family="Baloo 2,Nunito,sans-serif" font-size="'+(size||15)+'" font-weight="800">'+
+    (prefix?'<tspan fill="'+LAB+'">'+prefix+'</tspan>':'')+
+    '<tspan fill="'+k.col+'"'+(v.u===2?' class="fade-op"':'')+'>'+v.t+'</tspan>'+
+    (unit?'<tspan fill="'+LAB+'"> '+unit+'</tspan>':'')+'</text>';
+}
+/* étiquette à gauche d'un rectangle : tournée de 90° (sauf un simple nombre sans unité) */
+function vlabG(x,y,v,unit,size){
+  if(!unit) return vlab(x,y+5,v,'','end',size);
+  return '<g transform="rotate(-90 '+f1(x)+' '+f1(y)+')">'+vlab(x,y+5,v,unit,'middle',size)+'</g>';
+}
+function hcell(x,y,w,h,t){
+  return '<rect x="'+f1(x)+'" y="'+f1(y)+'" width="'+f1(w)+'" height="'+f1(h)+'" fill="#ffedd5" stroke="#fdba74" stroke-width="1"/>'+
+    '<text x="'+f1(x+w/2)+'" y="'+f1(y+h/2+3.5)+'" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9.5" font-weight="800" fill="#9a3412">'+t+'</text>';
+}
+
+/* total au centre d'un rectangle : nombre en gros + unité en petit (à côté, ou sous le nombre si le rectangle est étroit ou si c'est le « ? ») */
+function totLab(cx,cy,TT,unit,W,nom){
+  const k=STY[TT.u], cls=(TT.u===2?' class="fade-op"':'');
+  const est=TT.t.length*17+4+(unit||'').length*7.2, dessous=(TT.u===1)||est>W-6;
+  const base='font-family="Baloo 2,Nunito,sans-serif" font-weight="800" fill="'+k.col+'"'+HALO5+cls;
+  const NM=nom?'<text x="'+f1(cx)+'" y="'+f1(cy+(dessous?34:27))+'" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="800" fill="#111827" paint-order="stroke" stroke="#fff" stroke-width="3" stroke-linejoin="round">'+nom+'</text>':'';
+  if(!unit) return '<text x="'+f1(cx)+'" y="'+f1(cy+10)+'" text-anchor="middle" font-size="30" '+base+'>'+TT.t+'</text>'+NM;
+  if(dessous) return '<text x="'+f1(cx)+'" y="'+f1(cy+6)+'" text-anchor="middle" font-size="30" '+base+'>'+TT.t+'</text>'+
+                     '<text x="'+f1(cx)+'" y="'+f1(cy+22)+'" text-anchor="middle" font-size="13" '+base+'>'+unit+'</text>'+NM;
+  return '<text x="'+f1(cx)+'" y="'+f1(cy+10)+'" text-anchor="middle" '+base+'><tspan font-size="30">'+TT.t+'</tspan><tspan font-size="14" dx="4">'+unit+'</tspan></text>'+NM;
+}
+
+/* ---------- schéma 1 : grille (rectangle de carreaux, ou tableau à double entrée si d.head) ---------- */
+function schGrid(d,st){
+  const R=val(d.r,st,d.ans), Cc=val(d.c,st,d.ans), TT=val(d.tot,st,d.ans);
+  const cell=d.cell, gw=d.nc*cell, gh=d.nr*cell, hd=d.head?Math.round(cell*.75):0;
+  const hdT=(d.head&&Cc.u===0)?hd:0, lw=30, bw=lw+hd+gw, bx=(320-bw)/2, gx=bx+lw+hd, gy=34+hdT;
+  let s='';
+  if(d.head){
+    if(Cc.u===0) for(let j=0;j<d.nc;j++) s+=hcell(gx+j*cell,gy-hdT,cell,hdT,d.hc+(j+1));
+    if(R.u===0)  for(let i=0;i<d.nr;i++) s+=hcell(gx-hd,gy+i*cell,hd,cell,d.hr+(i+1));
+  }
+  if(Cc.u===0&&R.u===0){
+    for(let i=0;i<d.nr;i++) for(let j=0;j<d.nc;j++)
+      s+='<rect x="'+f1(gx+j*cell)+'" y="'+f1(gy+i*cell)+'" width="'+cell+'" height="'+cell+'" fill="#dbeafe" stroke="'+BLEU+'" stroke-width="1.5"/>';
+  } else if(Cc.u!==0){            /* nombre par rangée inconnu : chaque rangée est une barre entière */
+    const k=STY[Cc.u];
+    for(let i=0;i<d.nr;i++)
+      s+='<rect x="'+f1(gx)+'" y="'+f1(gy+i*cell)+'" width="'+f1(gw)+'" height="'+cell+'" fill="'+k.fill+'" stroke="'+k.stroke+'" stroke-width="2"'+k.dash+'/>';
+  } else {                        /* nombre de rangées inconnu : chaque colonne est une barre entière */
+    const k=STY[R.u];
+    for(let j=0;j<d.nc;j++)
+      s+='<rect x="'+f1(gx+j*cell)+'" y="'+f1(gy)+'" width="'+cell+'" height="'+f1(gh)+'" fill="'+k.fill+'" stroke="'+k.stroke+'" stroke-width="2"'+k.dash+'/>';
+  }
+  const by=gy-hdT-4;
+  s+=vlab(gx+gw/2,by-3,Cc,d.unitC,'middle',15)+
+     vlabG(gx-hd-10,gy+gh/2,R,d.unitR,15)+
+     /* le total : en gros, au milieu du rectangle, avec un contour clair */
+     totLab(gx+gw/2,gy+gh/2,TT,d.unitTot,gw);
+  return '<svg viewBox="0 0 320 '+(gy+gh+12)+'" width="320" role="img" aria-label="rectangle : des rangées égales">'+s+'</svg>';
+}
+
+/* ---------- schéma : un rectangle empilé de parts égales (comparaison « fois plus ») ---------- */
+function schStack(d,st){
+  const top=val(d.top,st,d.ans), pt=val(d.part,st,d.ans), cn=val(d.cnt,st,d.ans);
+  const n=d.n, bh=26, W=150, x0=132, y0=48, H=n*bh, E={t:'',u:0};
+  let s=cap(x0+W/2,14,d.cPart);
+  s+=vlab(x0+W/2,40,pt,'','middle',15);
+  for(let k=0;k<n;k++) s+=barre(x0,y0+k*bh,W,bh,E);
+  s+=vlabG(x0-12,y0+H/2,cn,'fois',15)+
+     totLab(x0+W/2,y0+H/2,top,d.unitTot,W,d.cTop.replace(' (en ans)',''));
+  return '<svg viewBox="0 0 320 '+(y0+H+12)+'" width="320" role="img" aria-label="rectangle fait de parts égales">'+s+'</svg>';
+}
+
+/* ---------- schéma 2 : une grande barre faite de parts égales ---------- */
+function schParts(d,st){
+  const top=val(d.top,st,d.ans), pt=val(d.part,st,d.ans), cn=val(d.cnt,st,d.ans);
+  const X=20, W=280, n=d.n, w=W/n;
+  let s=cap(X,25,d.cTop,'start')+barre(X,32,W,36,top)+
+    '<line x1="'+X+'" y1="70" x2="'+X+'" y2="98" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3 3"/>'+
+    '<line x1="'+(X+W)+'" y1="70" x2="'+(X+W)+'" y2="98" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3 3"/>';
+  for(let k=0;k<n;k++) s+=barre(X+k*w,100,w,36,pt);
+  s+='<path d="M'+X+',144 v8 H'+(X+W)+' v-8" fill="none" stroke="'+STY[cn.u].stroke+'" stroke-width="2"'+STY[cn.u].dash+'/>'+
+     vlab(X+W/2,172,cn,d.unitCnt,'middle',16)+cap(X+W/2,189,d.cPart);
+  return '<svg viewBox="0 0 320 196" width="320" role="img" aria-label="barre faite de parts égales">'+s+'</svg>';
+}
+
+/* ---------- schéma 3 : des sauts égaux sur la ligne numérique ---------- */
+function schHops(d,st){
+  const y=72, p=d.p, n=d.n, top=p*n, N=nl(0,top,y,p);
+  const pt=val(d.part,st,d.ans), tp=val(d.top,st,d.ans), cn=val(d.cnt,st,d.ans);
+  const g=3, h=Math.min(24,8+(270/n)*.22), as=Math.min(9,6+(270/n)*.08);
+  let s=N.svg;
+  for(let k=0;k<n;k++) s+=saut(N.x(k*p)+g,N.x((k+1)*p)-g,y-8,h,pt,false,as);
+  s+=croix(N.x(0),y,LAB,5)+croix(N.x(top),y,STY[tp.u].col,5)+
+     T(N.x(0),y+26,'0',LAB,15)+
+     T(N.x(top),y+26,tp.t,STY[tp.u].col,16,'middle',tp.u===2?' class="fade-op"':'')+
+     (d.unitTop?cap(N.x(top),y+43,d.unitTop):'')+
+     vlab(160,y+70,cn,'sauts égaux','middle',15,'nombre de sauts : ');
+  return '<svg viewBox="0 0 320 160" width="320" role="img" aria-label="sauts égaux sur la ligne numérique">'+s+'</svg>';
+}
+
+/* ---------- schéma 4 : tableau « pour 1 … → pour … » ---------- */
+function schTable(d,st){
+  const cells=d.cells.map(r=>r.map(v=>val(v,st,d.ans)));
+  const x1=124, x2=214, w=84, h=44, ys=[18,80];
+  let s='';
+  [0,1].forEach(i=>{
+    s+=cap(112,ys[i]+h/2+4,d.rows[i],'end')+barre(x1,ys[i],w,h,cells[i][0])+barre(x2,ys[i],w,h,cells[i][1]);
+  });
+  return '<svg viewBox="0 0 320 146" width="320" role="img" aria-label="tableau de deux lignes et deux colonnes">'+s+'</svg>';
+}
+
+/* ---------- mini-figures du bilan ---------- */
+function miniGrid(){
+  const c=22, nc=5, nr=3, w=nc*c, h=nr*c, x1=20, x2=204, y=30, HL=' paint-order="stroke" stroke="#fff" stroke-width="4" stroke-linejoin="round"';
+  let s='';
+  for(let i=0;i<nr;i++) for(let j=0;j<nc;j++)
+    s+='<rect x="'+(x1+j*c)+'" y="'+(y+i*c)+'" width="'+c+'" height="'+c+'" fill="#dbeafe" stroke="'+BLEU+'" stroke-width="1.4"/>';
+  s+='<rect x="'+x2+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="#eff6ff" stroke="'+BLEU+'" stroke-width="2"/>';
+  s+=T(x1+w/2,y-7,'5',BLEU,14,'middle')+T(x1-8,y+h/2+5,'3',BLEU,14,'end')+
+     T(x1+w/2,y+h/2+6,'3 × 5',BLEU,17,'middle',HL)+
+     T(x2+w/2,y-7,'longueur','#374151',12,'middle')+T(x2-8,y+h/2,'largeur','#374151',12,'middle',' transform="rotate(-90 '+(x2-8)+' '+(y+h/2)+')"')+
+     T(x2+w/2,y+h/2+4,'longueur × largeur','#374151',10,'middle',HL);
+  return '<svg viewBox="0 0 330 108" width="310" role="img" aria-label="rectangle de carreaux et rectangle général : longueur fois largeur">'+s+'</svg>';
+}
+function miniParts(){
+  const k=STY[0]; let s='<rect x="10" y="6" width="180" height="24" rx="4" fill="'+k.fill+'" stroke="'+k.stroke+'" stroke-width="2"/>'+T(100,23,'tout',k.col,12.5);
+  for(let j=0;j<4;j++) s+='<rect x="'+(10+j*45)+'" y="48" width="45" height="24" rx="4" fill="'+k.fill+'" stroke="'+k.stroke+'" stroke-width="2"/>'+T(10+j*45+22.5,65,'part',k.col,12.5);
+  return '<svg viewBox="0 0 200 84" width="190" role="img" aria-label="barre en parts égales">'+s+'</svg>';
+}
+function miniTable(){
+  const k=STY[0], c=(x,y,t)=>'<rect x="'+x+'" y="'+y+'" width="60" height="26" rx="4" fill="'+k.fill+'" stroke="'+k.stroke+'" stroke-width="2"/>'+T(x+30,y+18,t,k.col,14);
+  return '<svg viewBox="0 0 200 84" width="190" role="img" aria-label="tableau à deux lignes">'+
+    c(40,8,'1')+c(110,8,'7')+c(40,44,'3')+c(110,44,'21')+'</svg>';
+}
+
+/* ========================== LES PAGES ================================== */
+/* calcul : la quantité porte son unité, le nombre de fois n'en a pas */
+const K=(a,op,b,r)=>'<span class="t n">'+a+'</span><span class="t"><span>'+op+'</span> <span class="n">'+b+'</span></span><span class="t"><span>=</span> <span class="ans">'+r+'</span></span>';
+const STEPS=[
+
+/* ---------- 0. pourquoi ---------- */
+{ titre:"💡 Résoudre un problème en une étape",
+  html:()=>`
+  <div class="pourquoi fade-in">
+    <span class="pq-lead">🤔 Pourquoi ?</span>
+    Un gros problème de maths est toujours fait de petites étapes. Pour réussir un gros problème, il faut d'abord
+    savoir réussir chaque petite étape. Et pour y arriver, il faut s'entraîner à
+    <span class="cle">reconnaître les situations qui se ressemblent</span> : quand on en connaît une,
+    on sait comment s'y prendre.
+  </div>
+  <p class="step-text fade-in">Ici, on s'entraîne sur les problèmes qui se résolvent avec <span class="cle">une seule multiplication ou une seule division</span>. Il y a 4 grandes situations :</p>
+  <ul class="liste-simple fade-in">
+    <li>des objets rangés en <span class="cle">rangées égales</span> ;</li>
+    <li>on compare avec « <span class="cle">… fois plus</span> » ;</li>
+    <li>on <span class="cle">combine</span> deux listes de choix ;</li>
+    <li>une même valeur se répète : <span class="cle">chaque</span>, <span class="cle">pour chacun</span>.</li>
+  </ul>
+  <div class="info orange fade-in">Pour chacune, on commence par <b>représenter le problème</b> (avec un rectangle ou des barres) : c'est cette représentation qui nous aide à comprendre ce qu'on cherche.</div>`
+},
+
+/* ---------- 1. des rangées égales ---------- */
+{ titre:"✏️ Des rangées égales",
+  intro:`Quand des objets sont rangés en <span class="cle">rangées égales</span>, on dessine un <span class="cle">rectangle</span> : chaque rangée est une ligne de carreaux.`,
+  hFig:214, reps:[{f:schGrid,k:'d'},{f:schParts,k:'dA'}],
+  cas:[
+   { pill:"Le total ?",
+     enonce:`Une tablette de chocolat a <b class="n">5 barres</b>, avec <b class="n">4 carreaux</b> sur chaque barre. <span class="quest">Combien y a-t-il de carreaux dans la tablette ?</span>`,
+     d:{nr:5,nc:4,cell:28,r:'5',c:'4',tot:null,unitR:'barres',unitC:'carreaux',unitTot:'carreaux',ans:'20'},
+     dA:{n:5,cTop:'carreaux en tout',top:null,part:'4',cnt:'5',unitCnt:'barres',cPart:"chaque part : les carreaux d'une barre",ans:'20'},
+     calcul:K('4 carreaux','×','5','20 carreaux'),
+     rep:`Il y a <b>20 carreaux</b> dans la tablette.` },
+   { pill:"Par barre ?",
+     enonce:`Une tablette de chocolat a <b class="n">5 barres</b>. Elle contient <b class="n">20 carreaux</b>. <span class="quest">Combien y a-t-il de carreaux dans chaque barre ?</span>`,
+     d:{nr:5,nc:4,cell:28,r:'5',c:null,tot:'20',unitR:'barres',unitC:'carreaux',unitTot:'carreaux',ans:'4'},
+     dA:{n:5,cTop:'carreaux en tout',top:'20',part:null,cnt:'5',unitCnt:'barres',cPart:"chaque part : les carreaux d'une barre",ans:'4'},
+     calcul:K('20 carreaux','÷','5','4 carreaux'),
+     rep:`Il y a <b>4 carreaux</b> dans chaque barre.` }
+  ]
+},
+
+/* ---------- 2. comparer avec « fois plus » ---------- */
+{ titre:"✏️ Comparer avec « fois plus »",
+  intro:`Quand on compare avec « <span class="cle">… fois plus</span> », on dessine un <span class="cle">rectangle</span> fait de plusieurs <span class="cle">parts égales</span> : chaque part est la plus petite quantité.`,
+  hFig:214, reps:[{f:schStack,k:'d'},{f:schParts,k:'d'}],
+  note:`« 4 fois plus jeune », c'est la même situation lue dans l'autre sens : la représentation ne change pas.`,
+  cas:[
+   { g:"👨 Le père est plus âgé", pill:"Âge du père ?",
+     enonce:`Lucas a <b class="n">12 ans</b>. Son père est <b class="n">4 fois</b> plus âgé que lui. <span class="quest">Quel âge a son père ?</span>`,
+     d:{n:4,cTop:"âge du père (en ans)",top:null,part:'12',cnt:'4',unitCnt:'fois',unitTot:'ans',cPart:"chaque part : l'âge de Lucas",ans:'48'},
+     calcul:K('12 ans','×','4','48 ans'),
+     rep:`Le père de Lucas a <b>48 ans</b>.` },
+   { g:"👨 Le père est plus âgé", pill:"Âge de Lucas ?",
+     enonce:`Le père de Lucas a <b class="n">48 ans</b>. Il est <b class="n">3 fois</b> plus âgé que Lucas. <span class="quest">Quel âge a Lucas ?</span>`,
+     d:{n:3,cTop:"âge du père (en ans)",top:'48',part:null,cnt:'3',unitCnt:'fois',unitTot:'ans',cPart:"chaque part : l'âge de Lucas",ans:'16'},
+     calcul:K('48 ans','÷','3','16 ans'),
+     rep:`Lucas a <b>16 ans</b>.` },
+   { g:"👨 Le père est plus âgé", pill:"Combien de fois ?",
+     enonce:`Lucas a <b class="n">8 ans</b> et son père a <b class="n">40 ans</b>. <span class="quest">Son père est combien de fois plus âgé que Lucas ?</span>`,
+     d:{n:5,cTop:"âge du père (en ans)",top:'40',part:'8',cnt:null,unitCnt:'fois',unitTot:'ans',cPart:"chaque part : l'âge de Lucas",ans:'5'},
+     calcul:K('40 ans','÷','8 ans','5'),
+     rep:`Son père est <b>5 fois</b> plus âgé que Lucas.` },
+   { g:"🧒 Le fils est plus jeune", pill:"Âge du fils ?",
+     enonce:`Paul a <b class="n">32 ans</b>. Son fils est <b class="n">4 fois</b> plus jeune que lui. <span class="quest">Quel âge a son fils ?</span>`,
+     d:{n:4,cTop:"âge de Paul (en ans)",top:'32',part:null,cnt:'4',unitCnt:'fois',unitTot:'ans',cPart:"chaque part : l'âge de son fils",ans:'8'},
+     calcul:K('32 ans','÷','4','8 ans'),
+     rep:`Le fils de Paul a <b>8 ans</b>.` },
+   { g:"🧒 Le fils est plus jeune", pill:"Âge de Paul ?",
+     enonce:`Le fils de Paul a <b class="n">9 ans</b>. Il est <b class="n">4 fois</b> plus jeune que Paul. <span class="quest">Quel âge a Paul ?</span>`,
+     d:{n:4,cTop:"âge de Paul (en ans)",top:null,part:'9',cnt:'4',unitCnt:'fois',unitTot:'ans',cPart:"chaque part : l'âge de son fils",ans:'36'},
+     calcul:K('9 ans','×','4','36 ans'),
+     rep:`Paul a <b>36 ans</b>.` },
+   { g:"🧒 Le fils est plus jeune", pill:"Combien de fois ?",
+     enonce:`Paul a <b class="n">36 ans</b> et son fils a <b class="n">12 ans</b>. <span class="quest">Son fils est combien de fois plus jeune que Paul ?</span>`,
+     d:{n:3,cTop:"âge de Paul (en ans)",top:'36',part:'12',cnt:null,unitCnt:'fois',unitTot:'ans',cPart:"chaque part : l'âge de son fils",ans:'3'},
+     calcul:K('36 ans','÷','12 ans','3'),
+     rep:`Le fils de Paul est <b>3 fois</b> plus jeune que lui.` }
+  ]
+},
+
+/* ---------- 3. combiner deux choix ---------- */
+{ titre:"✏️ Combiner deux choix",
+  intro:`Quand on associe chaque objet d'une liste à chaque objet d'une autre liste (un T-shirt et un short), on dessine un <span class="cle">tableau</span> : chaque case est une combinaison possible.`,
+  hFig:172, schema:schGrid,
+  cas:[
+   { pill:"Les tenues ?",
+     enonce:`Je possède <b class="n">8 T-shirts</b> et <b class="n">3 shorts</b>. <span class="quest">Combien puis-je faire de tenues différentes ?</span>`,
+     d:{nr:3,nc:8,cell:26,head:true,hc:'T',hr:'S',r:'3',c:'8',tot:null,unitR:'shorts',unitC:'T-shirts',unitTot:'tenues',ans:'24'},
+     calcul:K('8 T-shirts','×','3 shorts','24 tenues'),
+     rep:`Je peux faire <b>24 tenues</b> différentes.` },
+   { pill:"Les T-shirts ?",
+     enonce:`Avec mes <b class="n">3 shorts</b> et mes T-shirts, je peux faire <b class="n">24 tenues</b> différentes. <span class="quest">Combien ai-je de T-shirts ?</span>`,
+     d:{nr:3,nc:8,cell:26,head:true,hc:'T',hr:'S',r:'3',c:null,tot:'24',unitR:'shorts',unitC:'T-shirts',unitTot:'tenues',ans:'8'},
+     calcul:K('24 tenues','÷','3 shorts','8 T-shirts'),
+     rep:`J'ai <b>8 T-shirts</b>.` },
+   { pill:"Les shorts ?",
+     enonce:`Avec mes shorts et mes <b class="n">8 T-shirts</b>, je peux faire <b class="n">24 tenues</b> différentes. <span class="quest">Combien ai-je de shorts ?</span>`,
+     d:{nr:3,nc:8,cell:26,head:true,hc:'T',hr:'S',r:null,c:'8',tot:'24',unitR:'shorts',unitC:'T-shirts',unitTot:'tenues',ans:'3'},
+     calcul:K('24 tenues','÷','8 T-shirts','3 shorts'),
+     rep:`J'ai <b>3 shorts</b>.` }
+  ]
+},
+
+/* ---------- 4. des parts égales ---------- */
+{ titre:"✏️ Des parts égales",
+  intro:`Quand une même valeur se répète (« <span class="cle">chaque</span> », « <span class="cle">pour chacun</span> »), on dessine un <span class="cle">rectangle</span> : chaque ligne est une bille rouge, et ses carreaux sont ses billes bleues.`,
+  hFig:214, reps:[{f:schGrid,k:'d'},{f:schParts,k:'dA'}],
+  cas:[
+   { pill:"Les bleues ?",
+     enonce:`Ibrahim a <b class="n">7 billes rouges</b>. Il reçoit <b class="n">4 billes bleues</b> en échange de chaque bille rouge. <span class="quest">Combien de billes bleues reçoit-il ?</span>`,
+     d:{nr:7,nc:4,cell:22,r:'7',c:'4',tot:null,unitR:'rouges',unitC:'bleues',unitTot:'billes bleues',ans:'28'},
+     dA:{n:7,cTop:'billes bleues en tout',top:null,part:'4',cnt:'7',unitCnt:'billes rouges',cPart:'chaque part : les billes bleues pour 1 bille rouge',ans:'28'},
+     calcul:K('4 billes bleues','×','7','28 billes bleues'),
+     rep:`Ibrahim reçoit <b>28 billes bleues</b>.` },
+   { pill:"Pour 1 rouge ?",
+     enonce:`Fatima a obtenu <b class="n">21 billes bleues</b> en les échangeant contre <b class="n">3 billes rouges</b>. <span class="quest">Combien chaque bille rouge lui a-t-elle permis d'avoir de billes bleues ?</span>`,
+     d:{nr:3,nc:7,cell:24,r:'3',c:null,tot:'21',unitR:'rouges',unitC:'bleues',unitTot:'billes bleues',ans:'7'},
+     dA:{n:3,cTop:'billes bleues en tout',top:'21',part:null,cnt:'3',unitCnt:'billes rouges',cPart:'chaque part : les billes bleues pour 1 bille rouge',ans:'7'},
+     calcul:K('21 billes bleues','÷','3','7 billes bleues'),
+     rep:`Chaque bille rouge vaut <b>7 billes bleues</b>.` },
+   { pill:"Les rouges ?",
+     enonce:`Juan a obtenu <b class="n">24 billes bleues</b> en échangeant chacune de ses billes rouges contre <b class="n">4 billes bleues</b>. <span class="quest">Combien de billes rouges avait-il ?</span>`,
+     d:{nr:6,nc:4,cell:22,r:null,c:'4',tot:'24',unitR:'rouges',unitC:'bleues',unitTot:'billes bleues',ans:'6'},
+     dA:{n:6,cTop:'billes bleues en tout',top:'24',part:'4',cnt:null,unitCnt:'billes rouges',cPart:'chaque part : les billes bleues pour 1 bille rouge',ans:'6'},
+     calcul:K('24 billes bleues','÷','4 billes bleues','6'),
+     rep:`Juan avait <b>6 billes rouges</b>.` }
+  ]
+},
+
+/* ---------- 5. bilan ---------- */
+{ titre:"🏆 Ce qu'il faut retenir",
+  html:()=>`
+  <div class="recap-list">
+    <div class="recap-item fade-in" style="border-left-color:var(--primary)">
+      <div>Pour comprendre un problème, on commence par le <span class="cle">représenter</span>.</div>
+    </div>
+  </div>
+  <div class="bilan-schemas fade-in">
+    <div class="exemple-bloc"><figure>${miniGrid()}<figcaption>représentation rectangle</figcaption></figure></div>
+    <div class="exemple-bloc"><figure>${miniParts()}<figcaption>des barres en parts égales</figcaption></figure></div>
+  </div>`
+}
+];
+
+/* ========================== MOTEUR ===================================== */
+/* un cas se déroule en 3 temps : st=0 énoncé, st=1 représentation, st=2 lecture + calcul + réponse */
+let i=0, cas=0, st=0, alt=false, fadeFig=false; const N=STEPS.length;
+const card=document.getElementById('card'),
+      progressBar=document.getElementById('progressBar'),
+      stepsIndicator=document.getElementById('stepsIndicator'),
+      btnPrev=document.getElementById('btnPrev'),
+      btnNext=document.getElementById('btnNext'),
+      counter=document.getElementById('counter');
+
+function goTo(k){ i=k; cas=0; st=0; alt=false; fadeFig=false; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+/* page à cas : pastilles, énoncé, bouton, représentation, lecture, calcul */
+function pageCas(s){
+  const c=s.cas[cas], last=s.cas.length-1;
+  let pills='<div class="cas-bloc">', g;
+  s.cas.forEach((x,k)=>{
+    if(k===0||x.g!==g){
+      if(k>0) pills+='</div>';
+      g=x.g; if(g) pills+='<div class="cas-groupe">'+g+'</div>';
+      pills+='<div class="cas-row">';
+    }
+    pills+='<button class="cas-pill'+(k===cas?' on':'')+'" data-k="'+k+'">'+x.pill+'</button>';
+  });
+  pills+='</div></div>';
+  const main='<button class="btn-anim fade-in" id="btns">'+
+    (st===0?'▶ Représenter le problème':st===1?'▶ Calculer':(cas<last?'▶ Cas suivant':'🔁 Revoir depuis le début'))+'</button>';
+  const reps = s.reps||[{f:s.schema,k:'d'}], R = reps[(+alt)%reps.length];
+  const sch = R.f, d = c[R.k];
+  const fig = st===0
+    ? '<p class="fig-vide">La représentation apparaîtra ici.</p>'
+    : '<figure class="'+(fadeFig?'fade-in':'')+'">'+sch(d,st+1)+'</figure>';
+  const bAlt = (st>=1 && reps.length>1) ? '<button class="btn-alt" id="btna">🔄 Autre représentation</button>' : '';
+  fadeFig=false;
+  return '<p class="step-text fade-in">'+s.intro+'</p>'+pills+
+    '<div class="enonce">'+c.enonce+'</div>'+
+    main+
+    '<div class="fig-zone" style="min-height:'+s.hFig+'px">'+fig+'</div>'+
+    bAlt+
+    '<div class="zone-txt">'+
+      (st>=2?'<div class="calcul fade-in">'+c.calcul+'</div><div class="info violet fade-in">'+c.rep+'</div>':'')+
+      (st>=2&&cas===last&&s.note?'<div class="info bleu fade-in">'+s.note+'</div>':'')+
+    '</div>';
+}
+
+function render(){
+  const s=STEPS[i];
+  card.innerHTML =
+    '<div class="step-title pop">'+s.titre+'</div>'+
+    (s.cas ? pageCas(s) : s.html());
+  const bs=document.getElementById('btns');
+  if(bs) bs.addEventListener('click',()=>{
+    if(st<2){ st++; fadeFig=(st===1); }
+    else if(cas<s.cas.length-1){ cas++; st=0; alt=false; }
+    else { cas=0; st=0; alt=false; }
+    render();
+  });
+  const ba=document.getElementById('btna');
+  if(ba) ba.addEventListener('click',()=>{ alt=((+alt)+1)%(s.reps||[0,1]).length; fadeFig=true; render(); });
+  card.querySelectorAll('.cas-pill').forEach(b=>b.addEventListener('click',()=>{
+    cas=+b.dataset.k; fadeFig=(st>=1); render();
+  }));
+
+  progressBar.style.width=(i/(N-1)*100)+'%';
+  stepsIndicator.innerHTML='';
+  for(let k=0;k<N;k++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(k===i?' active':k<i?' done':'');
+    d.textContent=k<i?'✓':k+1;
+    d.addEventListener('click',()=>goTo(k));
+    stepsIndicator.appendChild(d);
+  }
+  counter.textContent='Page '+(i+1)+' / '+N;
+  btnPrev.disabled=(i===0);
+  btnNext.textContent=i===N-1?'🔁 Recommencer':'Suivant →';
+}
+btnPrev.addEventListener('click',()=>{ if(i>0) goTo(i-1); });
+btnNext.addEventListener('click',()=>{ goTo(i===N-1?0:i+1); });
+render();
+</script>
+</body>
+</html>
