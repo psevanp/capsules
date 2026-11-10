@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>G10 — Construire la médiatrice</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  /* --- dominante du module Géométrie --- */
+  --primary:#16a34a;--primary2:#4ade80;--primary-clair:#dcfce7;
+  --bg:#f0fdf4;--cote:#166534;
+  /* --- palette pédagogique constante (identique aux autres modules) --- */
+  --bleu:#1a73e8;--bleu-clair:#e8f0fe;
+  --orange:#ea580c;--orange-clair:#ffedd5;
+  --vert:#16a34a;--vert-clair:#f0fdf4;
+  --violet:#7c3aed;--violet-clair:#f5f3ff;
+  --gris:#94a3b8;
+  --teal:#0d9488;--teal-clair:#f0fdfa;
+  --card:#fff;--texte:#1e293b;--border:#e2e8f0;
+  /* --- conventions de figures (identiques aux exercices WIMS du module) --- */
+  --fig-bleu:#1d4ed8;--fig-gris:#9ca3af;--fig-label:#4b5563;--fig-cod:#c4c9d1;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--texte);}
+header{display:flex;justify-content:center;margin-bottom:22px;}
+.header-row{display:flex;align-items:center;gap:14px;max-width:680px;width:100%;}
+.badge-code{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:48px;border-radius:12px;border:2.5px solid var(--primary);background:var(--primary-clair);font-family:'Baloo 2',cursive;font-size:1.3rem;font-weight:800;color:var(--primary);flex-shrink:0;}
+.tache-label{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--primary);line-height:1.3;}
+.progress-bar-wrap{width:100%;max-width:680px;background:var(--primary-clair);border-radius:99px;height:10px;margin-bottom:18px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:99px;transition:width .5s ease;}
+.steps-indicator{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+.step-dot{width:34px;height:34px;border-radius:50%;background:var(--primary-clair);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--primary2);transition:all .4s;border:2px solid transparent;cursor:pointer;user-select:none;}
+.step-dot:hover{border-color:var(--primary2);}
+.step-dot.active{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.15);box-shadow:0 0 0 4px var(--primary-clair);}
+.step-dot.done{background:var(--vert);color:#fff;border-color:var(--vert);}
+.card{background:var(--card);border-radius:20px;padding:26px 24px;max-width:680px;width:100%;min-height:360px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 4px 24px rgba(22,101,52,.10);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:20px 20px 0 0;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease both;}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .45s ease both;}
+.step-title{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;color:var(--cote);text-align:center;line-height:1.3;}
+.step-text{font-size:.97rem;line-height:1.7;text-align:left;max-width:580px;width:100%;}
+.pourquoi{background:var(--teal-clair);border-left:4px solid var(--teal);border-radius:10px;padding:12px 15px;font-size:.92rem;font-weight:600;color:#134e4a;line-height:1.6;max-width:580px;width:100%;}
+.pq-lead{font-family:'Baloo 2',cursive;font-weight:800;color:var(--teal);}
+.info{border-radius:12px;padding:12px 16px;font-weight:600;font-size:.92rem;line-height:1.6;max-width:580px;width:100%;}
+.info.primary{background:var(--primary-clair);border-left:4px solid var(--primary);color:var(--cote);}
+.info.vert{background:var(--vert-clair);border-left:4px solid var(--vert);color:#14532d;}
+.info.bleu{background:var(--bleu-clair);border-left:4px solid var(--bleu);color:#1e3a5f;}
+.info.violet{background:var(--violet-clair);border-left:4px solid var(--violet);color:#4c1d95;}
+.info.orange{background:var(--orange-clair);border-left:4px solid var(--orange);color:#7c2d12;}
+.definition{background:#eef2ff;border-left:4px solid #4f46e5;border-radius:10px;padding:12px 16px;font-size:.92rem;font-weight:600;line-height:1.6;color:#312e81;max-width:580px;width:100%;}
+.def-lead{font-family:'Baloo 2',cursive;font-weight:800;color:#4f46e5;display:block;margin-bottom:4px;}
+.propriete{background:#f0fdfa;border-left:4px solid #0d9488;border-radius:10px;padding:12px 16px;font-size:.92rem;font-weight:600;line-height:1.6;color:#134e4a;max-width:580px;width:100%;}
+.prop-lead{font-family:'Baloo 2',cursive;font-weight:800;color:#0d9488;display:block;margin-bottom:4px;}
+.propriete .ligne{display:block;}
+.etapes{display:flex;flex-direction:column;gap:10px;max-width:580px;width:100%;text-align:left;}
+.etape{display:flex;align-items:flex-start;gap:11px;}
+.etape-num{min-width:24px;height:24px;border-radius:50%;background:var(--primary);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;
+  font-weight:800;font-size:.8rem;flex-shrink:0;margin-top:1px;}
+.etape-txt{flex:1;line-height:1.55;}
+.liste-simple{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;max-width:580px;width:100%;text-align:left;font-size:.97rem;line-height:1.55;}
+.duo{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;max-width:580px;width:100%;}
+.duo figure{margin:0;flex:1 1 150px;max-width:230px;}
+.exemple-bloc{border:1.5px solid #e0e7ff;background:#f8faff;border-radius:16px;padding:14px 16px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;max-width:580px;width:100%;}
+.exemple-bloc figure{margin:0;}
+.duo-blocs{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;max-width:600px;width:100%;}
+.duo-blocs .exemple-bloc{flex:1 1 240px;max-width:270px;}
+.type-label{font-family:'Baloo 2',cursive;font-weight:800;color:var(--primary);font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;align-self:flex-start;}
+.compare-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;max-width:580px;width:100%;}
+.compare-row .info{flex:1 1 240px;max-width:270px;}
+figure{text-align:center;width:100%;}
+svg{max-width:100%;height:auto;overflow:visible;}
+figcaption{font-size:.85rem;color:var(--gris);margin-top:1px;line-height:1.3;}
+.cap-lead{display:block;color:var(--texte);font-size:.85rem;}
+.cle{color:var(--cote);font-weight:700;}
+.prop-oui{color:#14532d;}
+.prop-oui::marker{color:#16a34a;}
+.prop-non{color:#7f1d1d;}
+.prop-non::marker{color:#dc2626;}
+.toujours{font-weight:800;color:#15803d;background:#dcfce7;padding:0 4px;border-radius:5px;white-space:nowrap;}
+.pas-toujours{font-weight:800;color:#b91c1c;background:#fee2e2;padding:0 4px;border-radius:5px;white-space:nowrap;}
+.mot-bleu{color:var(--fig-bleu);font-weight:700;}
+.mot-orange{color:var(--orange);font-weight:700;}
+.mot-defini{color:#4f46e5;font-weight:800;font-size:1.08em;}
+.rep{opacity:0;transition:opacity .3s ease;max-width:580px;width:100%;text-align:center;font-size:.95rem;line-height:1.7;}
+.rep.on{opacity:1;}
+.btn-complete{border:2px solid var(--teal);background:var(--teal-clair);color:var(--teal);font-family:'Baloo 2',cursive;font-size:1rem;font-weight:700;border-radius:10px;padding:10px 22px;cursor:pointer;transition:all .2s;}
+.btn-complete:hover{background:var(--teal);color:#fff;}
+.btn-complete:disabled{opacity:.45;cursor:default;}
+.btn-anim{border:2px solid var(--violet);background:var(--violet-clair);color:var(--violet);font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;transition:all .2s;}
+.btn-anim:hover{background:var(--violet);color:#fff;}
+.recap-list{display:flex;flex-direction:column;gap:12px;width:100%;max-width:580px;}
+.recap-item{display:flex;gap:12px;align-items:flex-start;background:#f8faff;border-radius:12px;padding:11px 16px;border-left:4px solid transparent;text-align:left;font-size:.92rem;line-height:1.55;}
+.bilan-sous{margin-top:6px;gap:3px;font-size:.92rem;}
+.recap-num{min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:.9rem;color:#fff;flex-shrink:0;}
+.nav{display:flex;align-items:center;justify-content:space-between;max-width:680px;width:100%;margin-top:20px;gap:12px;}
+.btn-nav{font-family:'Baloo 2',cursive;font-weight:700;font-size:1rem;border:none;border-radius:12px;padding:11px 22px;cursor:pointer;transition:all .25s;}
+.btn-prev{background:var(--primary-clair);color:var(--primary);}
+.btn-prev:hover{background:var(--primary);color:#fff;}
+.btn-prev:disabled{opacity:.35;cursor:default;}
+.btn-next{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;}
+.btn-next:hover{opacity:.9;}
+.step-counter{font-family:'Baloo 2',cursive;font-weight:700;color:var(--primary);font-size:.95rem;white-space:nowrap;}
+.anim-txt{width:100%;max-width:560px;display:flex;flex-direction:column;gap:4px;text-align:left;font-size:.95rem;line-height:1.55;}
+.anim-txt>div{min-height:1.55em;}
+.l-hyp{color:var(--texte);font-weight:600;}
+.l-conc{color:#15803d;font-weight:800;}
+.anim-desc{display:none;margin-top:10px;padding:10px 14px;border:2px solid var(--primary);background:var(--primary-clair);
+  border-radius:10px;color:#14532d;font-weight:800;font-size:1rem;text-align:center;min-height:auto;}
+.objectif{max-width:580px;width:100%;background:#fef3c7;border-left:4px solid #f59e0b;border-radius:8px;
+  padding:9px 14px;font-weight:800;color:#78350f;line-height:1.5;text-align:left;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="badge-code">G10</div>
+    <div class="tache-label">Construire la médiatrice d'un segment</div>
+  </div>
+</header>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="steps-indicator" id="stepsIndicator"></div>
+<div class="card" id="card"></div>
+<div class="nav">
+  <button class="btn-nav btn-prev" id="btnPrev">← Retour</button>
+  <span class="step-counter" id="counter"></span>
+  <button class="btn-nav btn-next" id="btnNext">Suivant →</button>
+</div>
+
+<script>
+/* =========================================================================
+   G10 — Construire la médiatrice d'un segment.
+   Définition retenue (choix de Sven, sens du mot « médiateur ») : la
+   médiatrice de [AB] = tous les points à la même distance de A et de B.
+   La caractérisation « perpendiculaire en son milieu » sert ici de 2e
+   méthode de construction ; sa justification est renvoyée à G11.
+   Échelle : 1 cm = 16 unités (CM9). Points = croix avec contour clair.
+   ========================================================================= */
+const BLEU='#1d4ed8', GRIS='#9ca3af', LAB='#4b5563', OR='#ea580c', VIOLET='#7c3aed';
+
+/* étiquette : contour blanc fin */
+function lab(x,y,txt,col){
+  return '<text x="'+x+'" y="'+y+'" text-anchor="middle" font-family="Nunito,sans-serif"'+
+         ' font-size="15" font-weight="700" fill="'+(col||LAB)+'"'+
+         ' paint-order="stroke" stroke="#fff" stroke-width="1.4">'+txt+'</text>';
+}
+/* étiquette placée à distance "dist" du centre, dans la direction centre→point
+   (pour toujours poser la lettre à l'extérieur de la figure) */
+function labOut(P,center,dist,txt,col){
+  const dx=P[0]-center[0], dy=P[1]-center[1], d=Math.hypot(dx,dy)||1;
+  return lab(P[0]+dx/d*dist, P[1]+dy/d*dist, txt, col);
+}
+/* point sur le segment [p1p2] à la fraction t (0..1 = segment, hors intervalle = prolongement) */
+function onLine(p1,p2,t){
+  return [p1[0]+(p2[0]-p1[0])*t, p1[1]+(p2[1]-p1[1])*t];
+}
+/* point sur un cercle de centre (cx,cy) et de rayon r, à l'angle deg (°) */
+function arcPoint(cx,cy,r,deg){
+  const a=deg*Math.PI/180;
+  return [cx+r*Math.cos(a), cy+r*Math.sin(a)];
+}
+/* intersection des droites (p1p2) et (p3p4) */
+function inter(p1,p2,p3,p4){
+  const [x1,y1]=p1,[x2,y2]=p2,[x3,y3]=p3,[x4,y4]=p4;
+  const d=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
+  const t=((x1-x3)*(y3-y4)-(y1-y3)*(x3-x4))/d;
+  return [x1+t*(x2-x1), y1+t*(y2-y1)];
+}
+/* tourne une liste de points LOCAUX (relatifs à l'origine) de deg°, puis les
+   place autour de (cx,cy) — toutes les figures de cette capsule sont
+   construites ainsi, jamais avec des coordonnées absolues devinées à l'œil */
+function placeRot(cx,cy,deg,pts){
+  const a=deg*Math.PI/180, co=Math.cos(a), si=Math.sin(a);
+  return pts.map(([x,y])=>[cx+x*co-y*si, cy+x*si+y*co]);
+}
+/* contour d'un quadrilatère fermé à partir de 4 sommets */
+function quadPath(pts,col,w){
+  return '<path d="M'+pts[0][0].toFixed(1)+','+pts[0][1].toFixed(1)+
+    ' L'+pts[1][0].toFixed(1)+','+pts[1][1].toFixed(1)+
+    ' L'+pts[2][0].toFixed(1)+','+pts[2][1].toFixed(1)+
+    ' L'+pts[3][0].toFixed(1)+','+pts[3][1].toFixed(1)+
+    ' Z" fill="none" stroke="'+col+'" stroke-width="'+w+'"/>';
+}
+function segPath(P1,P2,col,w){
+  return '<line x1="'+P1[0].toFixed(1)+'" y1="'+P1[1].toFixed(1)+'" x2="'+P2[0].toFixed(1)+'" y2="'+P2[1].toFixed(1)+'" stroke="'+col+'" stroke-width="'+w+'"/>';
+}
+/* petit repère d'angle droit DANS l'angle formé en P par les côtés (P,A) et (P,B) */
+function angleMark(P,A,B,size,col){
+  const ux=A[0]-P[0], uy=A[1]-P[1], dA=Math.hypot(ux,uy);
+  const vx=B[0]-P[0], vy=B[1]-P[1], dB=Math.hypot(vx,vy);
+  const p1=[P[0]+ux/dA*size, P[1]+uy/dA*size];
+  const p3=[P[0]+vx/dB*size, P[1]+vy/dB*size];
+  const p2=[p1[0]+vx/dB*size, p1[1]+vy/dB*size];
+  return '<path d="M'+p1[0].toFixed(1)+','+p1[1].toFixed(1)+' L'+p2[0].toFixed(1)+','+p2[1].toFixed(1)+
+    ' L'+p3[0].toFixed(1)+','+p3[1].toFixed(1)+'" fill="none" stroke="'+col+'" stroke-width="1.6"/>';
+}
+/* codage de mesure : n petits traits parallèles (repris de G3, bug corrigé),
+   angleDeg = inclinaison par rapport à la verticale. Les n traits sont
+   espacés le LONG du segment codé (perpendiculairement à eux-mêmes) :
+   l'ancienne version décalait toujours en x "écran" quel que soit angleDeg,
+   ce qui faisait se chevaucher les traits dès que le segment n'était pas
+   proche de l'horizontale (ex. les codages à 2 traits sur un côté incliné) */
+function codage(cx,cy,angleDeg,n,spacing,halfLen,col,w){
+  const rad=angleDeg*Math.PI/180;
+  const dx=Math.sin(rad)*halfLen, dy=Math.cos(rad)*halfLen;
+  const ox=Math.cos(rad)*spacing, oy=-Math.sin(rad)*spacing;
+  const start=-(n-1)/2;
+  let s='';
+  for(let k=0;k<n;k++){
+    const x=cx+(start+k)*ox, y=cy+(start+k)*oy;
+    s+='<line x1="'+(x-dx).toFixed(1)+'" y1="'+(y-dy).toFixed(1)+'" x2="'+(x+dx).toFixed(1)+'" y2="'+(y+dy).toFixed(1)+'" stroke="'+col+'" stroke-width="'+w+'"/>';
+  }
+  return s;
+}
+/* tic(s) d'égalité de longueur, perpendiculaire(s) au segment [P1P2], à la
+   fraction t (par défaut le milieu) */
+function tickAt(P1,P2,t,n,col){
+  const [x,y]=onLine(P1,P2,t);
+  const phi=Math.atan2(P2[1]-P1[1],P2[0]-P1[0])*180/Math.PI;
+  return codage(x,y,-phi,n,5,7,col,1.8);
+}
+function sideTick(P1,P2,n,col){ return tickAt(P1,P2,0.5,n,col); }
+/* codage de mesure alternatif : petit rond (contour, fond blanc) à la fraction
+   t du segment [P1P2] — sert à distinguer deux couples de longueurs égales
+   sur une même figure sans se limiter aux seuls tirets */
+function roundMark(P1,P2,t,col,n){
+  if(n===undefined) n=1;
+  const [x,y]=onLine(P1,P2,t);
+  const L=Math.hypot(P2[0]-P1[0],P2[1]-P1[1])||1;
+  const ux=(P2[0]-P1[0])/L, uy=(P2[1]-P1[1])/L, gap=8;
+  const start=-(n-1)/2;
+  let s='';
+  for(let k=0;k<n;k++){
+    const cx=x+(start+k)*gap*ux, cy=y+(start+k)*gap*uy;
+    s+='<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="3.4" fill="#fff" stroke="'+col+'" stroke-width="1.8"/>';
+  }
+  return s;
+}
+
+/* ===================== HELPERS PROPRES À G7 =========================== */
+const VERT='#16a34a';
+const CM=18;                       /* échelle des figures : 1 cm = 18 unités */
+const GRAD=['#2563eb','#7c3aed','#c026d3','#e11d48'];   /* étapes : froid → chaud (G4/G5) */
+/* point = croix (convention G4/G5) */
+function croix(x,y,col,w,t){
+  w=w||5; t=t||1.9;
+  return '<path d="M'+(x-w).toFixed(1)+','+(y-w).toFixed(1)+' L'+(x+w).toFixed(1)+','+(y+w).toFixed(1)+
+         ' M'+(x-w).toFixed(1)+','+(y+w).toFixed(1)+' L'+(x+w).toFixed(1)+','+(y-w).toFixed(1)+
+         '" stroke="'+col+'" stroke-width="'+t+'" stroke-linecap="round" fill="none"/>';
+}
+/* liste des consignes révélées une à une (repris de G5) */
+function listeEtapes(consignes, stepIdx){
+  if(stepIdx===0) return '<p class="step-text" style="margin:0;color:var(--gris)">Clique sur « Étape suivante » pour commencer.</p>';
+  return consignes.slice(0,stepIdx).map((txt,idx)=>`
+    <div class="etape${idx===stepIdx-1?' fade-in':''}">
+      <div class="etape-num" style="background:${GRAD[idx]}">${idx+1}</div>
+      <div class="etape-txt">${txt}</div>
+    </div>`).join('');
+}
+function circ(C,r,col,w,extra){
+  return '<circle cx="'+C[0].toFixed(1)+'" cy="'+C[1].toFixed(1)+'" r="'+r.toFixed(1)+'" fill="none" stroke="'+col+
+         '" stroke-width="'+(w||2)+'"'+(extra||'')+'/>';
+}
+function seg(P,Q,col,w,extra){
+  return '<line x1="'+P[0].toFixed(1)+'" y1="'+P[1].toFixed(1)+'" x2="'+Q[0].toFixed(1)+'" y2="'+Q[1].toFixed(1)+
+         '" stroke="'+col+'" stroke-width="'+(w||2)+'"'+(extra||'')+'/>';
+}
+/* longueur écrite au milieu de [PQ], décalée de "off" perpendiculairement */
+function segLab(P,Q,txt,col,off){
+  const [mx,my]=onLine(P,Q,0.5), dx=Q[0]-P[0], dy=Q[1]-P[1], d=Math.hypot(dx,dy)||1;
+  const x=mx-dy/d*off, y=my+dx/d*off;
+  return '<text x="'+x.toFixed(1)+'" y="'+(y+4).toFixed(1)+'" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11.5" font-weight="800" fill="'+col+
+         '" paint-order="stroke" stroke="#fff" stroke-width="3">'+txt+'</text>';
+}
+/* intersections du cercle (C,r) et de la droite (PQ) */
+function interLC(C,r,P,Q){
+  const dx=Q[0]-P[0], dy=Q[1]-P[1], fx=P[0]-C[0], fy=P[1]-C[1];
+  const a=dx*dx+dy*dy, b=2*(fx*dx+fy*dy), c=fx*fx+fy*fy-r*r, disc=b*b-4*a*c;
+  if(disc<0) return [];
+  const s=Math.sqrt(disc);
+  return [(-b-s)/(2*a),(-b+s)/(2*a)].map(t=>[P[0]+t*dx,P[1]+t*dy]);
+}
+/* intersections des cercles (A,rA) et (B,rB) : [au-dessus, en dessous] */
+function interCC(A,rA,B,rB){
+  const dx=B[0]-A[0], dy=B[1]-A[1], d=Math.hypot(dx,dy);
+  const a=(rA*rA-rB*rB+d*d)/(2*d), h=Math.sqrt(Math.max(0,rA*rA-a*a));
+  const mx=A[0]+a*dx/d, my=A[1]+a*dy/d, px=-dy/d, py=dx/d;
+  return [[mx-h*px,my-h*py],[mx+h*px,my+h*py]];
+}
+/* étiquette de point centrée verticalement (lab() pose la ligne de base) */
+const L=(P,dx,dy,txt,col)=>lab((P[0]+dx).toFixed(1),(P[1]+dy+5).toFixed(1),txt,col);
+
+/* animation JS : un "jeton" par lancement ; changer de page ou relancer
+   incrémente le jeton, ce qui arrête proprement l'animation en cours */
+let animToken=0;
+const ROUGE='#dc2626';
+function pause(ms,tok){ return new Promise(res=>setTimeout(()=>res(tok===animToken),ms)); }
+function tween(ms,fn,tok){
+  return new Promise(res=>{
+    const t0=performance.now();
+    function f(now){
+      if(tok!==animToken) return res(false);
+      const u=Math.min(1,(now-t0)/ms); fn(u);
+      if(u<1) requestAnimationFrame(f); else res(true);
+    }
+    requestAnimationFrame(f);
+  });
+}
+
+/* mot écrit lettre par lettre en bleu et orange alternés */
+function melange(mot){
+  return '<strong>'+[...mot].map((c,k)=>'<span style="color:'+(k%2?OR:BLEU)+'">'+c+'</span>').join('')+'</strong>';
+}
+
+/* ===================== HELPERS PROPRES À G8 =========================== */
+const VERT_F='#15803d';
+const U=deg=>[Math.cos(deg*Math.PI/180), Math.sin(deg*Math.PI/180)];
+const add=(P,v,k)=>[P[0]+k*v[0], P[1]+k*v[1]];
+const nUp=v=>[v[1],-v[0]];               /* perpendiculaire "vers le haut" quand v est presque horizontal */
+const $=id=>document.getElementById(id);
+const f1=x=>x.toFixed(1);
+/* droite repliée sur son point de départ (invisible tant qu'elle n'est pas tracée) */
+function ligneVide(id,P,col,w){
+  return '<line id="'+id+'" x1="'+f1(P[0])+'" y1="'+f1(P[1])+'" x2="'+f1(P[0])+'" y2="'+f1(P[1])+
+         '" stroke="'+col+'" stroke-width="'+(w||2.4)+'" stroke-linecap="round" opacity="0"/>';
+}
+/* l'équerre (même dessin que G1) : angle droit au sommet V, un côté selon e1, l'autre selon e2 */
+function equerreSVG(id,L1,L2){
+  return '<g id="'+id+'" opacity="0">'+
+    '<polygon points="0,0 '+L1+',0 0,'+(-L2)+'" fill="#9ca3af" fill-opacity=".28" stroke="#6b7280" stroke-width="1.6" stroke-linejoin="round"/>'+
+    '<polygon points="12,-5 '+f1(L1*.66)+',-5 12,'+f1(-L2*.62)+'" fill="#fff" fill-opacity=".55"/></g>';
+}
+function placeEquerre(el,V,e1,e2){
+  el.setAttribute('transform','matrix('+[e1[0],e1[1],-e2[0],-e2[1]].map(x=>x.toFixed(4)).concat([f1(V[0]),f1(V[1])]).join(',')+')');
+}
+/* ---- briques d'animation (toutes s'arrêtent si on change de page ou relance) ---- */
+function trace(id,P,Q,ms,tok){
+  const el=$(id); el.setAttribute('opacity','1');
+  el.setAttribute('x1',f1(P[0])); el.setAttribute('y1',f1(P[1]));
+  return tween(ms,u=>{ el.setAttribute('x2',f1(P[0]+u*(Q[0]-P[0]))); el.setAttribute('y2',f1(P[1]+u*(Q[1]-P[1]))); },tok);
+}
+function apparait(id,ms,tok){ const el=$(id); return tween(ms,u=>el.setAttribute('opacity',u),tok); }
+function disparait(id,ms,tok){ const el=$(id); return tween(ms,u=>el.setAttribute('opacity',1-u),tok); }
+async function tape(id,txt,tok,ms){
+  const el=$(id); ms=ms||35;
+  for(let c=1;c<=txt.length;c++){ el.textContent=txt.slice(0,c); if(!await pause(ms,tok)) return false; }
+  return true;
+}
+/* les droites conclues "respirent" une fois (épaisseur) pour attirer l'œil */
+function pulse(ids,tok){
+  const els=ids.map($);
+  return tween(900,u=>els.forEach(el=>el.setAttribute('stroke-width',f1(2.4+2.2*Math.sin(Math.PI*u)))),tok);
+}
+function glisse(id,V0,V1,e1,e2,ms,tok){
+  const el=$(id);
+  return tween(ms,u=>{ const k=u<.5?2*u*u:1-2*(1-u)*(1-u);
+    placeEquerre(el,[V0[0]+k*(V1[0]-V0[0]),V0[1]+k*(V1[1]-V0[1])],e1,e2); },tok);
+}
+/* une page animée : on reconstruit la page (état initial), on joue le script,
+   puis on montre ce qui doit apparaître après (#apresAnim) */
+async function jouer(script){
+  const tok=++animToken;
+  render();
+  const btn=$('btnr');
+  btn.disabled=true; btn.textContent='Animation en cours…';
+  if(!await script(tok)) return;
+  const ap=$('apresAnim'); if(ap) ap.style.display='flex';
+  btn.disabled=false; btn.textContent="🔁 Revoir l'animation";
+}
+/* fin d'animation : description de la droite tracée, encadrée et écrite à la machine */
+async function decrit(txt,tok){
+  const el=$('desc'); el.style.display='block';
+  return await pause(250,tok) && await tape('desc',txt,tok,40);
+}
+/* zone de texte sous le dessin : lignes vides qui se remplissent pendant l'animation */
+function zoneTexte(n,conclusion){
+  let s='<div class="anim-txt">';
+  for(let k=1;k<=n;k++) s+='<div id="t'+k+'" class="'+(k===n&&conclusion?'l-conc':'l-hyp')+'"></div>';
+  return s+'<div id="desc" class="anim-desc"></div></div>';
+}
+const apres=contenu=>`<div id="apresAnim" style="display:none;flex-direction:column;gap:14px;width:100%;align-items:center">${contenu}</div>`;
+const propBox=(num,txt,notation)=>`
+    <div class="propriete fade-in">
+      <span class="prop-lead">📌 Propriété ${num}</span>
+      <span class="ligne">${txt}</span>
+      <span class="ligne" style="font-weight:700;margin-top:4px">${notation}</span>
+    </div>`;
+
+/* ===================== HELPERS PROPRES À G9 =========================== */
+const CM9=16;                                   /* échelle G9 : 1 cm = 16 unités */
+const MAG='#c026d3', ROSE='#e11d48';
+const deg=v=>Math.atan2(v[1],v[0])*180/Math.PI;
+/* chemin d'un arc de cercle de centre C, rayon r, de l'angle a0 sur "span" degrés (sens horaire écran) */
+function arcD(C,r,a0,span){
+  const P=a=>arcPoint(C[0],C[1],r,a).map(f1).join(',');
+  if(span>=359.9) return 'M'+P(a0)+' A'+r+','+r+' 0 0,1 '+P(a0+180)+' A'+r+','+r+' 0 0,1 '+P(a0+359.9);
+  return 'M'+P(a0)+' A'+r+','+r+' 0 '+(span>180?1:0)+',1 '+P(a0+span);
+}
+/* un arc (ou un cercle) prêt à être tracé : invisible au départ */
+function arcVide(id,C,r,a0,span,col){
+  const len=(r*Math.PI*span/180).toFixed(1);
+  return '<path id="'+id+'" d="'+arcD(C,r,a0,span)+'" fill="none" stroke="'+col+'" stroke-width="2" '+
+         'stroke-dasharray="'+len+'" stroke-dashoffset="'+len+'" opacity="0"/>';
+}
+/* le "compas" : un rayon se trace, tourne et dessine l'arc, puis s'efface */
+async function compas(idArc,idRay,idLab,C,r,a0,span,msTour,tok){
+  const arc=$(idArc), ray=$(idRay), lb=$(idLab), len=r*Math.PI*span/180;
+  const E0=arcPoint(C[0],C[1],r,a0);
+  if(!await trace(idRay,C,E0,450,tok)) return false;
+  if(lb && !await apparait(idLab,250,tok)) return false;
+  if(!await pause(250,tok)) return false;
+  if(lb) lb.setAttribute('opacity','0');
+  arc.setAttribute('opacity','1');
+  const ok=await tween(msTour,u=>{
+    const E=arcPoint(C[0],C[1],r,a0+span*u);
+    ray.setAttribute('x2',f1(E[0])); ray.setAttribute('y2',f1(E[1]));
+    arc.setAttribute('stroke-dashoffset',f1(len*(1-u)));
+  },tok);
+  if(!ok) return false;
+  return await disparait(idRay,300,tok);
+}
+/* la règle graduée (même gris que l'équerre), posée le long de [AB], corps du côté "dessous" */
+function regleSVG(id,A,u,cmMax){
+  const n=nUp(u), d=[-n[0],-n[1]], W=22;
+  const P0=add(A,u,-0.4*CM9), P1=add(A,u,(cmMax+0.4)*CM9);
+  const pts=[P0,P1,add(P1,d,W),add(P0,d,W)].map(p=>f1(p[0])+','+f1(p[1])).join(' ');
+  let s='<g id="'+id+'" opacity="0"><polygon points="'+pts+'" fill="#9ca3af" fill-opacity=".25" stroke="#6b7280" stroke-width="1.3"/>';
+  for(let k=0;k<=cmMax*2;k++){
+    const Q=add(A,u,k*CM9/2), L=k%2?4:7;
+    s+=seg(Q,add(Q,d,L),'#6b7280',1);
+    if(k%2===0){ const T=add(Q,d,15); s+='<text x="'+f1(T[0])+'" y="'+f1(T[1]+3)+'" text-anchor="middle" font-family="Nunito,sans-serif" font-size="7.5" fill="#4b5563">'+(k/2)+'</text>'; }
+  }
+  return s+'</g>';
+}
+/* croix avec un contour clair (halo blanc) pour qu'elle se détache des tracés */
+function croixH(x,y,col){ return croix(x,y,'#ffffff',5.6,5)+croix(x,y,col,5,2.1); }
+/* longueur écrite le long de [PQ], du côté extérieur au triangle (G = centre du triangle) */
+function labExt(P,Q,txt,col,G,dist){
+  const m=onLine(P,Q,.5), dx=Q[0]-P[0], dy=Q[1]-P[1], d=Math.hypot(dx,dy), nx=-dy/d, ny=dx/d;
+  const s=((m[0]+nx-G[0])**2+(m[1]+ny-G[1])**2) > ((m[0]-nx-G[0])**2+(m[1]-ny-G[1])**2) ? 1 : -1;
+  const x=m[0]+s*nx*dist, y=m[1]+s*ny*dist;
+  return '<text x="'+f1(x)+'" y="'+f1(y+4)+'" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11.5" font-weight="800" fill="'+col+
+         '" paint-order="stroke" stroke="#fff" stroke-width="3">'+txt+'</text>';
+}
+/* ===================== HELPERS PROPRES À G10 ========================== */
+/* zone de texte sous le dessin, chaque ligne avec sa couleur */
+function zoneCouleurs(cols){
+  return '<div class="anim-txt">'+cols.map((c,k)=>'<div id="t'+(k+1)+'" class="l-hyp" style="color:'+c+'"></div>').join('')+
+         '<div id="desc" class="anim-desc"></div></div>';
+}
+const cm=x=>x.toString().replace('.',',')+' cm';
+/* données d'un exemple de médiatrice au compas */
+function geoMed(cfg){
+  const u=U(cfg.th), n=nUp(u), A=cfg.A, B=add(A,u,cfg.ab*CM9), r=cfg.r*CM9;
+  const Mi=onLine(A,B,.5), [P,Q]=interCC(A,r,B,r);
+  const h=Math.hypot(P[0]-Mi[0],P[1]-Mi[1]);
+  const D1=add(Mi,n,-(h+cfg.ext)), D2=add(Mi,n,h+cfg.ext);
+  return {u,n,A,B,r,Mi,P,Q,D1,D2};
+}
+function svgMed(cfg){
+  const g=geoMed(cfg), {A,B,r,P,Q,u}=g, nm=cfg.noms;
+  const aP=k=>deg([P[0]-k[0],P[1]-k[1]]), aQ=k=>deg([Q[0]-k[0],Q[1]-k[1]]);
+  const a0A=deg([A[0]-B[0],A[1]-B[1]])-70, a0B=deg([B[0]-A[0],B[1]-A[1]])+70;   /* rayon de départ vers le bas, loin des étiquettes */
+  let arcs='';
+  if(cfg.arcs){
+    const s=cfg.arcs;
+    arcs=arcVide('cA1',A,r,aP(A)-s/2,s,BLEU)+arcVide('cA2',A,r,aQ(A)-s/2,s,BLEU)+
+         arcVide('cB1',B,r,aP(B)-s/2,s,VIOLET)+arcVide('cB2',B,r,aQ(B)-s/2,s,VIOLET);
+  } else arcs=arcVide('cA',A,r,a0A,360,BLEU)+arcVide('cB',B,r,a0B,360,VIOLET);
+  const rayStart=cfg.arcs? arcPoint(A[0],A[1],r,aP(A)-cfg.arcs/2) : arcPoint(A[0],A[1],r,a0A);
+  const rayStartB=cfg.arcs? arcPoint(B[0],B[1],r,aP(B)-cfg.arcs/2) : arcPoint(B[0],B[1],r,a0B);
+  const preuve=cfg.preuve? `<g id="preuve" opacity="0">
+      ${[[P,A],[P,B],[Q,A],[Q,B]].map(([X,Y])=>seg(X,Y,GRIS,1.4,' stroke-dasharray="4 3"')+tickAt(X,Y,.5,1,OR)).join('')}</g>` : '';
+  const out=(X,k)=>{ const v=[X[0]-g.Mi[0],X[1]-g.Mi[1]], d=Math.hypot(v[0],v[1]); return [v[0]/d*k,v[1]/d*k]; };
+  const [pA,qA]=out(A,15), [pB,qB]=out(B,15);
+  return `
+    <svg viewBox="${cfg.vb}" width="${cfg.w}" style="max-width:100%;height:auto" role="img" aria-label="construction au compas de la médiatrice du segment [${nm[0]}${nm[1]}]">
+      ${seg(A,B,LAB,2.4)}
+      ${arcs}
+      ${ligneVide('rA',A,BLEU,1.8)}${ligneVide('rB',B,VIOLET,1.8)}
+      ${preuve}
+      ${ligneVide('lm',g.D1,MED,2.6)}
+      <g id="ptP" opacity="0">${croixH(P[0],P[1],MAG)}${L(P,-13,-4,nm[2],MAG)}</g>
+      <g id="ptQ" opacity="0">${croixH(Q[0],Q[1],MAG)}${L(Q,-13,4,nm[3],MAG)}</g>
+      ${croixH(A[0],A[1],LAB)}${L(A,pA,qA,nm[0],LAB)}
+      ${croixH(B[0],B[1],LAB)}${L(B,pB,qB,nm[1],LAB)}
+    </svg>`;
+}
+async function construireMed(cfg,txt,v,tok){
+  const g=geoMed(cfg), {A,B,r,P,Q}=g;
+  const aP=k=>deg([P[0]-k[0],P[1]-k[1]]), aQ=k=>deg([Q[0]-k[0],Q[1]-k[1]]);
+  const pale=ids=>tween(700,k=>ids.forEach(id=>$(id).setAttribute('opacity',f1(1-.7*k))),tok);
+  let ok;
+  if(cfg.arcs){
+    const s=cfg.arcs;
+    ok= await tape('t1',txt[0],tok)
+      && await compas('cA1','rA',null,A,r,aP(A)-s/2,s,v.tour,tok) && await compas('cA2','rA',null,A,r,aQ(A)-s/2,s,v.tour,tok)
+      && await pause(v.p,tok) && await tape('t2',txt[1],tok)
+      && await compas('cB1','rB',null,B,r,aP(B)-s/2,s,v.tour,tok) && await compas('cB2','rB',null,B,r,aQ(B)-s/2,s,v.tour,tok);
+  } else {
+    ok= await tape('t1',txt[0],tok)
+      && await compas('cA','rA',null,A,r,deg([A[0]-B[0],A[1]-B[1]])-70,360,v.tour,tok)
+      && await pause(v.p,tok) && await tape('t2',txt[1],tok)
+      && await compas('cB','rB',null,B,r,deg([B[0]-A[0],B[1]-A[1]])+70,360,v.tour,tok);
+  }
+  if(!ok) return false;
+  ok= await pause(v.p,tok) && await apparait('ptP',300,tok) && await apparait('ptQ',300,tok) && await tape('t3',txt[2],tok);
+  if(!ok) return false;
+  if(cfg.preuve && !(await apparait('preuve',500,tok) && await pause(1500,tok) && await disparait('preuve',500,tok))) return false;
+  const arcsIds=cfg.arcs?['cA1','cA2','cB1','cB2']:['cA','cB'];
+  return await pause(v.p,tok) && await tape('t4',txt[3],tok) && await trace('lm',g.D1,g.D2,v.seg,tok) && await pause(300,tok)
+    && await pale(arcsIds) && await decrit(txt[4],tok) && await pause(300,tok);
+}
+function pageMed(titre,cfg,objectif,intro,txt,v,apresTxt){
+  return { titre, run:true,
+    html:()=>`
+  <div class="objectif fade-in">${objectif}</div>
+  ${intro?`<p class="step-text fade-in">${intro}</p>`:''}
+  <div class="exemple-bloc fade-in">
+    <figure>${svgMed(cfg)}</figure>
+    ${zoneCouleurs([BLEU,VIOLET,MAG,MED_T])}
+  </div>
+  ${apresTxt?apres(`<p class="step-text fade-in" style="margin:0">${apresTxt}</p>`):''}`,
+    play:()=>jouer(tok=>construireMed(cfg,txt,v,tok))
+  };
+}
+
+/* codage de longueurs égales : n petites formes (trait, rond, triangle, étoile) au milieu de [P1P2] */
+const BLEU_F2='#1e3a8a', BLEU_C2='#3b82f6';
+/* médiatrice et résultats des tests : couleurs lisibles aussi par les daltoniens (palette Okabe-Ito) */
+const MED='#009E73', MED_T='#00795A', NON='#D55E00', NON_T='#B34700', NEUTRE='#374151';
+function marque(P1,P2,col,n,forme){
+  if(forme==='trait') return tickAt(P1,P2,.5,n,col);
+  const X=onLine(P1,P2,.5), L=Math.hypot(P2[0]-P1[0],P2[1]-P1[1]), d=[(P2[0]-P1[0])/L,(P2[1]-P1[1])/L], q=[-d[1],d[0]];
+  let s=''; const st=-(n-1)/2, gap=forme==='etoile'?10:9;
+  for(let k=0;k<n;k++){
+    const C=add(X,d,(st+k)*gap);
+    if(forme==='rond') s+='<circle cx="'+f1(C[0])+'" cy="'+f1(C[1])+'" r="3.2" fill="#fff" stroke="'+col+'" stroke-width="1.7"/>';
+    else {
+      const pts=[]; const N=forme==='tri'?3:10;
+      for(let j=0;j<N;j++){
+        const a=-Math.PI/2+j*2*Math.PI/N, r=forme==='tri'?5.4:(j%2?2.4:5.8);
+        const v=[Math.cos(a),Math.sin(a)];               /* orientée par rapport au segment */
+        pts.push(f1(C[0]+r*(v[0]*d[0]+v[1]*q[0]))+','+f1(C[1]+r*(v[0]*d[1]+v[1]*q[1])));
+      }
+      s+='<polygon points="'+pts.join(' ')+'" fill="'+col+'" stroke="#fff" stroke-width=".6"/>';
+    }
+  }
+  return s;
+}
+
+/* ========================== LES PAGES ================================== */
+const STEPS=[
+
+/* ---------- 0. pourquoi ---------- */
+{ titre:"💡 La médiatrice d'un segment",
+  html:()=>`
+  <div class="pourquoi fade-in">
+    <span class="pq-lead">🤔 Pourquoi ?</span>
+    Un <strong>médiateur</strong>, c'est une personne qui se place au milieu de deux personnes qui ne sont pas
+    d'accord, sans être plus proche de l'une que de l'autre. La <strong>médiatrice</strong> d'un segment, c'est
+    pareil : elle se place « au milieu » des deux extrémités du segment, à la même distance de chacune.
+  </div>
+  <p class="step-text fade-in">Dans cette capsule, nous allons voir :</p>
+  <ul class="liste-simple fade-in">
+    <li>ce qu'est la <span class="cle">médiatrice</span> d'un segment,</li>
+    <li>et comment la tracer au <span class="cle">compas</span>, avec des exemples de plus en plus rapides.</li>
+
+  </ul>`
+},
+
+/* ---------- 1. découverte : des points à égale distance de A et de B ---------- */
+{ titre:"✏️ À la même distance de A et de B",
+  run:true,
+  html:()=>{
+    const A=[95,118], u=U(-10), B=add(A,u,5*CM9);
+    return `
+  <p class="step-text fade-in">Que se passe-t-il si on place beaucoup de points, chacun à la <strong>même distance</strong>
+  de A et de B ?</p>
+  <div class="exemple-bloc fade-in">
+    <figure>
+    <svg id="medAnim" viewBox="40 12 190 205" width="260" style="max-width:100%;height:auto" role="img" aria-label="des points placés un à un, chacun à la même distance de A et de B, qui finissent par former une droite">
+      ${seg(A,B,LAB,2.4)}
+      <g id="tmp"></g>
+      ${ligneVide('lmed',A,MED,2.4)}
+      <g id="dots"></g>
+      ${croixH(A[0],A[1],LAB)}${L(A,-14,4,'A',LAB)}
+      ${croixH(B[0],B[1],LAB)}${L(B,14,-2,'B',LAB)}
+    </svg>
+    </figure>
+    <div class="anim-txt"><div id="t1" class="l-hyp"></div><div id="desc" class="anim-desc"></div></div>
+  </div>
+  ${apres(`
+    <div class="definition fade-in">
+      <span class="def-lead">📘 Définition</span>
+      La <span class="mot-defini">médiatrice</span> d'un segment [AB], ce sont <strong>tous les points</strong> qui sont
+      à la même distance de A et de B. C'est une droite.
+    </div>`)}`;
+  },
+  play:()=>jouer(async tok=>{
+    const A=[95,118], u=U(-10), n=nUp(u), B=add(A,u,5*CM9), Mi=onLine(A,B,.5);
+    const tmp=$('tmp'), dots=$('dots');
+    const dist=[52,-38,24,-66,78,-14,40,-56,66,-26,10,-80,58,-46,32];
+    const tempo=k=> k===0?[600,400,400,400,400] : k===1?[400,300,300,300,0] : k<6?[200,200,200,150,0] : [110,110,110,90,0];
+    for(let k=0;k<dist.length;k++){
+      const [tT,p1,p2,tE]=tempo(k), P=add(Mi,n,dist[k]);
+      tmp.innerHTML=ligneVide('sa',P,GRIS,1.6)+ligneVide('sb',P,GRIS,1.6)+'<g id="tk" opacity="0">'+tickAt(P,A,.5,1,OR)+tickAt(P,B,.5,1,OR)+'</g>';
+      if(!(await Promise.all([trace('sa',P,A,tT,tok),trace('sb',P,B,tT,tok)])).every(x=>x)) return false;
+      if(!(await apparait('tk',150,tok) && await pause(p1,tok))) return false;
+      dots.insertAdjacentHTML('beforeend','<circle cx="'+f1(P[0])+'" cy="'+f1(P[1])+'" r="2.4" fill="'+MED+'"/>');
+      if(k===0 && !await tape('t1','Ce point est à la même distance de A et de B (les deux traits sont codés pareil).',tok,30)) return false;
+      if(!await pause(p2,tok)) return false;
+      if(!await tween(tE,x=>tmp.setAttribute('opacity',f1(1-x)),tok)) return false;
+      tmp.innerHTML=''; tmp.setAttribute('opacity','1');
+    }
+    /* beaucoup d'autres points, très vite */
+    for(let d=-88;d<=88;d+=6){
+      if(dist.some(x=>Math.abs(x-d)<4)) continue;
+      const P=add(Mi,n,d);
+      dots.insertAdjacentHTML('beforeend','<circle cx="'+f1(P[0])+'" cy="'+f1(P[1])+'" r="2.4" fill="'+MED+'"/>');
+      if(!await pause(40,tok)) return false;
+    }
+    return await pause(800,tok) && await trace('lmed',add(Mi,n,-96),add(Mi,n,96),1200,tok) && await pause(300,tok)
+      && await decrit('Tous ces points forment une droite : la médiatrice du segment [AB].',tok) && await pause(300,tok);
+  })
+},
+
+/* ---------- 2. au compas : premier exemple détaillé (cercles entiers) ---------- */
+pageMed("✏️ Tracer la médiatrice au compas",
+  {A:[60,120],th:-10,ab:5,r:4,noms:['A','B','C','D'],arcs:0,preuve:true,ext:22,vb:'-12 30 216 186',w:300},
+  "On veut tracer la médiatrice du segment [AB].",
+  "Pour tracer une droite, il suffit de trouver deux de ses points : il faut donc trouver deux points qui sont à la même distance de A et de B.",
+  ["1. On trace un cercle de centre A, avec un écartement de compas plus grand que la moitié de [AB].",
+   "2. Sans changer l'écartement du compas, on trace le cercle de centre B : il a le même rayon.",
+   "3. Les deux cercles se coupent en C et D. C est sur les deux cercles, qui ont le même rayon : il est à la même distance de A et de B. D aussi !",
+   "4. C et D sont donc tous les deux sur la médiatrice : on trace la droite (CD).",
+   "(CD) est la médiatrice du segment [AB]."],
+  {tour:2000,p:450,seg:1000},
+  "Attention : si le rayon est plus petit que la moitié de [AB], les deux cercles ne se coupent pas. Il faut donc toujours prendre un écartement de compas plus grand que la moitié du segment."),
+
+/* ---------- 3. deuxième exemple (petits arcs) ---------- */
+pageMed("✏️ Un deuxième exemple",
+  {A:[58,110],th:-6,ab:5.5,r:3.5,noms:['K','L','R','S'],arcs:34,preuve:false,ext:22,vb:'38 50 128 122',w:180},
+  "On veut tracer la médiatrice du segment [KL].",
+  "Sur son cahier, de <span class=\"cle\">petits arcs</span> suffisent, tracés là où ils vont se couper.",
+  ["Petits arcs de centre K, de part et d'autre du segment.",
+   "Petits arcs de centre L, avec le même écartement.",
+   "Les arcs se coupent en R et S.",
+   "On trace la droite (RS).",
+   "(RS) est la médiatrice du segment [KL]."],
+  {tour:380,p:180,seg:500},
+  ""),
+
+/* ---------- 6. bilan ---------- */
+{ titre:"🏆 Ce qu'il faut retenir",
+  html:()=>`
+  <div class="recap-list">
+    ${[
+      ['var(--primary)','La <span class="cle">médiatrice</span> d\'un segment [AB], ce sont tous les points qui sont à la même distance de A et de B. C\'est une droite.'],
+      ['var(--bleu)','Avec le <span class="cle">compas</span>, on peut la construire en commençant par placer deux points qui sont à la même distance de ses extrémités, puis en traçant la droite qui passe par ces deux points.'],
+    ].map(([c,t],idx)=>`
+    <div class="recap-item fade-in" style="animation-delay:${idx*.08}s;border-left-color:${c}">
+      <div class="recap-num" style="background:${c}">${idx+1}</div>
+      <div>${t}</div>
+    </div>`).join('')}
+  </div>`
+}
+];
+
+/* ========================== MOTEUR ===================================== */
+let i=0, revealed=false, stepIdx=0; const N=STEPS.length;
+const card=document.getElementById('card'),
+      progressBar=document.getElementById('progressBar'),
+      stepsIndicator=document.getElementById('stepsIndicator'),
+      btnPrev=document.getElementById('btnPrev'),
+      btnNext=document.getElementById('btnNext'),
+      counter=document.getElementById('counter');
+
+function goTo(k){ animToken++; i=k; revealed=false; stepIdx=0; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+function render(){
+  const s=STEPS[i];
+  card.innerHTML =
+    '<div class="step-title pop">'+s.titre+'</div>'+
+    s.html(revealed,stepIdx)+
+    (s.comp  ? '<button class="btn-complete fade-in" id="btnc"'+(revealed?' disabled':'')+'>✏️ Compléter</button>' : '')+
+    (s.trace ? '<button class="btn-anim fade-in" id="btnt">▶ Tracer</button>' : '')+
+    (s.stepwise ? '<button class="btn-anim fade-in" id="btns">'+(stepIdx>=s.stepwise?'🔁 Revoir depuis le début':'▶ Étape suivante')+'</button>' : '')+
+    (s.run ? '<button class="btn-anim fade-in" id="btnr">▶ Lancer l\'animation</button>' : '');
+  const b=document.getElementById('btnc');
+  if(b) b.addEventListener('click',()=>{revealed=true;render();});
+  const t=document.getElementById('btnt');
+  if(t) t.addEventListener('click',()=>{
+    card.querySelectorAll('.master').forEach(a=>{ if(a.beginElement) a.beginElement(); });
+  });
+  const br=document.getElementById('btnr');
+  if(br) br.addEventListener('click',()=>s.play(br));
+  const bs=document.getElementById('btns');
+  if(bs) bs.addEventListener('click',()=>{
+    stepIdx = stepIdx>=s.stepwise ? 0 : stepIdx+1;
+    render();
+  });
+
+  progressBar.style.width=(i/(N-1)*100)+'%';
+  stepsIndicator.innerHTML='';
+  for(let k=0;k<N;k++){
+    const d=document.createElement('div');
+    d.className='step-dot'+(k===i?' active':k<i?' done':'');
+    d.textContent=k<i?'✓':k+1;
+    d.addEventListener('click',()=>goTo(k));
+    stepsIndicator.appendChild(d);
+  }
+  counter.textContent=`Page ${i+1} / ${N}`;
+  btnPrev.disabled = (i===0);
+  btnNext.textContent = i===N-1 ? '🔁 Recommencer' : 'Suivant →';
+}
+btnPrev.addEventListener('click',()=>{ if(i>0) goTo(i-1); });
+btnNext.addEventListener('click',()=>{ goTo(i===N-1?0:i+1); });
+render();
+</script>
+</body>
+</html>

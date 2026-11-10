@@ -338,7 +338,7 @@ function equerreSVG(id,L1,L2){
     '<polygon points="12,-5 '+f1(L1*.66)+',-5 12,'+f1(-L2*.62)+'" fill="#fff" fill-opacity=".55"/></g>';
 }
 function placeEquerre(el,V,e1,e2){
-  el.setAttribute('transform','matrix('+[e1[0],e1[1],-e2[0],-e2[1],V[0],V[1]].map(f1).join(',')+')');
+  el.setAttribute('transform','matrix('+[e1[0],e1[1],-e2[0],-e2[1]].map(x=>x.toFixed(4)).concat([f1(V[0]),f1(V[1])]).join(',')+')');
 }
 /* ---- briques d'animation (toutes s'arrêtent si on change de page ou relance) ---- */
 function trace(id,P,Q,ms,tok){
